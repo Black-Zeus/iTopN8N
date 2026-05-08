@@ -19,11 +19,11 @@
   },
   "criteria": {
     "title": "Criterio del reporte",
-    "body": "Se consideran únicamente activos físicos de la CMDB con estado <strong>production</strong> y sin contacto responsable asociado. El objetivo es identificar activos huérfanos para su normalización operativa, administrativa y de trazabilidad."
+    "body": "Se consideran movimientos recientes de inventario CMDB dentro de la ventana de fechas o cantidad de días configurada."
   },
   "tables": {
-    "title": "Detalle operacional",
-    "subtitle": "Detalle de activos sin contacto asignado, agrupados por bodega/localidad."
+    "title": "Movimientos recientes",
+    "subtitle": "Cambios detectados sobre activos, usuarios y ubicaciones afectadas."
   },
   "cta": {
     "label": "Abrir Combodo iTop"
@@ -33,52 +33,28 @@
   },
   "stats": [
     {
-      "label": "TOTAL",
-      "value": "total_assets",
+      "label": "MOVIMIENTOS",
+      "value": "total_movements",
       "border": "#cbd5e1",
       "background": "#f8fafc",
       "labelColor": "#475569",
       "valueColor": "#0f172a"
     },
     {
-      "label": "PC/LAPTOP",
-      "value": "pc_laptop_count",
+      "label": "ACTIVOS",
+      "value": "affected_asset_count",
       "border": "#bfdbfe",
       "background": "#eff6ff",
       "labelColor": "#1e3a8a",
       "valueColor": "#1e3a8a"
     },
     {
-      "label": "TABLET",
-      "value": "tablet_count",
+      "label": "CAMBIOS",
+      "value": "affected_change_count",
       "border": "#ddd6fe",
       "background": "#f5f3ff",
       "labelColor": "#6d28d9",
       "valueColor": "#6d28d9"
-    },
-    {
-      "label": "TELÉFONO MÓVIL",
-      "value": "mobile_count",
-      "border": "#fde68a",
-      "background": "#fffbeb",
-      "labelColor": "#a16207",
-      "valueColor": "#a16207"
-    },
-    {
-      "label": "IMPRESORAS",
-      "value": "printer_count",
-      "border": "#fed7aa",
-      "background": "#fff7ed",
-      "labelColor": "#9a3412",
-      "valueColor": "#9a3412"
-    },
-    {
-      "label": "PERIFÉRICOS",
-      "value": "peripheral_count",
-      "border": "#e5e7eb",
-      "background": "#f9fafb",
-      "labelColor": "#374151",
-      "valueColor": "#111827"
     }
   ]
 }

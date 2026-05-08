@@ -1,0 +1,60 @@
+{
+  "template_version": "mail-v1",
+  "partials": {
+    "styles": "partials/styles.html",
+    "layout": "partials/layout.html",
+    "header": "partials/header.html",
+    "summary": "partials/summary.html",
+    "stats": "partials/stats.html",
+    "criteria": "partials/criteria.html",
+    "tables": "partials/tables.html",
+    "notes": "partials/notes.html",
+    "cta": "partials/cta.html",
+    "footer": "partials/footer.html"
+  },
+  "header": {
+    "eyebrow": "Automatización ITSM / CMDB",
+    "subtitle": "Consolidado operativo sincronizado desde Combodo iTop",
+    "source_label": "Producción / iTop"
+  },
+  "criteria": {
+    "title": "Criterio del reporte",
+    "body": "Se consideran tickets ITSM abiertos cuya última actualización supera el umbral de horas configurado."
+  },
+  "tables": {
+    "title": "Tickets sin actualización reciente",
+    "subtitle": "Detalle de tickets que requieren seguimiento por falta de actividad."
+  },
+  "cta": {
+    "label": "Abrir Combodo iTop"
+  },
+  "footer": {
+    "brand": "Automatización ITSM / CMDB"
+  },
+  "stats": [
+    {
+      "label": "SIN UPDATE",
+      "value": "total_stale",
+      "border": "#fecaca",
+      "background": "#fef2f2",
+      "labelColor": "#991b1b",
+      "valueColor": "#991b1b"
+    },
+    {
+      "label": "UMBRAL H",
+      "value": "stale_threshold_hours",
+      "border": "#fde68a",
+      "background": "#fffbeb",
+      "labelColor": "#a16207",
+      "valueColor": "#a16207"
+    },
+    {
+      "label": "ABIERTOS",
+      "value": "total_open",
+      "border": "#cbd5e1",
+      "background": "#f8fafc",
+      "labelColor": "#475569",
+      "valueColor": "#0f172a"
+    }
+  ]
+}
