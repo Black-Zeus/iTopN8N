@@ -92,6 +92,7 @@ services:
       N8N_PATH: /n8n/
       N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:-http://localhost/n8n/}
       WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://localhost/n8n/}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
       N8N_PROXY_HOPS: 1
 
       # Seguridad
@@ -161,6 +162,7 @@ services:
       # Seguridad
       # Debe ser exactamente igual al servicio n8n principal
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
 
       # Rutas internas
       N8N_USER_FOLDER: /home/node/.n8n
