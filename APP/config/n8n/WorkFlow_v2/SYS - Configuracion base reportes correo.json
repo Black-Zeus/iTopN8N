@@ -3,29 +3,30 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "c122a59e-9e5e-478c-82cd-b7176b18834e",
+      "id": "8024c6aa-d2c9-4a69-8cab-7c9dd5f1fcd2",
       "name": "Cuando es llamado por otro workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -320,
-        0
+        1712,
+        704
       ]
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first()?.json || {};\n\nconst setBase = {\n  Company: input.Company || input.company || 'TecnoComp',\n  company: input.company || input.Company || 'TecnoComp',\n  timezone: input.timezone || 'America/Santiago',\n  email_from: input.email_from || 'notificaciones@dominio.cl',\n  email_to: input.email_to || 'destinatario@dominio.cl',\n  email_cc: input.email_cc || '',\n  email_bcc: input.email_bcc || '',\n  itop_url: input.itop_url || 'http://172.16.123.132/itop/',\n  itop_organization: input.itop_organization || 'Minera GoldFields Chile',\n  itop_limit: Number(input.itop_limit || 5000),\n  template_root: input.template_root || '/opt/n8n-config/templates/mail/v1',\n  source_label: input.source_label || 'Producci?n / iTop CMDB',\n  default_detail_level: input.default_detail_level || 'full',\n  flags: {\n    send_email: input.send_email !== false,\n    include_attachment: input.include_attachment !== false,\n    include_summary: input.include_summary !== false,\n    include_detail: input.include_detail !== false,\n    include_operational_notes: input.include_operational_notes !== false,\n  },\n};\n\nreturn [{ json: { ...setBase, set_base_version: 'mail-config-v1' } }];"
+        "jsCode": "const input = $input.first()?.json || {};\n\nfunction flagEnabled(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nconst setBase = {\n  Company: input.Company || input.company || 'TecnoComp',\n  company: input.company || input.Company || 'TecnoComp',\n  timezone: input.timezone || 'America/Santiago',\n  email_from: input.email_from || 'notificaciones@dominio.cl',\n  email_to: input.email_to || 'destinatario@dominio.cl',\n  email_cc: input.email_cc || '',\n  email_bcc: input.email_bcc || '',\n  itop_url: input.itop_url || 'http://172.16.123.132/itop/',\n  itop_organization: input.itop_organization || 'Minera GoldFields Chile',\n  itop_limit: Number(input.itop_limit || 5000),\n  template_root: input.template_root || '/opt/n8n-config/templates/mail/v1',\n  source_label: input.source_label || input.report_source_label || 'Producción / iTop CMDB',\n  default_detail_level: input.default_detail_level || 'full',\n  flags: {\n    send_email: flagEnabled(input.send_email, true),\n    include_attachment: flagEnabled(input.include_attachment, true),\n    include_summary: flagEnabled(input.include_summary, true),\n    include_detail: flagEnabled(input.include_detail, true),\n    include_operational_notes: flagEnabled(input.include_operational_notes, true),\n    include_itop_button_footer: flagEnabled(input.include_itop_button_footer, true),\n    include_requirements: flagEnabled(input.include_requirements, true),\n    include_incidents: flagEnabled(input.include_incidents, true),\n    include_changes: flagEnabled(input.include_changes, true),\n    include_problems: flagEnabled(input.include_problems, true),\n  },\n};\n\nreturn [{ json: { ...setBase, set_base_version: 'mail-config-v2' } }];"
       },
-      "id": "1632662e-c03a-4bc7-9496-68ba4ba96ea7",
+      "id": "362fbd6b-149c-4e0f-b2b0-43b3d1985db2",
       "name": "SetBase - Reportes correo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -80,
-        0
+        1952,
+        704
       ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Cuando es llamado por otro workflow": {
       "main": [
@@ -39,12 +40,15 @@
       ]
     }
   },
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
-  "staticData": null,
-  "pinData": {},
-  "versionId": "88121b87-246e-46eb-a3b2-764fa5bf50dd",
-  "triggerCount": 0,
+  "versionId": "71a13d61-7f1a-4e88-bb30-97cffa06ed67",
+  "meta": {
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "puR8KZ9UFvq5zRqX",
   "tags": []
 }
