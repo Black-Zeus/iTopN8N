@@ -10,7 +10,7 @@ Stack Docker Compose para automatizaciones y reportes operacionales sobre Combod
 - Mailpit publicado bajo subpath: `http://localhost:8089/mailpit/`
 - PostgreSQL, Redis, n8n, NocoDB y Mailpit quedan solo en la red interna Docker.
 - Los workflows productivos viven en `APP/config/n8n/WorkFlows`.
-- La PoC v2 vive en `APP/config/n8n/WorkFlow_v2`.
+- Los workflows v2 viven en `APP/config/n8n/WorkFlow_v2`.
 - Los templates HTML desacoplados viven en `APP/config/n8n/templates/mail/v1`.
 
 ## Arquitectura
@@ -71,7 +71,7 @@ No usar accesos directos como `localhost:5678`, `localhost:8025` o `localhost:80
 |   |   |   `-- html/index.html
 |   |   |-- n8n/
 |   |   |   |-- WorkFlows/      # workflows actuales / productivos
-|   |   |   |-- WorkFlow_v2/    # PoC v2 versionable
+|   |   |   |-- WorkFlow_v2/    # workflows v2 versionables
 |   |   |   `-- templates/
 |   |   |       `-- mail/v1/    # parciales HTML y contratos de reporte
 |   |   `-- postgres/init.sql
@@ -90,13 +90,15 @@ Documentacion del catalogo:
 APP/config/n8n/WorkFlows/README.md
 ```
 
-### PoC WorkFlow_v2
+### WorkFlow_v2
 
-`APP/config/n8n/WorkFlow_v2` contiene la primera PoC de desacoplamiento:
+`APP/config/n8n/WorkFlow_v2` contiene la migracion v2 de los reportes SMTP:
 
 ```text
 SYS - Configuracion base reportes correo.json
-CMDB - Activos sin contacto asignado - SMTP - v2 POC.json
+CMDB - Activos sin contacto asignado - SMTP.json
+CMDB - ... - SMTP.json
+ITSM - ... - SMTP.json
 README.md
 ```
 
@@ -106,7 +108,7 @@ El patron v2 separa:
 Trigger
 SetTrigger - Flujo
 SubWorkflow - SetBase reportes correo
-SetMixed - Configuracion efectiva
+Config Reporte / SetMixed - Configuracion efectiva
 Consulta de datos
 Preparacion de datos
 HTML - Renderer parciales
@@ -127,7 +129,7 @@ Dentro del contenedor se montan como solo lectura en:
 /opt/n8n-config/templates/mail/v1
 ```
 
-El renderer de la PoC usa parciales:
+El primer renderer migrado a parciales usa:
 
 ```text
 partials/layout.html
@@ -142,11 +144,13 @@ partials/cta.html
 partials/footer.html
 ```
 
-Y contratos por reporte:
+Los contratos por reporte viven en:
 
 ```text
-reports/cmdb-activos-sin-contacto.json
+reports/*.json
 ```
+
+`cmdb-activos-sin-contacto.json` es específico de ese flujo; no es un contrato genérico.
 
 ## Montajes n8n
 
@@ -221,23 +225,25 @@ Validar que solo nginx este expuesto al host:
 docker compose ps
 ```
 
-Debe aparecer unicamente nginx con `0.0.0.0:8089->80/tcp`.
+Debe aparecer únicamente nginx con `0.0.0.0:8089->80/tcp`.
 
 ## Importar Workflows v2
 
 Los JSON de `APP/config/n8n/WorkFlow_v2` estan preparados para importarse en n8n dentro de la carpeta del cliente.
 
-Para la PoC:
+Para importar:
 
 1. Importar `SYS - Configuracion base reportes correo.json`.
-2. Importar `CMDB - Activos sin contacto asignado - SMTP - v2 POC.json`.
-3. Revisar credenciales iTop y SMTP.
-4. Ejecutar manualmente el flujo piloto.
+2. Importar los workflows `*- SMTP.json` requeridos desde `WorkFlow_v2`.
+3. Moverlos dentro de la carpeta del cliente en n8n.
+4. Publicar/activar los workflows necesarios.
+5. Revisar credenciales iTop, SMTP y `HeaderAuth`.
+6. Ejecutar manualmente o probar webhook.
 
-El flujo piloto llama al subworkflow desde archivo local:
+Los workflows llaman al subworkflow `SYS - Configuracion base reportes correo` desde n8n usando el nodo `Execute Workflow` en modo Database/lista. Si se reimporta el SYS y n8n genera un nuevo ID, actualizar la referencia del nodo:
 
 ```text
-/opt/n8n-config/WorkFlow_v2/SYS - Configuracion base reportes correo.json
+SubWorkflow - SetBase reportes correo
 ```
 
 ## Versionamiento
@@ -247,7 +253,7 @@ Se versiona:
 - Compose y configuracion nginx.
 - Portal `index.html`.
 - Workflows exportados.
-- PoC `WorkFlow_v2`.
+- Workflows `WorkFlow_v2`.
 - Templates HTML desacoplados.
 - Documentacion.
 
@@ -257,6 +263,10 @@ No se versiona:
 - datos runtime en `APP/volumes`
 - backups locales
 - logs y temporales
+
+### Regla operativa Git
+
+Las acciones `git commit`, `git pull` y `git push` solo deben ejecutarse cuando exista una solicitud textual explicita del responsable del proyecto. Los cambios pueden prepararse, revisar diff y validarse localmente, pero no se versionan ni sincronizan sin esa confirmacion.
 
 ## Seguridad
 
