@@ -1,0 +1,278 @@
+{
+  "name": "CMDB - Activos próximos a vencer garantía - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        2944,
+        544
+      ],
+      "id": "c1ba9cf0-5484-493c-87ac-093c92913a7c",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "059197b7-d91c-49e7-aaeb-b3c8b8872670",
+              "name": "itop_url",
+              "value": "http://172.16.123.132/itop/",
+              "type": "string"
+            },
+            {
+              "id": "e9b8b00c-47e3-4ab3-bc00-80a936fe8336",
+              "name": "email_from",
+              "value": "notificaciones@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "c83991c2-147a-4b21-9e73-12e547e46f46",
+              "name": "email_to",
+              "value": "destinatario@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "e3a2a008-d143-4ac3-932e-494f47a913d5",
+              "name": "email_cc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "97f40aee-c889-49ba-b13d-8288e09dd5ac",
+              "name": "email_bcc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "a004e244-0975-4588-adf2-4ec0e595c41e",
+              "name": "email_subject",
+              "value": "CMDB - activos próximos a vencer garantía",
+              "type": "string"
+            },
+            {
+              "id": "5ab51298-1617-4c7d-98bb-83b2c5b0a1ad",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "efc99431-a62f-4d80-9c11-65562dc2432b",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "3c85eb06-fdec-4634-bffa-c5a475665dc5",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "f9fb0c48-4556-41eb-9d58-216ab6bd6a8c",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "cb1e02d2-9e2b-4ac6-a2ce-bf313ea47f33",
+              "name": "report_mode",
+              "value": "warranty_upcoming",
+              "type": "string"
+            },
+            {
+              "id": "863f70b5-6089-4d71-a52e-1bf494d5157b",
+              "name": "csv_basename",
+              "value": "testing_cmdb_garantias_proximas_vencer",
+              "type": "string"
+            },
+            {
+              "id": "69d4d173-2a85-4d59-be10-dd0ff64ef3c9",
+              "name": "report_title",
+              "value": "CMDB - Activos próximos a vencer garantía",
+              "type": "string"
+            },
+            {
+              "id": "c1f1bd4e-5b93-46f0-9ab5-47310935fbc1",
+              "name": "report_description",
+              "value": "Lista activos CMDB no obsoletos cuya garantía vence dentro de la ventana definida en la configuración del flujo. Por defecto se consideran los próximos 12 meses.",
+              "type": "string"
+            },
+            {
+              "id": "f23408f8-feb2-44ff-9b7c-e97d40945f7e",
+              "name": "operational_notes",
+              "value": "Este reporte fue generado automáticamente por \"Automatización ITSM / CMDB\".\nOrganización iTop considerada en el reporte: Minera GoldFields Chile.\nSe adjunta un CSV único con el volcado consolidado de activos próximos a vencer garantía.",
+              "type": "string"
+            },
+            {
+              "id": "2552407b-338e-4dca-a67a-fd6399679fad",
+              "name": "warranty_warning_months",
+              "value": 12,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3184,
+        544
+      ],
+      "id": "8c030773-37ed-49a4-b4dd-57c593302087",
+      "name": "Config Reporte"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "PhysicalDevice",
+        "key": "SELECT PhysicalDevice\nWHERE finalclass IN ('PC', 'Laptop', 'MobilePhone', 'Tablet', 'Printer', 'Peripheral', 'NetworkDevice')\nAND status NOT IN ('obsolete')",
+        "output_fields": "id,name,friendlyname,finalclass,status,org_id,org_id_friendlyname,location_id,location_id_friendlyname,contacts_list,brand_id,brand_id_friendlyname,model_id,model_id_friendlyname,serialnumber,asset_number,move2production,purchase_date,end_of_warranty,description",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        3456,
+        544
+      ],
+      "id": "01cbec44-8ced-4579-84c4-1d188c6c8119",
+      "name": "iTop - Activos CMDB",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Consulta base CMDB. El filtrado final se refuerza en el nodo Code para evitar depender exclusivamente del OQL."
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst config = $('Config Reporte').first().json;\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst itopOrganization = String(config.itop_organization || '').trim();\nconst timezone = String(config.timezone || 'America/Santiago').trim();\nconst reportMode = String(config.report_mode || '').trim();\nconst warrantyMonths = Number(config.warranty_warning_months || 12);\nconst warrantyHalfMonths = Math.ceil(warrantyMonths / 2);\nconst now = new Date();\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\"/g, '\"\"');\n  return `\"${text}\"`;\n}\n\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\n\nfunction scalarText(value) {\n  if (value === undefined || value === null) return '';\n  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {\n    const text = String(value).trim();\n    return text === '[object Object]' ? '' : text;\n  }\n  return '';\n}\n\nfunction cleanContactText(value) {\n  let text = scalarText(value);\n  if (!text) return '';\n  if (text.includes(' / ')) text = text.split(' / ')[0].trim();\n  return text;\n}\n\nfunction normalizeContactEntry(entry) {\n  if (entry === undefined || entry === null) return '';\n  const direct = cleanContactText(entry);\n  if (direct) return direct;\n  if (Array.isArray(entry)) return entry.map(normalizeContactEntry).filter(Boolean).join(', ');\n  if (typeof entry === 'object') {\n    if (entry.fields && typeof entry.fields === 'object') {\n      const fromFields = normalizeContactEntry(entry.fields);\n      if (fromFields) return fromFields;\n    }\n    if (entry.objects && typeof entry.objects === 'object') {\n      return Object.values(entry.objects).map(normalizeContactEntry).filter(Boolean).join(', ');\n    }\n    const preferred = ['contact_id_friendlyname','person_id_friendlyname','user_id_friendlyname','contact_name','person_name','display_name','name','friendlyname','email','email_address'];\n    for (const field of preferred) {\n      const text = cleanContactText(entry[field]);\n      if (text) return text;\n    }\n    const nested = ['contact_id','person_id','user_id','contact','person','user'];\n    for (const field of nested) {\n      const text = normalizeContactEntry(entry[field]);\n      if (text) return text;\n    }\n  }\n  return '';\n}\n\nfunction normalizeContacts(value) {\n  const text = normalizeContactEntry(value);\n  if (!text) return '';\n  const unique = [];\n  const seen = new Set();\n  for (const part of text.split(',').map(v => cleanContactText(v)).filter(Boolean)) {\n    const key = part.toLowerCase();\n    if (!seen.has(key)) { seen.add(key); unique.push(part); }\n  }\n  return unique.join(', ');\n}\n\nfunction isBlankValue(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'n/a' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined';\n}\n\nfunction normalizeClass(value) {\n  const raw = String(value || '-').trim();\n  const lower = raw.toLowerCase();\n  if (lower === 'pc' || lower.includes('desktop')) return 'PC';\n  if (lower === 'laptop' || lower.includes('notebook') || lower.includes('portable')) return 'Laptop';\n  if (lower === 'mobilephone' || lower.includes('phone') || lower.includes('telefono') || lower.includes('teléfono')) return 'Teléfonos móviles';\n  if (lower === 'tablet') return 'Tablets';\n  if (lower === 'printer' || lower.includes('impresora')) return 'Impresoras';\n  if (lower === 'peripheral' || lower.includes('periferico') || lower.includes('periférico')) return 'Periféricos';\n  if (lower === 'networkdevice') return 'Dispositivos de red';\n  return raw || 'Otros';\n}\n\nfunction classSortWeight(className) {\n  const order = { 'PC': 10, 'Laptop': 20, 'Tablets': 30, 'Teléfonos móviles': 40, 'Impresoras': 50, 'Periféricos': 60, 'Dispositivos de red': 70, 'Otros': 90 };\n  return order[className] || 80;\n}\n\nfunction translateStatus(value) {\n  const status = String(value || '').trim().toLowerCase();\n  const map = { stock: 'En Inventario', implementation: 'No Productivo', production: 'Productivo', obsolete: 'Obsoleto', inactive: 'Inactivo' };\n  return map[status] || String(value || '-');\n}\n\nfunction parseDate(value) {\n  const raw = String(value || '').trim();\n  if (!raw || raw === '-' || raw.toLowerCase() === 'null') return null;\n  const normalized = raw.length === 10 ? `${raw}T00:00:00` : raw.replace(' ', 'T');\n  const d = new Date(normalized);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\n\nfunction formatDate(value) {\n  const d = value instanceof Date ? value : parseDate(value);\n  if (!d) return '-';\n  return d.toLocaleDateString('es-CL', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' });\n}\n\nfunction daysBetween(a, b) {\n  const start = new Date(a.getFullYear(), a.getMonth(), a.getDate());\n  const end = new Date(b.getFullYear(), b.getMonth(), b.getDate());\n  return Math.ceil((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));\n}\n\nfunction addMonths(date, months) {\n  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());\n  result.setMonth(result.getMonth() + Number(months || 0));\n  return result;\n}\n\nfunction groupBy(list, fn) {\n  const map = new Map();\n  for (const item of list) {\n    const key = fn(item) || '-';\n    if (!map.has(key)) map.set(key, []);\n    map.get(key).push(item);\n  }\n  return map;\n}\n\nfunction buildAssetRows(list, emptyText) {\n  if (!list.length) {\n    return `<tr><td colspan=\"9\" style=\"padding:14px; font-size:12px; color:#64748b;\">${escapeHtml(emptyText)}</td></tr>`;\n  }\n  return list.map(a => `\n    <tr>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.finalclass)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\"><strong>${escapeHtml(a.name)}</strong></td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.status)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.location)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.brand)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.model)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.serial)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.warrantyDateDisplay)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.daysLabel)}</td>\n    </tr>`).join('');\n}\n\nfunction buildClassSummary(list) {\n  const groups = [...groupBy(list, a => a.finalclass).entries()]\n    .sort((a, b) => classSortWeight(a[0]) - classSortWeight(b[0]) || a[0].localeCompare(b[0], 'es'));\n  if (!groups.length) return '<tr><td colspan=\"2\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin registros para el criterio.</td></tr>';\n  return groups.map(([klass, rows]) => `<tr><td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(klass)}</td><td align=\"right\" style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\"><strong>${rows.length}</strong></td></tr>`).join('');\n}\n\nconst warrantyCutoffDate = addMonths(now, warrantyMonths);\nconst warrantyHalfCutoffDate = addMonths(now, warrantyHalfMonths);\nconst rawRows = flattenInput($input.all());\nlet assets = rawRows.map(row => {\n  const f = row.fields || row;\n  const warrantyDate = parseDate(getField(f, ['end_of_warranty', 'warranty_end_date'], ''));\n  const contacts = normalizeContacts(getField(f, ['contacts_list', 'contact_list', 'contact_id_friendlyname', 'contact_name'], ''));\n  const statusRaw = String(getField(f, ['status'], '-')).trim().toLowerCase();\n  const days = warrantyDate ? daysBetween(now, warrantyDate) : null;\n  return {\n    id: getField(f, ['id', 'key'], row.key || ''),\n    name: getField(f, ['name', 'friendlyname'], '-'),\n    finalclass: normalizeClass(getField(f, ['finalclass', 'class'], '-')),\n    statusRaw,\n    status: translateStatus(statusRaw),\n    organization: getField(f, ['org_id_friendlyname', 'org_name', 'organization_name'], '-'),\n    location: getField(f, ['location_id_friendlyname', 'location_name', 'location_id'], 'Sin bodega/localidad'),\n    contact: contacts,\n    brand: getField(f, ['brand_id_friendlyname', 'brand'], '-'),\n    model: getField(f, ['model_id_friendlyname', 'model'], '-'),\n    serial: getField(f, ['serialnumber', 'serial_number'], '-'),\n    assetNumber: getField(f, ['asset_number', 'assetnumber'], '-'),\n    purchaseDate: getField(f, ['purchase_date'], '-'),\n    warrantyDate,\n    warrantyDateDisplay: formatDate(warrantyDate),\n    daysToWarranty: days,\n    daysLabel: days === null ? '-' : (days >= 0 ? `${days} días` : `${Math.abs(days)} días vencida`),\n  };\n});\n\nif (reportMode === 'without_contact_production') {\n  assets = assets.filter(a => a.statusRaw === 'production' && isBlankValue(a.contact));\n  assets.sort((a, b) => a.location.localeCompare(b.location, 'es') || classSortWeight(a.finalclass) - classSortWeight(b.finalclass) || a.name.localeCompare(b.name, 'es'));\n} else if (reportMode === 'warranty_upcoming') {\n  assets = assets.filter(a => a.statusRaw !== 'obsolete' && a.warrantyDate && a.daysToWarranty >= 0 && a.warrantyDate <= warrantyCutoffDate);\n  assets.sort((a, b) => a.daysToWarranty - b.daysToWarranty || a.name.localeCompare(b.name, 'es'));\n} else if (reportMode === 'warranty_expired') {\n  assets = assets.filter(a => a.statusRaw !== 'obsolete' && a.warrantyDate && a.daysToWarranty < 0);\n  assets.sort((a, b) => a.daysToWarranty - b.daysToWarranty || a.name.localeCompare(b.name, 'es'));\n}\n\nconst generatedAt = now.toLocaleString('es-CL', { timeZone: timezone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });\nconst generatedAtFile = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);\nconst subjectBase = String(config.email_subject || 'Reporte CMDB').trim();\nconst emailSubject = itopOrganization ? `${subjectBase} - ${itopOrganization}` : subjectBase;\n\nconst headers = ['Clase','Activo','Estado','Bodega','Marca','Modelo','Serie','Garantía','Plazo'];\nconst csvContent = '\\uFEFF' + [\n  headers.map(csvEscape).join(';'),\n  ...assets.map(a => [a.finalclass,a.name,a.status,a.location,a.brand,a.model,a.serial,a.warrantyDateDisplay,a.daysLabel].map(csvEscape).join(';'))\n].join('\\r\\n');\n\nconst groupedByLocation = [...groupBy(assets, a => a.location).entries()]\n  .sort((a, b) => a[0].localeCompare(b[0], 'es'));\n\nlet detailBlocks = '';\nif (!assets.length) {\n  detailBlocks = '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">No se encontraron activos para el criterio del reporte.</td></tr></table>';\n} else {\n  detailBlocks = groupedByLocation.map(([location, rows]) => `\n    <div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">${escapeHtml(location)} <span style=\"font-weight:normal; color:#64748b;\">(${rows.length})</span></div>\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\">\n      <thead><tr style=\"background:#f8fafc;\">\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Clase</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Activo</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Estado</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Bodega</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Marca</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Modelo</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Serie</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Garantía</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Plazo</th>\n      </tr></thead>\n      <tbody>${buildAssetRows(rows, 'Sin registros.')}</tbody>\n    </table>`).join('');\n}\n\nconst csvBaseName = String(config.csv_basename || 'cmdb_reporte_testing').trim();\nconst withoutLocationCount = assets.filter(a => isBlankValue(a.location) || a.location === 'Sin bodega/localidad').length;\nconst upcomingWarrantyCount = assets.length;\nconst classTypeCount = new Set(assets.map(a => a.finalclass).filter(Boolean)).size;\nconst halfWindowCount = assets.filter(a => a.warrantyDate && a.daysToWarranty !== null && a.daysToWarranty >= 0 && a.warrantyDate <= warrantyHalfCutoffDate).length;\n\nreturn [{\n  json: {\n    email_from: config.email_from,\n    email_to: config.email_to,\n    email_cc: config.email_cc || '',\n    email_bcc: config.email_bcc || '',\n    email_subject: emailSubject,\n    company,\n    Company: company,\n    itop_organization: itopOrganization || '-',\n    generated_at: generatedAt,\n    total_assets: String(assets.length),\n    warranty_months: String(warrantyMonths),\n    without_location_count: String(withoutLocationCount),\n    upcoming_warranty_count: String(upcomingWarrantyCount),\n    half_window_count: String(halfWindowCount),\n    warranty_half_months: String(warrantyHalfMonths),\n    class_type_count: String(classTypeCount),\n    class_summary_rows: buildClassSummary(assets),\n    detail_blocks: detailBlocks,\n    report_title: config.report_title || subjectBase,\n    report_description: config.report_description || '',\n    operational_notes: config.operational_notes || '',\n    itop_url: config.itop_url || '#',\n    csv_filename: `${csvBaseName}_${generatedAtFile}.csv`,\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csvContent, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `${csvBaseName}_${generatedAtFile}.csv`,\n    },\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3728,
+        544
+      ],
+      "id": "4cae4bc8-a367-4916-a815-2bd1f62854be",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst data = input.json || {};\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? '')\n    .split(/\\r?\\n|\\. /)\n    .map(v => v.trim().replace(/\\.$/, ''))\n    .filter(Boolean);\n\n  if (!lines.length) return '';\n\n  return `<ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">${\n    lines.map(line => `<li>${escapeHtml(line)}.</li>`).join('')\n  }</ul>`;\n}\n\nconst template = `<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>{{report_title}}</title>\n  <style type=\"text/css\">\n    body { margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937; }\n    table { border-collapse:collapse; }\n    a { color:#1d4ed8; text-decoration:none; }\n    .wrapper { width:100%; background-color:#eef2f6; padding:24px 0; }\n    .container { width:100%; max-width:1000px; background-color:#ffffff; border:1px solid #d9e2ec; }\n    .mobile-padding { padding-left:28px; padding-right:28px; }\n    .summary-card { padding:4px; }\n    .section-title { font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px; }\n    .section-subtitle { font-size:12px; line-height:18px; color:#6b7280; margin-bottom:10px; }\n    @media only screen and (max-width:760px) { .container{width:100%!important;} .mobile-padding{padding-left:14px!important;padding-right:14px!important;} .summary-card{width:100%!important;display:block!important;margin-bottom:8px!important;} .table-scroll{overflow-x:auto!important;display:block!important;width:100%!important;} }\n  </style>\n</head>\n<body style=\"margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937;\">\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"wrapper\"><tr><td align=\"center\">\n    <table role=\"presentation\" width=\"1000\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"container\">\n      <tr><td style=\"background-color:#0f172a; padding:24px 28px;\" class=\"mobile-padding\">\n        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n          <td valign=\"top\" style=\"width:65%;\">\n            <div style=\"font-size:13px; line-height:18px; color:#93c5fd; font-weight:bold; letter-spacing:0.4px;\">Automatización ITSM / CMDB</div>\n            <div style=\"font-size:26px; line-height:32px; color:#ffffff; font-weight:bold; margin-top:6px;\">{{report_title}}</div>\n            <div style=\"font-size:14px; line-height:20px; color:#cbd5e1; margin-top:6px;\">Consolidado operacional de activos sincronizados desde Combodo iTop</div>\n            <div style=\"font-size:13px; line-height:19px; color:#cbd5e1; margin-top:10px;\"><strong style=\"color:#ffffff;\">Organización iTop:</strong> {{itop_organization}}</div>\n          </td>\n          <td valign=\"top\" align=\"right\" style=\"width:35%; font-size:12px; line-height:18px; color:#cbd5e1; text-align:right;\"><strong style=\"color:#ffffff;\">Generado:</strong><br>{{generated_at}}<br><br><strong style=\"color:#ffffff;\">Fuente:</strong><br>Producción / iTop CMDB</td>\n        </tr></table>\n      </td></tr>\n\n      <tr><td style=\"padding:24px 28px 12px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Resumen ejecutivo</div>\n        <div style=\"font-size:13px; line-height:19px; color:#6b7280; margin-top:4px;\">{{report_description}}</div>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 18px 28px;\" class=\"mobile-padding\">\n        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n          <tr>\n            <td class=\"summary-card\" width=\"25%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #cbd5e1; background-color:#f8fafc;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#475569; font-weight:bold;\">TOTAL ACTIVOS</div><div style=\"font-size:24px; color:#0f172a; font-weight:bold;\">{{total_assets}}</div></td></tr></table></td>\n            <td class=\"summary-card\" width=\"25%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fed7aa; background-color:#fff7ed;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#9a3412; font-weight:bold;\">PRÓXIMOS {{warranty_months}} MESES</div><div style=\"font-size:24px; color:#9a3412; font-weight:bold;\">{{upcoming_warranty_count}}</div></td></tr></table></td>\n            <td class=\"summary-card\" width=\"25%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fde68a; background-color:#fffbeb;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#a16207; font-weight:bold;\">VENCE &lt;= {{warranty_half_months}} MESES</div><div style=\"font-size:24px; color:#a16207; font-weight:bold;\">{{half_window_count}}</div></td></tr></table></td>\n            <td class=\"summary-card\" width=\"25%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#374151; font-weight:bold;\">CLASES/TIPOS</div><div style=\"font-size:24px; color:#111827; font-weight:bold;\">{{class_type_count}}</div></td></tr></table></td>\n          </tr>\n        </table>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 20px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\"><tr><td style=\"padding:12px 14px;\">\n        <div style=\"font-size:13px; line-height:18px; font-weight:bold; color:#111827; margin-bottom:8px;\">Criterio del reporte</div>\n        <div style=\"font-size:12px; line-height:18px; color:#374151;\">Se listan activos CMDB no obsoletos cuya garantía vence dentro de los próximos <strong>{{warranty_months}} meses</strong>. El detalle se agrupa por bodega/localidad y el CSV adjunto mantiene las mismas columnas operacionales del reporte.</div>\n      </td></tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Detalle operacional</div>\n        {{detail_blocks}}\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #dbe3ec; background-color:#f8fafc;\"><tr><td style=\"padding:16px 18px;\"><div style=\"font-size:15px; line-height:21px; color:#111827; font-weight:bold; margin-bottom:8px;\">Observaciones operacionales</div>{{operational_notes_html}}</td></tr></table></td></tr>\n\n      <tr><td align=\"center\" style=\"padding:0 28px 26px 28px;\" class=\"mobile-padding\"><table role=\"presentation\"><tr><td align=\"center\" bgcolor=\"#1d4ed8\" style=\"background-color:#1d4ed8; padding:11px 20px;\"><a href=\"{{itop_url}}\" target=\"_blank\" style=\"font-size:13px; line-height:18px; color:#ffffff; font-weight:bold; text-decoration:none; display:inline-block;\">Abrir Combodo iTop</a></td></tr></table></td></tr>\n      <tr><td style=\"background-color:#f1f5f9; border-top:1px solid #dbe3ec; padding:18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\"><tr><td valign=\"top\" style=\"font-size:12px; line-height:18px; color:#64748b;\"><strong style=\"color:#334155;\">Automatización ITSM / CMDB</strong><br>{{company}}<br>Correo generado automáticamente. No responder a este mensaje.</td><td valign=\"top\" align=\"right\" style=\"font-size:12px; line-height:18px; color:#64748b;\">Generado:<br>{{generated_at}}</td></tr></table></td></tr>\n    </table>\n  </td></tr></table>\n</body>\n</html>`;\n\nlet html = template;\nconst enriched = {\n  ...data,\n  operational_notes_html: notesList(data.operational_notes),\n};\nfor (const [key, value] of Object.entries(enriched)) {\n  html = html.replaceAll(`{{${key}}}`, String(value ?? ''));\n}\n\nreturn [{\n  json: {\n    ...data,\n    html,\n  },\n  binary: input.binary || {},\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4000,
+        544
+      ],
+      "id": "66029158-bf97-40fa-be6d-97f1cd7389c1",
+      "name": "HTML - Template Reporte"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "csv",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        4272,
+        544
+      ],
+      "id": "d1e96cc2-3201-447d-9999-d0a4cba972b1",
+      "name": "Enviar correo SMTP",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "xNtpGsiFHeoJckRp",
+          "name": "SMTP_MailPit"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Activos CMDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Activos CMDB": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Template Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Template Reporte": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fbd14746-5a31-43fa-a94f-d8e86a1c891d",
+  "meta": {
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "MRkHSqOgFWaK4e8D",
+  "tags": []
+}

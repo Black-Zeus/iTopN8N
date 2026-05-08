@@ -1,0 +1,243 @@
+{
+  "name": "CMDB - Inventario de activos con contactos - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        448
+      ],
+      "id": "5b01fc3a-b487-4e97-bec7-124024b9426a",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1ae7a5b-c042-4856-9276-bf39bb26129b",
+              "name": "itop_url",
+              "value": "http://172.16.123.132/itop/",
+              "type": "string"
+            },
+            {
+              "id": "eba139fa-ed0e-4480-962f-4c4adc3c4c8d",
+              "name": "email_from",
+              "value": "notificaciones@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "e5c1be27-47a6-4e6b-9b95-28ee65c63a38",
+              "name": "email_to",
+              "value": "destinatario@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "2117f03c-28e9-412e-bc47-7dc711851aa3",
+              "name": "email_cc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "8b972cc5-64c5-4aba-a560-d5b9a178a7f4",
+              "name": "email_bcc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "4176989f-e347-4773-84f4-7427c7a0b522",
+              "name": "email_subject",
+              "value": "Reporte CMDB - activos con contacto asignado por estado",
+              "type": "string"
+            },
+            {
+              "id": "9d6372f0-727b-4197-b8d5-7ef8092e7c6c",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "cb4118a4-7489-4d77-a0fa-6ca81191329b",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "9ff0d0ea-c691-4f17-8616-d517e5236839",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "9dc9b965-953f-4480-970b-d5172054ae40",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1840,
+        448
+      ],
+      "id": "783dcf70-5aa6-47c3-9c0b-6b4f9a84d882",
+      "name": "Config Reporte"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "PhysicalDevice",
+        "key": "SELECT PhysicalDevice",
+        "output_fields": "id,name,friendlyname,finalclass,status,org_id,org_id_friendlyname,location_id,location_id_friendlyname,contacts_list,brand_id,brand_id_friendlyname,model_id,model_id_friendlyname,serialnumber,asset_number,move2production,purchase_date,end_of_warranty,description",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        448
+      ],
+      "id": "87eec408-6ead-4f8e-aefd-a2abe0628620",
+      "name": "iTop - Inventario CMDB",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Consulta PhysicalDevice sin filtro rígido por finalclass. El nodo Code filtra activos con contacto asignado y subclasifica PC/Laptop por campos disponibles como clase, tipo, nombre y modelo."
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Config Reporte').first().json;\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst itopOrganization = String(config.itop_organization || '').trim();\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\"/g, '\"\"');\n  return `\"${text}\"`;\n}\n\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\n\nfunction scalarText(value) {\n  if (value === undefined || value === null) return '';\n  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {\n    const text = String(value).trim();\n    return text === '[object Object]' ? '' : text;\n  }\n  return '';\n}\n\nfunction cleanContactText(value) {\n  let text = scalarText(value);\n  if (!text) return '';\n  // iTop suele exponer la relación como \"Contacto / Activo\".\n  // Para el reporte se requiere solamente el contacto.\n  if (text.includes(' / ')) text = text.split(' / ')[0].trim();\n  return text;\n}\n\nfunction normalizeContactEntry(entry) {\n  if (entry === undefined || entry === null) return '';\n\n  const direct = cleanContactText(entry);\n  if (direct) return direct;\n\n  if (Array.isArray(entry)) {\n    return entry.map(normalizeContactEntry).filter(Boolean).join(', ');\n  }\n\n  if (typeof entry === 'object') {\n    if (entry.fields && typeof entry.fields === 'object') {\n      const fromFields = normalizeContactEntry(entry.fields);\n      if (fromFields) return fromFields;\n    }\n\n    if (entry.objects && typeof entry.objects === 'object') {\n      return Object.values(entry.objects).map(normalizeContactEntry).filter(Boolean).join(', ');\n    }\n\n    const preferredFields = [\n      'contact_id_friendlyname',\n      'person_id_friendlyname',\n      'user_id_friendlyname',\n      'contact_name',\n      'person_name',\n      'display_name',\n      'name',\n      'friendlyname',\n      'email',\n      'email_address',\n    ];\n\n    for (const field of preferredFields) {\n      const text = cleanContactText(entry[field]);\n      if (text) return text;\n    }\n\n    const nestedCandidates = ['contact_id', 'person_id', 'user_id', 'contact', 'person', 'user'];\n    for (const field of nestedCandidates) {\n      const text = normalizeContactEntry(entry[field]);\n      if (text) return text;\n    }\n  }\n\n  return '';\n}\n\nfunction normalizeContacts(value) {\n  const text = normalizeContactEntry(value);\n  if (!text) return '';\n\n  const unique = [];\n  const seen = new Set();\n  for (const part of text.split(',').map(v => cleanContactText(v)).filter(Boolean)) {\n    const key = part.toLowerCase();\n    if (!seen.has(key)) {\n      seen.add(key);\n      unique.push(part);\n    }\n  }\n  return unique.join(', ');\n}\n\nfunction isBlankValue(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'n/a' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined' || v.toLowerCase() === 'sin bodega/localidad';\n}\n\nfunction inferWorkstationClass(f) {\n  // iTop estándar puede mostrar la clase como \"PC/Laptop\" sin separar notebook de desktop.\n  // La separación real depende de que exista algún dato útil: tipo, categoría, modelo, nombre o descripción.\n  const rawHints = [\n    getField(f, ['finalclass', 'class', 'class_friendlyname'], ''),\n    getField(f, ['type', 'type_friendlyname', 'computer_type', 'computer_type_friendlyname', 'device_type', 'device_type_friendlyname'], ''),\n    getField(f, ['category', 'category_friendlyname', 'subcategory', 'subcategory_friendlyname'], ''),\n    getField(f, ['name', 'friendlyname'], ''),\n    getField(f, ['model_id_friendlyname', 'model'], ''),\n    getField(f, ['brand_id_friendlyname', 'brand'], ''),\n    getField(f, ['description', 'comment', 'comments'], ''),\n  ].map(v => String(v || '').trim()).filter(Boolean);\n\n  const hint = rawHints.join(' ').toLowerCase();\n\n  const laptopPatterns = [\n    'laptop', 'notebook', 'portable', 'portatil', 'portátil', 'ultrabook',\n    'latitude', 'elitebook', 'probook', 'thinkpad', 'thinkbook', 'macbook',\n    'vivobook', 'zenbook', 'travelmate', 'tecra', 'xps 13', 'xps 15',\n    // Patrones frecuentes de modelos corporativos notebook. Ajustar según catálogo real de la CMDB.\n    /\\b(34|35|54|55|72|73|74|75)[0-9]{2}\\b/,\n    /\\bt14\\b/, /\\bt15\\b/, /\\bx1\\b/, /\\be14\\b/, /\\be15\\b/\n  ];\n\n  const desktopPatterns = [\n    'desktop', 'sobremesa', 'escritorio', 'tower', 'torre', 'sff', 'micro',\n    'minitower', 'optiplex', 'prodesk', 'elitedesk', 'thinkcentre',\n    'workstation', 'all-in-one', 'all in one', 'aio'\n  ];\n\n  for (const pattern of desktopPatterns) {\n    if (hint.includes(pattern)) return 'PC';\n  }\n\n  for (const pattern of laptopPatterns) {\n    if (pattern instanceof RegExp ? pattern.test(hint) : hint.includes(pattern)) return 'Laptop';\n  }\n\n  return 'PC/Laptop';\n}\n\nfunction normalizeClass(value, f = {}) {\n  const raw = String(value || '-').trim();\n  const lower = raw.toLowerCase();\n\n  if (lower === 'pc' || lower === 'pc/laptop' || lower.includes('pc/laptop') || lower.includes('desktop') || lower.includes('laptop') || lower.includes('notebook') || lower.includes('portable')) {\n    return inferWorkstationClass({ ...f, finalclass: raw });\n  }\n\n  if (lower === 'mobilephone' || lower.includes('phone') || lower.includes('telefono') || lower.includes('teléfono')) return 'Teléfonos móviles';\n  if (lower === 'tablet') return 'Tablets';\n  if (lower === 'printer' || lower.includes('impresora')) return 'Impresoras';\n  if (lower === 'peripheral' || lower.includes('periferico') || lower.includes('periférico')) return 'Periféricos';\n  return raw || 'Otros';\n}\n\nfunction classSortWeight(className) {\n  const order = { 'PC': 10, 'Laptop': 20, 'PC/Laptop': 25, 'Tablets': 30, 'Teléfonos móviles': 40, 'Impresoras': 50, 'Periféricos': 60, 'Otros': 90 };\n  return order[className] || 80;\n}\n\nfunction normalizeStatus(value) {\n  const raw = String(value || '').trim();\n  const s = raw.toLowerCase();\n\n  if (s === 'stock' || s.includes('stock') || s.includes('inventario') || s.includes('available')) {\n    return { code: 'stock', label: 'En Inventario' };\n  }\n  if (s === 'implementation' || s.includes('implementation') || s.includes('implementacion') || s.includes('implementación') || s.includes('no productivo')) {\n    return { code: 'implementation', label: 'No Productivo' };\n  }\n  if (s === 'production' || s.includes('production') || s.includes('produccion') || s.includes('producción') || s.includes('productivo')) {\n    return { code: 'production', label: 'Productivo' };\n  }\n  if (s === 'obsolete' || s.includes('obsolete') || s.includes('obsoleto') || s.includes('retired')) {\n    return { code: 'obsolete', label: 'Obsoleto' };\n  }\n\n  return { code: raw || 'unknown', label: raw || 'Sin estado' };\n}\n\nfunction statusSortWeight(code) {\n  const order = { stock: 10, implementation: 20, production: 30, obsolete: 40 };\n  return order[code] || 90;\n}\n\nfunction statusBadge(status) {\n  const code = status.code;\n  const label = status.label;\n  if (code === 'stock') return badge(label, 'blue');\n  if (code === 'implementation') return badge(label, 'orange');\n  if (code === 'production') return badge(label, 'green');\n  if (code === 'obsolete') return badge(label, 'gray');\n  return badge(label, 'gray');\n}\n\nfunction parseDate(value) {\n  if (!value || value === '-') return null;\n  const d = new Date(String(value).replace(' ', 'T'));\n  if (Number.isNaN(d.getTime())) return null;\n  return d;\n}\n\nfunction fmtDateOnly(value) {\n  const d = parseDate(value);\n  if (!d) return isBlankValue(value) ? '-' : String(value);\n  return d.toLocaleDateString('es-CL', {\n    timeZone: config.timezone || 'America/Santiago',\n    year: 'numeric', month: '2-digit', day: '2-digit'\n  });\n}\n\nfunction isWarrantyExpired(value) {\n  const d = parseDate(value);\n  if (!d) return false;\n  const today = new Date();\n  today.setHours(0, 0, 0, 0);\n  return d < today;\n}\n\nfunction badge(text, color = 'gray') {\n  return `<span class=\"badge badge-${color}\">${escapeHtml(text)}</span>`;\n}\n\nfunction td(value, align = 'left') {\n  return `<td align=\"${align}\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${value}</td>`;\n}\n\nfunction headerCell(text) {\n  return `<th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap;\">${escapeHtml(text)}</th>`;\n}\n\nfunction reviewReasons(asset) {\n  const reasons = [];\n  if (isBlankValue(asset.serial)) reasons.push('sin serie');\n  if (isBlankValue(asset.brand)) reasons.push('sin marca');\n  if (isBlankValue(asset.model)) reasons.push('sin modelo');\n  if (isBlankValue(asset.location) || asset.location === 'Sin bodega/localidad') reasons.push('sin bodega/localidad');\n  if (isWarrantyExpired(asset.warrantyEnd)) reasons.push('garantía vencida');\n  return reasons;\n}\n\nconst rawRows = flattenInput($input.all());\n\nconst allAssets = rawRows.map((row) => {\n  const f = row.fields || row;\n  const contactRaw = getField(f, [\n    'contacts_list_friendlyname',\n    'contacts_list',\n    'contact_id_friendlyname',\n    'contact_name',\n    'person_id_friendlyname',\n    'user_id_friendlyname'\n  ], '');\n  const status = normalizeStatus(getField(f, ['operational_status_friendlyname', 'operational_status', 'status_friendlyname', 'status'], '-'));\n  const finalclassRaw = getField(f, ['finalclass', 'class', 'class_friendlyname'], '-');\n\n  return {\n    name: getField(f, ['name', 'friendlyname'], '-'),\n    finalclass: normalizeClass(finalclassRaw, f),\n    finalclassRaw,\n    status,\n    organization: getField(f, ['org_id_friendlyname', 'organization_name', 'org_name'], '-'),\n    location: getField(f, ['location_id_friendlyname', 'location_name', 'location_id'], 'Sin bodega/localidad'),\n    contacts: normalizeContacts(contactRaw),\n    brand: getField(f, ['brand_id_friendlyname', 'brand'], '-'),\n    model: getField(f, ['model_id_friendlyname', 'model'], '-'),\n    serial: getField(f, ['serialnumber', 'serial_number'], ''),\n    move2production: getField(f, ['move2production', 'production_date'], '-'),\n    purchaseDate: getField(f, ['purchase_date'], '-'),\n    warrantyEnd: getField(f, ['end_of_warranty'], '-'),\n  };\n});\n\n// Requisito del reporte: devolver solamente activos CMDB con contacto asignado.\nconst assets = allAssets\n  .filter(asset => !isBlankValue(asset.contacts))\n  .sort((a, b) =>\n    statusSortWeight(a.status.code) - statusSortWeight(b.status.code) ||\n    String(a.status.label).localeCompare(String(b.status.label), 'es') ||\n    classSortWeight(a.finalclass) - classSortWeight(b.finalclass) ||\n    String(a.finalclass).localeCompare(String(b.finalclass), 'es') ||\n    String(a.location).localeCompare(String(b.location), 'es') ||\n    String(a.name).localeCompare(String(b.name), 'es')\n  );\n\nconst statusGroups = new Map();\nconst classGroups = new Map();\nconst locationGroups = new Map();\nconst reviewAssets = [];\nlet warrantyExpiredCount = 0;\n\nfor (const asset of assets) {\n  if (!statusGroups.has(asset.status.code)) statusGroups.set(asset.status.code, { status: asset.status, list: [] });\n  statusGroups.get(asset.status.code).list.push(asset);\n\n  if (!classGroups.has(asset.finalclass)) classGroups.set(asset.finalclass, []);\n  classGroups.get(asset.finalclass).push(asset);\n\n  if (!locationGroups.has(asset.location)) locationGroups.set(asset.location, []);\n  locationGroups.get(asset.location).push(asset);\n\n  if (isWarrantyExpired(asset.warrantyEnd)) warrantyExpiredCount++;\n  const reasons = reviewReasons(asset);\n  if (reasons.length) reviewAssets.push({ ...asset, reviewReasonText: reasons.join(', ') });\n}\n\nconst statusEntries = Array.from(statusGroups.values()).sort((a, b) => statusSortWeight(a.status.code) - statusSortWeight(b.status.code) || a.status.label.localeCompare(b.status.label, 'es'));\n\nconst statusSummaryRows = statusEntries.map(({ status, list }) => {\n  const byClass = {};\n  for (const asset of list) byClass[asset.finalclass] = (byClass[asset.finalclass] || 0) + 1;\n  const classText = Object.entries(byClass)\n    .sort(([a], [b]) => classSortWeight(a) - classSortWeight(b) || a.localeCompare(b, 'es'))\n    .map(([klass, count]) => `${escapeHtml(klass)}: ${count}`)\n    .join('<br>');\n  const reviewCount = list.filter(a => reviewReasons(a).length > 0).length;\n  const observation = reviewCount > 0 ? `<span class=\"badge badge-yellow\">Por revisar: ${reviewCount}</span>` : `<span class=\"badge badge-green\">Sin observaciones</span>`;\n  return `<tr>${td(statusBadge(status))}${td(`<strong>${list.length}</strong>`, 'right')}${td(classText || '-')}${td(observation)}</tr>`;\n}).join('');\n\nconst locationSummaryRows = Array.from(locationGroups.entries()).sort(([a], [b]) => a.localeCompare(b, 'es')).map(([location, list]) => {\n  const byStatus = {};\n  for (const asset of list) byStatus[asset.status.label] = (byStatus[asset.status.label] || 0) + 1;\n  const statusText = Object.entries(byStatus).sort(([a], [b]) => a.localeCompare(b, 'es')).map(([status, count]) => `${escapeHtml(status)}: ${count}`).join('<br>');\n  const reviewCount = list.filter(a => reviewReasons(a).length > 0).length;\n  const observation = reviewCount > 0 ? `<span class=\"badge badge-yellow\">Por revisar: ${reviewCount}</span>` : `<span class=\"badge badge-green\">Sin observaciones</span>`;\n  return `<tr>${td(escapeHtml(location))}${td(`<strong>${list.length}</strong>`, 'right')}${td(statusText || '-')}${td(observation)}</tr>`;\n}).join('');\n\n\nfunction contactParts(value) {\n  const text = String(value ?? '').trim();\n  if (!text) return [];\n\n  const unique = [];\n  const seen = new Set();\n  for (const part of text.split(',').map(v => cleanContactText(v)).filter(Boolean)) {\n    const key = part.toLowerCase();\n    if (!seen.has(key)) {\n      seen.add(key);\n      unique.push(part);\n    }\n  }\n  return unique;\n}\n\nfunction renderContactsHtml(value) {\n  const parts = contactParts(value);\n  if (!parts.length) return '<span class=\"badge badge-yellow\">Sin responsable</span>';\n  if (parts.length === 1) return escapeHtml(parts[0]);\n\n  // Para múltiples responsables se usa salto de línea sin viñetas/iconos,\n  // compatible con clientes de correo como Outlook y Gmail.\n  return parts\n    .map(contact => `<div style=\"margin:0 0 3px 0; padding:0; color:#1f2937; font-size:12px; line-height:16px;\">${escapeHtml(contact)}</div>`)\n    .join('');\n}\n\nfunction assetRows(list, includeReviewColumn = false) {\n  return list.map(asset => {\n    const serialBadge = !isBlankValue(asset.serial) ? escapeHtml(asset.serial) : '<span class=\"badge badge-yellow\">Sin serie</span>';\n    const contactBadge = renderContactsHtml(asset.contacts);\n    const warrantyValue = isWarrantyExpired(asset.warrantyEnd) ? '<span class=\"badge badge-orange\">' + escapeHtml(fmtDateOnly(asset.warrantyEnd)) + '</span>' : escapeHtml(fmtDateOnly(asset.warrantyEnd));\n    const reviewColumn = includeReviewColumn ? td(badge(asset.reviewReasonText || reviewReasons(asset).join(', '), 'yellow')) : '';\n    return `<tr>\n      ${td(`<strong>${escapeHtml(asset.name)}</strong>`)}\n      ${td(statusBadge(asset.status))}\n      ${td(escapeHtml(asset.location))}\n      ${td(contactBadge)}\n      ${td(escapeHtml(asset.brand))}\n      ${td(escapeHtml(asset.model))}\n      ${td(serialBadge)}\n      ${td(escapeHtml(fmtDateOnly(asset.move2production)))}\n      ${td(escapeHtml(fmtDateOnly(asset.purchaseDate)))}\n      ${td(warrantyValue)}\n      ${reviewColumn}\n    </tr>`;\n  }).join('');\n}\n\nfunction assetsTable(list, includeReviewColumn = false) {\n  const reviewHead = includeReviewColumn ? headerCell('Criterio') : '';\n  const colSpan = includeReviewColumn ? 11 : 10;\n  return `<div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\">\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%;\">\n      <thead><tr>\n        ${headerCell('Nombre')}${headerCell('Estado')}${headerCell('Bodega / localidad')}${headerCell('Contactos')}${headerCell('Marca')}${headerCell('Modelo')}${headerCell('N° serie')}${headerCell('Producción')}${headerCell('Compra')}${headerCell('Garantía')}${reviewHead}\n      </tr></thead>\n      <tbody>${list.length ? assetRows(list, includeReviewColumn) : `<tr><td colspan=\"${colSpan}\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin activos para listar.</td></tr>`}</tbody>\n    </table>\n  </div>`;\n}\n\nconst statusAssetBlocks = statusEntries.map(({ status, list }) => {\n  const classMap = new Map();\n\n  for (const asset of list) {\n    if (!classMap.has(asset.finalclass)) classMap.set(asset.finalclass, []);\n    classMap.get(asset.finalclass).push(asset);\n  }\n\n  const classBlocks = Array.from(classMap.entries())\n    .sort(([a], [b]) => classSortWeight(a) - classSortWeight(b) || a.localeCompare(b, 'es'))\n    .map(([className, classList]) => `\n      <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:0 0 14px 0; border:1px solid #e2e8f0;\">\n        <tr>\n          <td style=\"background-color:#f8fafc; padding:9px 12px; border-bottom:1px solid #e2e8f0;\">\n            <div style=\"font-size:13px; line-height:18px; font-weight:bold; color:#0f172a;\">\n              Clase/Tipo: ${escapeHtml(className)}\n              <span style=\"color:#64748b; font-weight:normal;\">(${classList.length} activos)</span>\n            </div>\n          </td>\n        </tr>\n        <tr><td>${assetsTable(classList, false)}</td></tr>\n      </table>\n    `).join('');\n\n  return `\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n      <tr><td style=\"background-color:#f1f5f9; padding:10px 12px;\">\n        <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#0f172a;\">${statusBadge(status)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} activos con contacto)</span></div>\n        <div style=\"font-size:12px; line-height:18px; color:#64748b; margin-top:6px;\">Grupo por estado operativo normalizado desde iTop, subagrupado por clase de activo.</div>\n      </td></tr>\n      <tr><td style=\"padding:12px;\">${classBlocks}</td></tr>\n    </table>\n  `;\n}).join('');\n\nconst reviewCriteria = [\n  { title: 'Sin número de serie', description: 'Activos con contacto asignado, pero sin serial registrado en iTop.', match: (asset) => isBlankValue(asset.serial) },\n  { title: 'Sin marca', description: 'Activos con contacto asignado, pero sin fabricante o marca asociada.', match: (asset) => isBlankValue(asset.brand) },\n  { title: 'Sin modelo', description: 'Activos con contacto asignado, pero sin modelo técnico registrado.', match: (asset) => isBlankValue(asset.model) },\n  { title: 'Sin bodega/localidad', description: 'Activos con contacto asignado, pero sin ubicación física clara para trazabilidad operacional.', match: (asset) => isBlankValue(asset.location) || asset.location === 'Sin bodega/localidad' },\n  { title: 'Garantía vencida', description: 'Activos con fecha de vencimiento de garantía anterior a la fecha de generación del reporte.', match: (asset) => isWarrantyExpired(asset.warrantyEnd) },\n];\n\nconst reviewAssetBlocks = reviewAssets.length ? reviewCriteria.map((criterion) => {\n  const list = reviewAssets.filter(asset => criterion.match(asset)).sort((a, b) =>\n    statusSortWeight(a.status.code) - statusSortWeight(b.status.code) ||\n    classSortWeight(a.finalclass) - classSortWeight(b.finalclass) ||\n    String(a.location).localeCompare(String(b.location), 'es') ||\n    String(a.name).localeCompare(String(b.name), 'es')\n  );\n  if (!list.length) return '';\n  return `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n    <tr><td style=\"background-color:#fff7ed; padding:10px 12px; border-bottom:1px solid #fed7aa;\">\n      <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#9a3412;\">${escapeHtml(criterion.title)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} activos)</span></div>\n      <div style=\"font-size:12px; line-height:18px; color:#854d0e; margin-top:2px;\">${escapeHtml(criterion.description)} Un mismo activo puede aparecer en más de un criterio si presenta múltiples condiciones de revisión.</div>\n    </td></tr>\n    <tr><td>${assetsTable(list, true)}</td></tr>\n  </table>`;\n}).join('') : '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#166534;\">No se detectaron activos por revisar según el criterio del reporte.</td></tr></table>';\n\n\nconst csvHeaders = [\n  'Nombre',\n  'Clase/Tipo',\n  'Estado',\n  'Bodega/Localidad',\n  'Contactos',\n  'Marca',\n  'Modelo',\n  'Serie',\n  'Puesto en Produccion',\n  'Fecha de Compra',\n  'Vencimiento de Garantia'\n];\n\nconst csvRows = assets.map(asset => [\n  asset.name,\n  asset.finalclass,\n  asset.status.label,\n  asset.location,\n  asset.contacts,\n  asset.brand,\n  asset.model,\n  asset.serial,\n  fmtDateOnly(asset.move2production),\n  fmtDateOnly(asset.purchaseDate),\n  fmtDateOnly(asset.warrantyEnd)\n]);\n\nconst csvContent = '\\uFEFF' + [\n  csvHeaders.map(csvEscape).join(';'),\n  ...csvRows.map(row => row.map(csvEscape).join(';')),\n].join('\\r\\n');\n\nconst generatedAt = new Date().toLocaleString('es-CL', {\n  timeZone: config.timezone || 'America/Santiago',\n  year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'\n});\n\n\nconst countByStatus = (code) => statusGroups.get(code)?.list.length || 0;\n\nconst subjectBase = String(config.email_subject || 'Reporte CMDB - activos con contacto asignado por estado').trim();\nconst emailSubject = itopOrganization\n  ? `${subjectBase} - ${itopOrganization}`\n  : subjectBase;\n\nconst generatedAtFile = new Date()\n  .toISOString()\n  .replace(/[:.]/g, '-')\n  .replace('T', '_')\n  .slice(0, 19);\n\nreturn [{\n  json: {\n    email_from: config.email_from,\n    email_to: config.email_to,\n    email_cc: config.email_cc || '',\n    email_bcc: config.email_bcc || '',\n    email_subject: emailSubject,\n    company,\n    Company: company,\n    itop_organization: itopOrganization || '-',\n    generated_at: generatedAt,\n    total_assets: String(assets.length),\n    stock_count: String(countByStatus('stock')),\n    implementation_count: String(countByStatus('implementation')),\n    production_count: String(countByStatus('production')),\n    obsolete_count: String(countByStatus('obsolete')),\n    review_count: String(reviewAssets.length),\n    status_summary_rows: statusSummaryRows || '<tr><td colspan=\"4\" style=\"padding:12px; font-size:12px; color:#64748b;\">No se encontraron activos con contacto asignado.</td></tr>',\n    location_summary_rows: locationSummaryRows || '<tr><td colspan=\"4\" style=\"padding:12px; font-size:12px; color:#64748b;\">No se encontraron activos con contacto asignado.</td></tr>',\n    status_asset_blocks: statusAssetBlocks || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">No se encontraron activos con contacto asignado.</td></tr></table>',\n    review_asset_blocks: reviewAssetBlocks,\n    itop_url: config.itop_url || '#',\n    csv_filename: `cmdb_activos_contacto_${generatedAtFile}.csv`,\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csvContent, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `cmdb_activos_contacto_${generatedAtFile}.csv`,\n    },\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        448
+      ],
+      "id": "d9607dcc-59be-41e3-b763-db59a1e41573",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst data = input.json || {};\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction headerCell(text) {\n  return `<th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap;\">${escapeHtml(text)}</th>`;\n}\n\nconst template = `<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Reporte de activos CMDB con contacto asignado</title>\n  <style type=\"text/css\">\n    body { margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937; }\n    table { border-collapse:collapse; }\n    a { color:#1d4ed8; text-decoration:none; }\n    .wrapper { width:100%; background-color:#eef2f6; padding:24px 0; }\n    .container { width:100%; max-width:1000px; background-color:#ffffff; border:1px solid #d9e2ec; }\n    .mobile-padding { padding-left:28px; padding-right:28px; }\n    .summary-card { padding:4px; }\n    .data-table th { background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap; }\n    .data-table td { font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top; }\n    .section-title { font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px; }\n    .section-subtitle { font-size:12px; line-height:18px; color:#6b7280; margin-bottom:10px; }\n    .badge { display:inline-block; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold; line-height:14px; white-space:nowrap; }\n    .badge-green { background-color:#dcfce7; color:#166534; border:1px solid #bbf7d0; }\n    .badge-blue { background-color:#dbeafe; color:#1e3a8a; border:1px solid #bfdbfe; }\n    .badge-yellow { background-color:#fef9c3; color:#854d0e; border:1px solid #fde68a; }\n    .badge-orange { background-color:#ffedd5; color:#9a3412; border:1px solid #fed7aa; }\n    .badge-gray { background-color:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }\n    @media only screen and (max-width:760px) { .container{width:100%!important;} .mobile-padding{padding-left:14px!important;padding-right:14px!important;} .summary-card{width:100%!important;display:block!important;margin-bottom:8px!important;} .table-scroll{overflow-x:auto!important;display:block!important;width:100%!important;} }\n  </style>\n</head>\n<body style=\"margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937;\">\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"wrapper\"><tr><td align=\"center\">\n    <table role=\"presentation\" width=\"1000\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"container\">\n      <tr><td style=\"background-color:#0f172a; padding:24px 28px;\" class=\"mobile-padding\">\n        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n          <td valign=\"top\" style=\"width:65%;\">\n            <div style=\"font-size:13px; line-height:18px; color:#93c5fd; font-weight:bold; letter-spacing:0.4px;\">Automatización ITSM / CMDB</div>\n            <div style=\"font-size:26px; line-height:32px; color:#ffffff; font-weight:bold; margin-top:6px;\">Activos CMDB con contacto asignado</div>\n            <div style=\"font-size:14px; line-height:20px; color:#cbd5e1; margin-top:6px;\">Inventario sincronizado desde Combodo iTop</div>\n            <div style=\"font-size:13px; line-height:19px; color:#cbd5e1; margin-top:10px;\"><strong style=\"color:#ffffff;\">Organización iTop:</strong> {{itop_organization}}</div>\n          </td>\n          <td valign=\"top\" align=\"right\" style=\"width:35%; font-size:12px; line-height:18px; color:#cbd5e1; text-align:right;\"><strong style=\"color:#ffffff;\">Generado:</strong><br>{{generated_at}}<br><br><strong style=\"color:#ffffff;\">Fuente:</strong><br>Producción / iTop CMDB</td>\n        </tr></table>\n      </td></tr>\n\n      <tr><td style=\"padding:24px 28px 12px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Resumen ejecutivo</div>\n        <div style=\"font-size:13px; line-height:19px; color:#6b7280; margin-top:4px;\">Reporte consolidado de objetos CMDB que poseen al menos un contacto asignado para la organización <strong>{{itop_organization}}</strong>. Los estados se normalizan a español: En Inventario, No Productivo, Productivo y Obsoleto.</div>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #cbd5e1; background-color:#f8fafc;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#475569; font-weight:bold;\">TOTAL CON CONTACTO</div><div style=\"font-size:24px; color:#0f172a; font-weight:bold;\">{{total_assets}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #bfdbfe; background-color:#eff6ff;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#1e3a8a; font-weight:bold;\">EN INVENTARIO</div><div style=\"font-size:24px; color:#1e3a8a; font-weight:bold;\">{{stock_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fed7aa; background-color:#fff7ed;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#9a3412; font-weight:bold;\">NO PRODUCTIVO</div><div style=\"font-size:24px; color:#9a3412; font-weight:bold;\">{{implementation_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #bbf7d0; background-color:#f0fdf4;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#166534; font-weight:bold;\">PRODUCTIVO</div><div style=\"font-size:24px; color:#166534; font-weight:bold;\">{{production_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#374151; font-weight:bold;\">OBSOLETO</div><div style=\"font-size:24px; color:#374151; font-weight:bold;\">{{obsolete_count}}</div></td></tr></table></td>\n      </tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 20px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\"><tr><td style=\"padding:12px 14px;\">\n        <div style=\"font-size:13px; line-height:18px; font-weight:bold; color:#111827; margin-bottom:8px;\">Criterio del reporte</div>\n        <div style=\"font-size:12px; line-height:18px; color:#374151;\">Se listan únicamente activos con contacto asignado. El agrupamiento principal se realiza por estado operativo traducido: <strong>En Inventario</strong> para <code>stock</code>, <strong>No Productivo</strong> para <code>implementation</code>, <strong>Productivo</strong> para <code>production</code> y <strong>Obsoleto</strong> para <code>obsolete</code>.</div>\n      </td></tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Resumen por estado</div><div class=\"section-subtitle\">Cantidad de activos con contacto asignado, agrupados por estado operativo y resumidos por clase.</div>\n        <div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\"><table role=\"presentation\" width=\"100%\" class=\"data-table\" style=\"width:100%; border:1px solid #dbe3ec;\"><thead><tr>${headerCell('Estado')}${headerCell('Total')}${headerCell('Clase/Tipo')}${headerCell('Observación')}</tr></thead><tbody>{{status_summary_rows}}</tbody></table></div>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Resumen por bodega/localidad</div><div class=\"section-subtitle\">Cantidad de activos con contacto asignado por ubicación y estado.</div>\n        <div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\"><table role=\"presentation\" width=\"100%\" class=\"data-table\" style=\"width:100%; border:1px solid #dbe3ec;\"><thead><tr>${headerCell('Bodega / localidad')}${headerCell('Total')}${headerCell('Estados')}${headerCell('Observación')}</tr></thead><tbody>{{location_summary_rows}}</tbody></table></div>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Detalle de activos agrupado por estado y clase</div><div class=\"section-subtitle\">Cada bloque se agrupa primero por estado operativo y luego por clase de activo. Para PC/Laptop se intenta separar PC y Laptop usando campos disponibles como tipo, nombre y modelo.</div>{{status_asset_blocks}}\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Por revisar ({{review_count}} activos)</div>\n        <div class=\"section-subtitle\">Activos con contacto asignado, pero con datos técnicos o administrativos incompletos.</div>{{review_asset_blocks}}\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #dbe3ec; background-color:#f8fafc;\"><tr><td style=\"padding:16px 18px;\"><div style=\"font-size:15px; line-height:21px; color:#111827; font-weight:bold; margin-bottom:8px;\">Observaciones operacionales</div><ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\"><li>Este reporte fue generado automáticamente por &quot;Automatización ITSM / CMDB&quot;.</li><li>Organización iTop considerada en el reporte: <strong>{{itop_organization}}</strong>.</li><li>Se adjunta un CSV único con el volcado consolidado de activos con contacto asignado.</li><li>La separación PC/Laptop depende de que la CMDB entregue algún dato diferenciador.</li><li>Si no existe, el activo queda como PC/Laptop.</li><li>Este reporte es informativo y no reemplaza la trazabilidad oficial registrada en la CMDB.</li></ul></td></tr></table></td></tr>\n\n      <tr><td align=\"center\" style=\"padding:0 28px 26px 28px;\" class=\"mobile-padding\"><table role=\"presentation\"><tr><td align=\"center\" bgcolor=\"#1d4ed8\" style=\"background-color:#1d4ed8; padding:11px 20px;\"><a href=\"{{itop_url}}\" target=\"_blank\" style=\"font-size:13px; line-height:18px; color:#ffffff; font-weight:bold; text-decoration:none; display:inline-block;\">Abrir Combodo iTop</a></td></tr></table></td></tr>\n      <tr><td style=\"background-color:#f1f5f9; border-top:1px solid #dbe3ec; padding:18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\"><tr><td valign=\"top\" style=\"font-size:12px; line-height:18px; color:#64748b;\"><strong style=\"color:#334155;\">Automatización ITSM / CMDB</strong><br>{{company}}<br>Correo generado automáticamente. No responder a este mensaje.</td><td valign=\"top\" align=\"right\" style=\"font-size:12px; line-height:18px; color:#64748b;\">Generado:<br>{{generated_at}}</td></tr></table></td></tr>\n    </table>\n  </td></tr></table>\n</body>\n</html>`;\n\nconst countByStatus = (code) => statusGroups.get(code)?.list.length || 0;\n\n\nlet html = template;\nfor (const [key, value] of Object.entries(data)) {\n  html = html.replaceAll(`{{${key}}}`, String(value ?? ''));\n}\n\nreturn [{\n  json: {\n    ...data,\n    html,\n  },\n  binary: input.binary || {},\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        448
+      ],
+      "id": "8dc47f72-fdd6-43e1-ba40-ad4932fccf76",
+      "name": "HTML - Template Reporte"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "csv",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2928,
+        448
+      ],
+      "id": "9bf7c264-3183-4104-9e86-3dd4c4ea452b",
+      "name": "Enviar correo SMTP",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "xNtpGsiFHeoJckRp",
+          "name": "SMTP_MailPit"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Inventario CMDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Inventario CMDB": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Template Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Template Reporte": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8806dccd-ad78-445a-9774-72c6dd9474df",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "Vdt8i4Mc7AfehKwn",
+  "tags": []
+}

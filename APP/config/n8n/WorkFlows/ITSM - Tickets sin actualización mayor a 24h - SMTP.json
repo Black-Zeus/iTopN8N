@@ -1,0 +1,278 @@
+{
+  "name": "ITSM - Tickets sin actualización mayor a 24h - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "dcd680d7-36c6-4243-a1cc-dbfe42b69fa7",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4fed7f27-5cfd-4590-9c2b-d6f111068b14",
+              "name": "itop_url",
+              "value": "http://172.16.123.132/itop/",
+              "type": "string"
+            },
+            {
+              "id": "9fa60a0b-200d-4088-a4b1-075167ed882a",
+              "name": "email_from",
+              "value": "notificaciones@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "d2df71ec-2e2e-44ef-9d13-de3545aa36d7",
+              "name": "email_to",
+              "value": "destinatario@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "9250c9c8-1200-4663-b5b8-18b242fc91d2",
+              "name": "email_cc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "7263cdcf-b8f7-4aed-b34f-fe76b49a1b23",
+              "name": "email_bcc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "1fbbc448-3721-4798-9b29-8897c818bfa9",
+              "name": "email_subject",
+              "value": "Reporte ITSM - tickets sin update mayor a 24 horas",
+              "type": "string"
+            },
+            {
+              "id": "a360df72-fbe9-4fa0-b410-07b43fd26d95",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "b6e02fea-006b-4d12-8a7c-9854640ad9f5",
+              "name": "closed_status_values",
+              "value": "closed,resolved,rejected,cancelled,cerrado,resuelto,rechazado",
+              "type": "string"
+            },
+            {
+              "id": "11ff5526-5f13-4133-8f2b-3c1ed7f3495c",
+              "name": "stale_threshold_hours",
+              "value": "24",
+              "type": "string"
+            },
+            {
+              "id": "0cb25102-cf52-4005-81d0-4f517670de63",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "6efb7d0a-9fd3-4be4-89e7-f8c80ed8a43c",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "57bfc2f6-73dd-49a5-964e-8b4167c10d22",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "1b6c2861-3ef3-4bb3-bac4-aa99c76449d3",
+              "name": "include_requirements",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "5ebda81e-7484-4012-a6e1-97d3faf16580",
+              "name": "include_incidents",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "58ba9b75-224e-4991-bb14-1ca3f8ae17fc",
+              "name": "include_changes",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "cd9bed01-041b-4ff2-b8fb-57b9a9ca93aa",
+              "name": "include_problems",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "8a1c1428-8b48-4f4b-a1fe-8aea05e1ea74",
+      "name": "Config Reporte"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "Ticket",
+        "key": "SELECT Ticket WHERE operational_status NOT IN ('closed', 'resolved', 'rejected', 'cancelled')",
+        "output_fields": "ref,operational_status,org_id,org_name,caller_id,caller_name,team_id,team_name,team_email,agent_id,agent_name,title,description,start_date,end_date,last_update,close_date,private_log,contacts_list,functionalcis_list,workorders_list,finalclass,friendlyname,org_id_friendlyname,caller_id_friendlyname,team_id_friendlyname,agent_id_friendlyname",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        512,
+        0
+      ],
+      "id": "de060713-1b9c-4d21-84f4-60a7e0fe3d1e",
+      "name": "iTop - Tickets para análisis de actividad",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Config Reporte').first().json;\nconst thresholdHours = Number(config.stale_threshold_hours || 24);\nconst timezone = config.timezone || 'America/Santiago';\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst itopOrganization = String(config.itop_organization || '').trim();\nconst now = new Date();\n\nfunction isEnabledFlag(value, defaultValue = true) {\n  if (value === undefined || value === null || value === '') return defaultValue;\n  if (typeof value === 'boolean') return value;\n  const normalized = String(value).trim().toLowerCase();\n  return ['true', '1', 'yes', 'si', 'sí', 'y', 'on', 'enabled'].includes(normalized);\n}\n\nconst includeRequirements = isEnabledFlag(config.include_requirements, true);\nconst includeIncidents = isEnabledFlag(config.include_incidents, true);\nconst includeChanges = isEnabledFlag(config.include_changes, true);\nconst includeProblems = isEnabledFlag(config.include_problems, true);\n\nconst enabledTicketTypes = new Set();\nif (includeRequirements) enabledTicketTypes.add('requirement');\nif (includeIncidents) enabledTicketTypes.add('incident');\nif (includeChanges) enabledTicketTypes.add('change');\nif (includeProblems) enabledTicketTypes.add('problem');\n\nfunction normalizeTicketKind(value, fields = {}) {\n  const rawValues = [\n    value,\n    getField(fields, ['finalclass', 'class', 'class_friendlyname', 'ticket_class', 'ticket_type', 'type', 'request_type', 'request_type_friendlyname'], ''),\n    getField(fields, ['ref', 'reference', 'friendlyname'], '')\n  ].map(v => String(v || '').trim()).filter(Boolean);\n\n  const raw = rawValues.join(' ').toLowerCase();\n\n  if (raw.includes('userrequest') || raw.includes('user request') || raw.includes('request') || raw.includes('requerimiento') || raw.includes('requisito') || raw.includes('solicitud')) {\n    return { key: 'requirement', label: 'Requerimiento' };\n  }\n  if (raw.includes('incident') || raw.includes('incidente') || raw.includes('incidencia')) {\n    return { key: 'incident', label: 'Incidente' };\n  }\n  if (raw.includes('change') || raw.includes('cambio')) {\n    return { key: 'change', label: 'Cambio' };\n  }\n  if (raw.includes('problem') || raw.includes('problema')) {\n    return { key: 'problem', label: 'Problema' };\n  }\n\n  return { key: 'unknown', label: rawValues[0] || 'No identificado' };\n}\n\nfunction enabledTicketTypeText() {\n  const labels = [];\n  if (includeRequirements) labels.push('Requerimientos');\n  if (includeIncidents) labels.push('Incidentes');\n  if (includeChanges) labels.push('Cambios');\n  if (includeProblems) labels.push('Problemas');\n  return labels.length ? labels.join(', ') : 'Sin tipos habilitados';\n}\n\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\\\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\"/g, '\"\"');\n  return `\"${text}\"`;\n}\n\nfunction stripHtml(value) {\n  return String(value ?? '')\n    .replace(/<br\\s*\\/?>/gi, '\\n')\n    .replace(/<\\/p>/gi, '\\n')\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\\\"')\n    .replace(/&#039;/g, \"'\")\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction rawField(obj, names) {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return undefined;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\n\nfunction parseDate(value) {\n  if (!value || value === '-') return null;\n  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;\n  const raw = String(value).trim();\n  if (!raw) return null;\n  const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T');\n  const d = new Date(normalized);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\n\nfunction fmtDateTime(value) {\n  const d = parseDate(value);\n  if (!d) return '-';\n  return d.toLocaleString('es-CL', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });\n}\n\nfunction diffHours(from, to = now) {\n  const d = parseDate(from);\n  if (!d) return 0;\n  return Math.max(0, Math.floor((to.getTime() - d.getTime()) / 36e5));\n}\n\nfunction formatDurationFromHours(hours) {\n  const h = Math.max(0, Math.floor(Number(hours || 0)));\n  const days = Math.floor(h / 24);\n  const rem = h % 24;\n  if (days <= 0) return `${rem}h`;\n  if (rem === 0) return `${days}d`;\n  return `${days}d ${rem}h`;\n}\n\nfunction isBlank(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined' || v.toLowerCase() === 'n/a';\n}\n\nfunction closedSet() {\n  return new Set(String(config.closed_status_values || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean));\n}\nfunction isClosed(status) { return closedSet().has(String(status || '').trim().toLowerCase()); }\n\nfunction translateStatus(value) {\n  const raw = String(value || '').trim();\n  const s = raw.toLowerCase();\n  const map = {\n    new: 'Nuevo', assigned: 'Asignado', ongoing: 'En curso', pending: 'Pendiente', waiting: 'En espera', resolved: 'Resuelto', closed: 'Cerrado', rejected: 'Rechazado', cancelled: 'Cancelado'\n  };\n  return map[s] || raw || '-';\n}\n\nfunction collectLogEntries(value, collector = []) {\n  if (value === undefined || value === null || value === '') return collector;\n  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {\n    const text = stripHtml(value);\n    if (text && text !== '[object Object]') collector.push({ date: '', author: '', text });\n    return collector;\n  }\n  if (Array.isArray(value)) { value.forEach(v => collectLogEntries(v, collector)); return collector; }\n  if (typeof value === 'object') {\n    const date = value.date || value.created || value.created_at || value.creation_date || value.timestamp || value.time || value.modification_date || '';\n    const author = value.user_id_friendlyname || value.user_friendlyname || value.user_name || value.user_login || value.author || value.author_friendlyname || '';\n    const direct = rawField(value, ['message', 'html', 'text', 'body', 'content', 'comment', 'note', 'entry', 'value', 'description']);\n    if (direct !== undefined && direct !== value) {\n      const text = stripHtml(direct);\n      if (text && text !== '[object Object]') collector.push({ date, author, text });\n    }\n    const collection = value.entries || value.items || value.log || value.logs || value.records || value.data;\n    if (collection && collection !== value) collectLogEntries(collection, collector);\n  }\n  return collector;\n}\n\nfunction getLastLog(fields) {\n  const candidates = [\n    rawField(fields, ['last_comment', 'last_note', 'last_public_log', 'last_private_log', 'last_update_reason', 'last_change']),\n    rawField(fields, ['public_log', 'private_log', 'user_satisfaction', 'caselog', 'work_log', 'history'])\n  ];\n  const entries = [];\n  for (const candidate of candidates) collectLogEntries(candidate, entries);\n  const valid = entries.filter(e => e.text);\n  if (!valid.length) return { text: '-', date: null };\n  valid.sort((a, b) => (parseDate(a.date)?.getTime() || 0) - (parseDate(b.date)?.getTime() || 0));\n  const last = valid[valid.length - 1];\n  const prefix = [last.date ? fmtDateTime(last.date) : '', stripHtml(last.author)].filter(Boolean).join(' - ');\n  return { text: prefix ? `${prefix}: ${last.text}` : last.text, date: parseDate(last.date) };\n}\n\nfunction detectLastUpdate(fields, createdAt) {\n  const explicitUpdate = getField(fields, ['last_update','last_update_date','last_modification_date','last_modified','modification_date','date_mod','updated_at','last_activity','last_activity_date'], '');\n  const explicitUpdateDate = parseDate(explicitUpdate);\n  const lastLog = getLastLog(fields);\n  const candidates = [explicitUpdateDate, lastLog.date].filter(Boolean).sort((a, b) => b.getTime() - a.getTime());\n  return { date: candidates[0] || createdAt || null, source: candidates[0] ? 'update' : 'creation_fallback', note: lastLog.text || '-' };\n}\n\nfunction getSlaInfo(fields) {\n  const raw = [getField(fields, ['tto_escalation_deadline', 'ttr_escalation_deadline', 'resolution_deadline'], ''), getField(fields, ['tto_escalation_flag', 'ttr_escalation_flag', 'sla_status', 'sla', 'slas'], '')].filter(Boolean).join(' ');\n  const s = raw.toLowerCase();\n  const breached = ['breach', 'breached', 'vencido', 'expired', 'late', 'rojo', 'red'].some(v => s.includes(v));\n  return { text: raw || '-', breached };\n}\n\nfunction severityBadge(ticket) {\n  if (ticket.slaBreached || ticket.hoursSinceUpdate >= 72 || ticket.ageDays > 14) return '<span class=\"badge badge-red\">Crítico</span>';\n  if (ticket.hoursSinceUpdate >= 48) return '<span class=\"badge badge-orange\">Alto</span>';\n  return '<span class=\"badge badge-yellow\">Seguimiento</span>';\n}\n\nfunction td(value, align = 'left') {\n  return `<td align=\"${align}\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${value}</td>`;\n}\nfunction th(text, align = 'left') {\n  return `<th align=\"${align}\" style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:${align}; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap;\">${escapeHtml(text)}</th>`;\n}\n\nfunction ticketRow(ticket) {\n  const note = ticket.lastNote && ticket.lastNote !== '-' ? ticket.lastNote : 'Sin anotación legible desde la respuesta de iTop';\n  return `<tr>\n    ${td(severityBadge(ticket))}\n    ${td(`<strong>${escapeHtml(ticket.ref)}</strong>`)}\n    ${td(`<strong>${escapeHtml(ticket.title)}</strong>`)}\n    ${td(escapeHtml(ticket.caller))}\n    ${td(escapeHtml(ticket.agent || 'Sin agente asignado'))}\n    ${td(escapeHtml(fmtDateTime(ticket.createdAt)))}\n    ${td(escapeHtml(fmtDateTime(ticket.lastUpdateAt)))}\n    ${td(`<span class=\"badge ${ticket.hoursSinceUpdate >= 72 ? 'badge-red' : ticket.hoursSinceUpdate >= 48 ? 'badge-orange' : 'badge-yellow'}\">${escapeHtml(formatDurationFromHours(ticket.hoursSinceUpdate))}</span>`)}\n    ${td(escapeHtml(formatDurationFromHours(ticket.ageHours)))}\n    ${td(ticket.slaBreached ? '<span class=\"badge badge-red\">Vencido</span>' : escapeHtml(ticket.slaText || '-'))}\n    ${td(`<span class=\"wrap\">${escapeHtml(note).slice(0, 500)}</span>`)}\n  </tr>`;\n}\n\nfunction renderAgentBlock(agent, tickets) {\n  const sorted = [...tickets].sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));\n  const oldest = sorted[0];\n  const criticalCount = sorted.filter(t => t.slaBreached || t.hoursSinceUpdate >= 72 || t.ageDays > 14).length;\n  const slaBreachedCount = sorted.filter(t => t.slaBreached).length;\n  return `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n    <tr><td style=\"background-color:#f1f5f9; padding:10px 12px; border-bottom:1px solid #dbe3ec;\">\n      <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#0f172a;\">${escapeHtml(agent)} <span style=\"color:#64748b; font-weight:normal;\">(${sorted.length} tickets)</span></div>\n      <div style=\"font-size:12px; line-height:18px; color:#64748b; margin-top:4px;\">Más antiguo: <strong>${escapeHtml(oldest?.ref || '-')}</strong> · abierto hace <strong>${escapeHtml(formatDurationFromHours(oldest?.ageHours || 0))}</strong> · críticos: <strong>${criticalCount}</strong> · SLA vencido: <strong>${slaBreachedCount}</strong></div>\n    </td></tr>\n    <tr><td><div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%;\">\n      <thead><tr>${th('Crit.')}${th('Referencia')}${th('Título / asunto')}${th('Solicitante')}${th('Agente')}${th('Creación')}${th('Último update')}${th('Sin update')}${th('Tiempo abierto')}${th('SLA')}${th('Última anotación / cambio registrado')}</tr></thead>\n      <tbody>${sorted.map(ticketRow).join('')}</tbody>\n    </table></div></td></tr>\n  </table>`;\n}\n\nfunction renderSection(title, subtitle, tickets) {\n  if (!tickets.length) return `<div class=\"section-title\">${escapeHtml(title)}</div><div class=\"section-subtitle\">${escapeHtml(subtitle)}</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec; margin-bottom:20px;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin tickets para este bloque.</td></tr></table>`;\n  const groups = new Map();\n  for (const ticket of tickets) {\n    const agent = ticket.agent || 'Sin agente asignado';\n    if (!groups.has(agent)) groups.set(agent, []);\n    groups.get(agent).push(ticket);\n  }\n  const ordered = Array.from(groups.entries()).sort(([, aList], [, bList]) => {\n    const aOldest = Math.min(...aList.map(t => t.createdAt?.getTime() || Number.MAX_SAFE_INTEGER));\n    const bOldest = Math.min(...bList.map(t => t.createdAt?.getTime() || Number.MAX_SAFE_INTEGER));\n    return aOldest - bOldest;\n  });\n  return `<div class=\"section-title\">${escapeHtml(title)}</div><div class=\"section-subtitle\">${escapeHtml(subtitle)}</div>${ordered.map(([agent, list]) => renderAgentBlock(agent, list)).join('')}`;\n}\n\nconst rows = flattenInput($input.all());\nconst tickets = rows.map((row) => {\n  const f = row.fields || row;\n  const status = getField(f, ['operational_status', 'operational_status_friendlyname', 'status', 'status_friendlyname'], '');\n  const createdRaw = getField(f, ['start_date', 'creation_date', 'created_at', 'date', 'opened_at'], '');\n  const createdAt = parseDate(createdRaw);\n  const lastUpdate = detectLastUpdate(f, createdAt);\n  const hoursSinceUpdate = diffHours(lastUpdate.date, now);\n  const ageHours = diffHours(createdAt, now);\n  const sla = getSlaInfo(f);\n  const ticketKind = normalizeTicketKind(getField(f, ['finalclass', 'class', 'class_friendlyname', 'ticket_class', 'ticket_type', 'type'], ''), f);\n  return {\n    ref: getField(f, ['ref', 'reference', 'ticket_ref', 'friendlyname'], row.key || '-'),\n    title: stripHtml(getField(f, ['title', 'description', 'name', 'friendlyname'], '-')),\n    ticketType: ticketKind.key,\n    ticketTypeLabel: ticketKind.label,\n    status,\n    statusLabel: translateStatus(status),\n    caller: getField(f, ['caller_id_friendlyname', 'customer_id_friendlyname', 'requestor_id_friendlyname', 'person_id_friendlyname'], '-'),\n    agent: getField(f, ['agent_id_friendlyname', 'agent_name', 'assignee_id_friendlyname', 'team_id_friendlyname', 'owner_id_friendlyname'], 'Sin agente asignado'),\n    createdAt,\n    lastUpdateAt: lastUpdate.date,\n    lastUpdateSource: lastUpdate.source,\n    lastNote: lastUpdate.note,\n    hoursSinceUpdate,\n    ageHours,\n    ageDays: Math.floor(ageHours / 24),\n    slaText: sla.text,\n    slaBreached: sla.breached,\n  };\n})\n.filter(t => !isClosed(t.status))\n.filter(t => enabledTicketTypes.has(t.ticketType))\n.filter(t => t.hoursSinceUpdate >= thresholdHours)\n.sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));\n\nconst olderThan14 = tickets.filter(t => t.ageDays > 14);\nconst upTo14 = tickets.filter(t => t.ageDays <= 14);\nconst unassignedCount = tickets.filter(t => isBlank(t.agent) || t.agent === 'Sin agente asignado').length;\nconst stale72Count = tickets.filter(t => t.hoursSinceUpdate >= 72).length;\nconst stale48Count = tickets.filter(t => t.hoursSinceUpdate >= 48 && t.hoursSinceUpdate < 72).length;\nconst stale24Count = tickets.filter(t => t.hoursSinceUpdate >= 24 && t.hoursSinceUpdate < 48).length;\nconst slaBreachedCount = tickets.filter(t => t.slaBreached).length;\nconst oldestTicket = tickets[0] ? `${tickets[0].ref} · ${formatDurationFromHours(tickets[0].ageHours)}` : '-';\nconst agentCount = new Set(tickets.map(t => t.agent || 'Sin agente asignado')).size;\n\nconst generatedAt = now.toLocaleString('es-CL', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });\n\nconst older_section = renderSection('Tickets con más de 14 días abiertos', 'Agrupados por agente. Dentro de cada agente, ordenados desde el ticket más viejo al más nuevo. El filtro se aplica por último update mayor al umbral configurado.', olderThan14);\nconst recent_section = renderSection('Tickets abiertos hasta 14 días', 'Agrupados por agente. Dentro de cada agente, ordenados desde el ticket más viejo al más nuevo. El filtro se aplica por último update mayor al umbral configurado.', upTo14);\n\nconst csvHeaders = ['Criticidad','Referencia','Tipo','Titulo/Asunto','Estado','Solicitante','Agente','Creacion','Ultimo update','Horas sin update','Tiempo abierto horas','SLA','Ultima anotacion/cambio'];\nconst csvRows = tickets.map(t => [\n  (t.slaBreached || t.hoursSinceUpdate >= 72 || t.ageDays > 14) ? 'Critico' : t.hoursSinceUpdate >= 48 ? 'Alto' : 'Seguimiento',\n  t.ref, t.ticketTypeLabel, t.title, t.statusLabel, t.caller, t.agent, fmtDateTime(t.createdAt), fmtDateTime(t.lastUpdateAt), t.hoursSinceUpdate, t.ageHours, t.slaBreached ? 'Vencido' : t.slaText, t.lastNote\n]);\nconst csvContent = '\\uFEFF' + [csvHeaders.map(csvEscape).join(';'), ...csvRows.map(row => row.map(csvEscape).join(';'))].join('\\r\\n');\nconst generatedAtFile = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);\n\nconst subjectBase = String(config.email_subject || `Reporte ITSM - tickets sin update mayor a ${thresholdHours}h`).trim();\nconst emailSubject = itopOrganization ? `${subjectBase} - ${itopOrganization}` : subjectBase;\n\nreturn [{\n  json: {\n    email_from: config.email_from,\n    email_to: config.email_to,\n    email_cc: config.email_cc || '',\n    email_bcc: config.email_bcc || '',\n    email_subject: emailSubject,\n    company,\n    Company: company,\n    itop_organization: itopOrganization || '-',\n    generated_at: generatedAt,\n    threshold_hours: String(thresholdHours),\n    enabled_ticket_types: enabledTicketTypeText(),\n    include_requirements: String(includeRequirements),\n    include_incidents: String(includeIncidents),\n    include_changes: String(includeChanges),\n    include_problems: String(includeProblems),\n    total_stale: String(tickets.length),\n    older_than_14_count: String(olderThan14.length),\n    up_to_14_count: String(upTo14.length),\n    stale_72h_count: String(stale72Count),\n    stale_48h_count: String(stale48Count),\n    stale_24h_count: String(stale24Count),\n    unassigned_count: String(unassignedCount),\n    sla_breached_count: String(slaBreachedCount),\n    oldest_ticket: oldestTicket,\n    agent_count: String(agentCount),\n    older_section,\n    recent_section,\n    itop_url: config.itop_url || '#',\n    csv_filename: `tickets_sin_update_${generatedAtFile}.csv`,\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csvContent, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `tickets_sin_update_${generatedAtFile}.csv`,\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        0
+      ],
+      "id": "eb0cd9ff-66da-41a2-b722-e2320c4790e9",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst data = input.json || {};\n\nconst template = `<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Tickets abiertos sin update reciente</title>\n  <style type=\"text/css\">\n    body { margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937; }\n    table { border-collapse:collapse; }\n    a { color:#1d4ed8; text-decoration:none; }\n    .wrapper { width:100%; background-color:#eef2f6; padding:24px 0; }\n    .container { width:100%; max-width:1000px; background-color:#ffffff; border:1px solid #d9e2ec; }\n    .mobile-padding { padding-left:28px; padding-right:28px; }\n    .summary-card { padding:4px; }\n    .data-table th { background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap; }\n    .data-table td { font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top; }\n    .section-title { font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px; }\n    .section-subtitle { font-size:12px; line-height:18px; color:#6b7280; margin-bottom:10px; }\n    .badge { display:inline-block; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold; line-height:14px; white-space:nowrap; }\n    .badge-red { background-color:#fee2e2; color:#991b1b; border:1px solid #fecaca; }\n    .badge-orange { background-color:#ffedd5; color:#9a3412; border:1px solid #fed7aa; }\n    .badge-yellow { background-color:#fef9c3; color:#854d0e; border:1px solid #fde68a; }\n    .badge-green { background-color:#dcfce7; color:#166534; border:1px solid #bbf7d0; }\n    .badge-blue { background-color:#dbeafe; color:#1e3a8a; border:1px solid #bfdbfe; }\n    .badge-gray { background-color:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }\n    .wrap { word-break:break-word; overflow-wrap:break-word; }\n    @media only screen and (max-width:760px) { .container{width:100%!important;} .mobile-padding{padding-left:14px!important;padding-right:14px!important;} .summary-card{width:100%!important;display:block!important;margin-bottom:8px!important;} .table-scroll{overflow-x:auto!important;display:block!important;width:100%!important;} }\n  </style>\n</head>\n<body style=\"margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937;\">\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"wrapper\"><tr><td align=\"center\">\n    <table role=\"presentation\" width=\"1000\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"container\">\n      <tr><td style=\"background-color:#0f172a; padding:24px 28px;\" class=\"mobile-padding\">\n        <table role=\"presentation\" width=\"100%\"><tr>\n          <td valign=\"top\" style=\"width:65%;\">\n            <div style=\"font-size:13px; line-height:18px; color:#93c5fd; font-weight:bold; letter-spacing:0.4px;\">Automatización ITSM / Backlog</div>\n            <div style=\"font-size:26px; line-height:32px; color:#ffffff; font-weight:bold; margin-top:6px;\">Tickets abiertos sin update reciente</div>\n            <div style=\"font-size:14px; line-height:20px; color:#cbd5e1; margin-top:6px;\">Se consideran dos fechas: creación del ticket y último update registrado</div>\n            <div style=\"font-size:12px; line-height:18px; color:#93c5fd; margin-top:8px;\"><strong style=\"color:#ffffff;\">Organización iTop:</strong> {{itop_organization}}</div>\n          </td>\n          <td valign=\"top\" align=\"right\" style=\"width:35%; font-size:12px; line-height:18px; color:#cbd5e1; text-align:right;\"><strong style=\"color:#ffffff;\">Generado:</strong><br>{{generated_at}}<br><br><strong style=\"color:#ffffff;\">Fuente:</strong><br>Producción / Combodo iTop</td>\n        </tr></table>\n      </td></tr>\n\n      <tr><td style=\"padding:24px 28px 12px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Resumen ejecutivo</div>\n        <div style=\"font-size:13px; line-height:19px; color:#6b7280; margin-top:4px;\">Reporte orientado a identificar tickets abiertos cuyo <strong>último update</strong> supera el umbral operacional definido: <strong>{{threshold_hours}} horas</strong>. La fecha de creación se usa solo para calcular antigüedad del ticket y separar los bloques de más de 14 días.</div>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\"><tr>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #cbd5e1; background-color:#f8fafc;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#475569; font-weight:bold;\">TOTAL SIN UPDATE</div><div style=\"font-size:24px; color:#0f172a; font-weight:bold;\">{{total_stale}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fecaca; background-color:#fef2f2;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#991b1b; font-weight:bold;\">MÁS DE 14 DÍAS</div><div style=\"font-size:24px; color:#991b1b; font-weight:bold;\">{{older_than_14_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fed7aa; background-color:#fff7ed;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#9a3412; font-weight:bold;\">HASTA 14 DÍAS</div><div style=\"font-size:24px; color:#9a3412; font-weight:bold;\">{{up_to_14_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #bfdbfe; background-color:#eff6ff;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#1e3a8a; font-weight:bold;\">SIN UPDATE +72H</div><div style=\"font-size:24px; color:#1e3a8a; font-weight:bold;\">{{stale_72h_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #bfdbfe; background-color:#eff6ff;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#1e3a8a; font-weight:bold;\">SIN AGENTE</div><div style=\"font-size:24px; color:#1e3a8a; font-weight:bold;\">{{unassigned_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fecaca; background-color:#fff1f2;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#991b1b; font-weight:bold;\">SLA VENCIDO</div><div style=\"font-size:24px; color:#991b1b; font-weight:bold;\">{{sla_breached_count}}</div></td></tr></table></td>\n      </tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 20px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\"><tr><td style=\"padding:12px 14px;\">\n        <div style=\"font-size:13px; line-height:18px; font-weight:bold; color:#111827; margin-bottom:8px;\">Criterio y ordenamiento</div>\n        <div style=\"font-size:12px; line-height:18px; color:#374151;\">Se muestran únicamente tickets abiertos cuyo último update supera el umbral operacional definido de <strong>{{threshold_hours}} horas</strong>. El reporte considera solo los tipos habilitados en la configuración: <strong>{{enabled_ticket_types}}</strong>. La fecha de creación se utiliza para separar los tickets con más de 14 días y ordenar cada bloque desde el ticket más antiguo al más reciente.</div>\n      </td></tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">{{older_section}}</td></tr>\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">{{recent_section}}</td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #dbe3ec; background-color:#f8fafc;\"><tr><td style=\"padding:16px 18px;\"><div style=\"font-size:15px; line-height:21px; color:#111827; font-weight:bold; margin-bottom:8px;\">Observaciones operacionales</div><ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\"><li>Este reporte fue generado automáticamente por &quot;Automatización ITSM / Backlog&quot;.</li><li>Organización iTop considerada en el reporte: <strong>{{itop_organization}}</strong>.</li><li>Se adjunta un CSV único con el volcado consolidado de tickets filtrados.</li><li>La antigüedad mayor a 14 días se calcula exclusivamente contra la fecha de creación del ticket.</li></ul></td></tr></table></td></tr>\n\n      <tr><td align=\"center\" style=\"padding:0 28px 26px 28px;\" class=\"mobile-padding\"><table role=\"presentation\"><tr><td align=\"center\" bgcolor=\"#1d4ed8\" style=\"background-color:#1d4ed8; padding:11px 20px;\"><a href=\"{{itop_url}}\" target=\"_blank\" style=\"font-size:13px; line-height:18px; color:#ffffff; font-weight:bold; text-decoration:none; display:inline-block;\">Abrir Combodo iTop</a></td></tr></table></td></tr>\n      <tr><td style=\"background-color:#f1f5f9; border-top:1px solid #dbe3ec; padding:18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\"><tr><td style=\"font-size:12px; line-height:18px; color:#64748b;\"><strong style=\"color:#334155;\">Automatización ITSM / Backlog</strong><br>{{company}}<br>Correo generado automáticamente. No responder a este mensaje.</td><td align=\"right\" style=\"font-size:12px; line-height:18px; color:#64748b;\">Generado:<br>{{generated_at}}</td></tr></table></td></tr>\n    </table>\n  </td></tr></table>\n</body>\n</html>`;\n\nlet html = template;\nfor (const [key, value] of Object.entries(data)) html = html.replaceAll(`{{${key}}}`, String(value ?? ''));\n\nreturn [{ json: { ...data, html }, binary: input.binary || {} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "047fa893-e51f-462f-856d-c9153fd2d65a",
+      "name": "HTML - Template Reporte"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "csv",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "943430ff-c66b-44d3-b2fa-f8195846c3f7",
+      "name": "Enviar correo SMTP",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "xNtpGsiFHeoJckRp",
+          "name": "SMTP_MailPit"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Tickets para análisis de actividad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Tickets para análisis de actividad": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Template Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Template Reporte": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dde095f4-c1cd-4d18-8a9a-5d2652b6be19",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "SB3bUPpAjsLaLvsy",
+  "tags": []
+}

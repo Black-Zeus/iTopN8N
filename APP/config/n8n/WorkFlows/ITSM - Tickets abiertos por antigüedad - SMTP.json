@@ -1,0 +1,273 @@
+{
+  "name": "ITSM - Tickets abiertos por antigüedad - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        112,
+        288
+      ],
+      "id": "d2ddcfa6-3664-433d-9282-3c3db63912a0",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eff82b12-cd4a-471c-982e-4fbd5fe0d46e",
+              "name": "itop_url",
+              "value": "http://172.16.123.132/itop/",
+              "type": "string"
+            },
+            {
+              "id": "a5eb985b-028f-4db6-9c82-9ca740e9ca24",
+              "name": "email_from",
+              "value": "notificaciones@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "0c2a783f-b171-4c83-80e9-eba393735150",
+              "name": "email_to",
+              "value": "destinatario@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "ed4d18d7-d7bc-4461-b216-271f45344360",
+              "name": "email_cc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "df29f0d8-f3f0-4f45-a862-7448b924e675",
+              "name": "email_bcc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "892cb5b5-ed11-43d4-a167-d183019c2a21",
+              "name": "email_subject",
+              "value": "Reporte ITSM - tickets abiertos por agente y antigüedad",
+              "type": "string"
+            },
+            {
+              "id": "5fcf5353-6dfe-44de-ad41-5ea35b54aa8b",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "9d7666aa-c2dc-4611-8206-8da7067918bf",
+              "name": "closed_status_values",
+              "value": "closed,resolved,rejected,cancelled,cerrado,resuelto,rechazado",
+              "type": "string"
+            },
+            {
+              "id": "a26123c3-4869-428d-a04b-e79eb26e086f",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "75b88ac1-8fec-473a-9de6-24b388f0b28c",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "28080b6a-b7a5-4b8f-8c6c-f04f1c97dff9",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "5e6ef0f1-4145-4a68-854a-05b1294cb8e5",
+              "name": "include_requirements",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "abbd15a5-11c4-4a37-95e4-9ed2ebf3278d",
+              "name": "include_incidents",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "6a377385-5cef-4c86-94c8-7075bb78eb8c",
+              "name": "include_changes",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "e8106e1f-fdf8-4042-83fd-89c60e8edbd9",
+              "name": "include_problems",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        352,
+        288
+      ],
+      "id": "b7646da7-03ff-4c03-bfeb-1edd2b3269f4",
+      "name": "Config Reporte"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "Ticket",
+        "key": "SELECT Ticket WHERE operational_status NOT IN ('closed', 'resolved', 'rejected', 'cancelled')",
+        "output_fields": "ref,operational_status,org_id,org_name,caller_id,caller_name,team_id,team_name,team_email,agent_id,agent_name,title,description,start_date,end_date,last_update,close_date,private_log,contacts_list,functionalcis_list,workorders_list,finalclass,friendlyname,org_id_friendlyname,caller_id_friendlyname,team_id_friendlyname,agent_id_friendlyname",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        624,
+        288
+      ],
+      "id": "e2bd7bd4-56d7-4996-b900-7b32744846eb",
+      "name": "iTop - Tickets abiertos",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Output Fields definido explícitamente para evitar selector * y recuperar solo campos usados por el reporte."
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Config Reporte').first().json;\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst itopOrganization = String(config.itop_organization || '').trim();\n\n\nfunction isEnabledFlag(value, defaultValue = true) {\n  if (value === undefined || value === null || value === '') return defaultValue;\n  if (typeof value === 'boolean') return value;\n  const normalized = String(value).trim().toLowerCase();\n  return ['true', '1', 'yes', 'si', 'sí', 'y', 'on', 'enabled'].includes(normalized);\n}\n\nconst includeRequirements = isEnabledFlag(config.include_requirements, true);\nconst includeIncidents = isEnabledFlag(config.include_incidents, true);\nconst includeChanges = isEnabledFlag(config.include_changes, true);\nconst includeProblems = isEnabledFlag(config.include_problems, true);\n\nconst enabledTicketTypes = new Set();\nif (includeRequirements) enabledTicketTypes.add('requirement');\nif (includeIncidents) enabledTicketTypes.add('incident');\nif (includeChanges) enabledTicketTypes.add('change');\nif (includeProblems) enabledTicketTypes.add('problem');\n\nfunction enabledTicketTypeText() {\n  const labels = [];\n  if (includeRequirements) labels.push('Requerimientos');\n  if (includeIncidents) labels.push('Incidentes');\n  if (includeChanges) labels.push('Cambios');\n  if (includeProblems) labels.push('Problemas');\n  return labels.length ? labels.join(', ') : 'Sin tipos habilitados';\n}\n\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\"/g, '\"\"');\n  return `\"${text}\"`;\n}\n\nfunction escapeHtml(value) {\n  return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#039;');\n}\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction stripHtml(value) {\n  return String(value ?? '')\n    .replace(/<br\\s*\\/?>/gi, '\\n')\n    .replace(/<\\/p>/gi, '\\n')\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#039;/g, \"'\")\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\nfunction rawField(obj, names) {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return undefined;\n}\nfunction entryDateValue(entry, fallbackKey = '') {\n  if (!entry || typeof entry !== 'object') return fallbackKey;\n  return entry.date || entry.created || entry.created_at || entry.creation_date || entry.timestamp || entry.time || fallbackKey || '';\n}\nfunction entryAuthorValue(entry) {\n  if (!entry || typeof entry !== 'object') return '';\n  return entry.user_id_friendlyname || entry.user_friendlyname || entry.user_name || entry.user_login || entry.author || entry.author_friendlyname || '';\n}\nfunction normalizeLogText(value, fallbackKey = '') {\n  if (value === undefined || value === null || value === '') return '';\n\n  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {\n    const text = stripHtml(value);\n    return text && text !== '[object Object]' ? text : '';\n  }\n\n  if (Array.isArray(value)) {\n    const normalized = value\n      .map((entry, index) => ({\n        date: entryDateValue(entry, String(index).padStart(6, '0')),\n        text: normalizeLogText(entry, String(index).padStart(6, '0')),\n      }))\n      .filter(e => e.text);\n    if (!normalized.length) return '';\n    normalized.sort((a, b) => String(a.date).localeCompare(String(b.date)));\n    return normalized[normalized.length - 1].text;\n  }\n\n  if (typeof value === 'object') {\n    const direct = rawField(value, [\n      'message', 'html', 'text', 'body', 'content', 'comment', 'note',\n      'last_comment', 'last_note', 'entry', 'value', 'description'\n    ]);\n\n    if (direct !== undefined && direct !== value) {\n      const text = normalizeLogText(direct, fallbackKey);\n      if (text) {\n        const date = entryDateValue(value, fallbackKey);\n        const author = entryAuthorValue(value);\n        const prefix = [date, author].map(v => stripHtml(v)).filter(Boolean).join(' - ');\n        return prefix ? `${prefix}: ${text}` : text;\n      }\n    }\n\n    const collection = value.entries || value.items || value.log || value.logs || value.records || value.data;\n    if (collection && collection !== value) {\n      const entries = Array.isArray(collection)\n        ? collection.map((v, i) => [String(i).padStart(6, '0'), v])\n        : Object.entries(collection);\n      const normalized = entries\n        .map(([key, entry]) => ({ date: entryDateValue(entry, key), text: normalizeLogText(entry, key) }))\n        .filter(e => e.text);\n      if (!normalized.length) return '';\n      normalized.sort((a, b) => String(a.date).localeCompare(String(b.date)));\n      return normalized[normalized.length - 1].text;\n    }\n\n    const leafTexts = [];\n    const ignored = new Set(['id', 'key', 'code', 'class', 'finalclass', 'type', 'attribute', 'attcode', 'att_code']);\n    for (const [key, val] of Object.entries(value)) {\n      if (ignored.has(String(key).toLowerCase())) continue;\n      if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {\n        const text = stripHtml(val);\n        if (text && text !== '[object Object]') leafTexts.push(text);\n      }\n    }\n    const unique = [...new Set(leafTexts)].filter(t => t.length > 1);\n    return unique.slice(-3).join(' / ');\n  }\n\n  return '';\n}\nfunction getLastReadableNote(fields) {\n  const candidates = [\n    rawField(fields, ['last_comment','last_note','last_public_log','last_private_log','last_update_reason','last_change']),\n    rawField(fields, ['public_log','private_log','user_satisfaction','operational_status']),\n    rawField(fields, ['description'])\n  ];\n\n  for (const candidate of candidates) {\n    const text = normalizeLogText(candidate);\n    if (text) return text;\n  }\n  return '-';\n}\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\nfunction fmtDate(value) {\n  if (!value || value === '-') return '-';\n  const d = new Date(String(value).replace(' ', 'T'));\n  if (Number.isNaN(d.getTime())) return String(value);\n  return d.toLocaleString('es-CL', { timeZone: config.timezone || 'America/Santiago', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });\n}\nfunction fmtDateOnly(value) {\n  if (!value || value === '-') return '-';\n  const d = new Date(String(value).replace(' ', 'T'));\n  if (Number.isNaN(d.getTime())) return String(value);\n  return d.toLocaleDateString('es-CL', { timeZone: config.timezone || 'America/Santiago', year:'numeric', month:'2-digit', day:'2-digit' });\n}\nfunction ageHours(value) {\n  if (!value) return 0;\n  const d = new Date(String(value).replace(' ', 'T'));\n  if (Number.isNaN(d.getTime())) return 0;\n  return Math.max(0, Math.floor((Date.now() - d.getTime()) / 36e5));\n}\nfunction ageTextFromHours(h) {\n  const days = Math.floor(h / 24); const hours = h % 24;\n  if (days > 0) return `${days}d ${hours}h`;\n  return `${hours}h`;\n}\nfunction td(value, align='left') {\n  return `<td align=\"${align}\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${value}</td>`;\n}\nfunction badge(text, cls='badge-gray') { return `<span class=\"badge ${cls}\">${escapeHtml(text)}</span>`; }\nfunction replaceAllVars(html, replacements) { for (const [k,v] of Object.entries(replacements)) html = html.replaceAll(`{{${k}}}`, String(v)); return html; }\n\nfunction translateOperationalStatus(value) {\n  const raw = String(value ?? '').trim();\n  if (!raw || raw === '-') return '-';\n\n  const key = raw\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[\\s-]+/g, '_');\n\n  const map = {\n    ongoing: 'En curso',\n    new: 'Nuevo',\n    assigned: 'Asignado',\n    pending: 'Pendiente',\n    waiting_for_approval: 'En espera de aprobación',\n    waiting_for_customer: 'En espera del solicitante',\n    waiting_for_user: 'En espera del usuario',\n    waiting_for_provider: 'En espera de proveedor',\n    wait_for_customer: 'En espera del solicitante',\n    wait_for_user: 'En espera del usuario',\n    wait_for_provider: 'En espera de proveedor',\n    escalated: 'Escalado',\n    resolved: 'Resuelto',\n    closed: 'Cerrado',\n    rejected: 'Rechazado',\n    cancelled: 'Cancelado',\n    canceled: 'Cancelado',\n    frozen: 'Congelado',\n    approved: 'Aprobado',\n    implemented: 'Implementado',\n    monitored: 'En monitoreo',\n    validated: 'Validado',\n    accepted: 'Aceptado',\n    completed: 'Completado',\n    failed: 'Fallido'\n  };\n\n  return map[key] || raw;\n}\n\nfunction normalizeTicketKind(value, fields = {}) {\n  const rawValues = [\n    value,\n    getField(fields, ['finalclass', 'class', 'class_friendlyname', 'ticket_class', 'ticket_type', 'type', 'request_type', 'request_type_friendlyname'], ''),\n    getField(fields, ['ref', 'reference', 'friendlyname'], '')\n  ].map(v => String(v || '').trim()).filter(Boolean);\n\n  const raw = rawValues.join(' ').toLowerCase();\n\n  if (raw.includes('userrequest') || raw.includes('user request') || raw.includes('request') || raw.includes('requerimiento') || raw.includes('requisito') || raw.includes('solicitud')) {\n    return { key: 'requirement', label: 'Requerimiento' };\n  }\n  if (raw.includes('incident') || raw.includes('incidente') || raw.includes('incidencia')) {\n    return { key: 'incident', label: 'Incidente' };\n  }\n  if (raw.includes('change') || raw.includes('cambio')) {\n    return { key: 'change', label: 'Cambio' };\n  }\n  if (raw.includes('problem') || raw.includes('problema')) {\n    return { key: 'problem', label: 'Problema' };\n  }\n\n  return { key: 'unknown', label: rawValues[0] || 'No identificado' };\n}\n\nconst generatedAt = new Date().toLocaleString('es-CL', { timeZone: config.timezone || 'America/Santiago', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });\nconst rawRows = flattenInput($input.all());\n\nconst openStatusBlacklist = String(config.closed_status_values || 'closed,resolved,rejected,cancelled,cerrado,resuelto,rechazado').toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);\nlet tickets = rawRows.map((row) => {\n  const f = row.fields || row;\n  const ref = getField(f, ['ref','friendlyname','id'], '-');\n  const start = getField(f, ['start_date','creation_date','created','date'], '');\n  const last = getField(f, ['last_update','last_update_date','modify_date','modification_date','updated'], start);\n  const priority = getField(f, ['priority_friendlyname','priority','urgency_friendlyname','urgency'], '-');\n  const status = getField(f, ['operational_status_friendlyname','operational_status','status_friendlyname','status'], '-');\n  const sla = getField(f, ['tto_escalation_deadline','ttr_escalation_deadline','resolution_date','tto_deadline','ttr_deadline'], '');\n  const ticketKind = normalizeTicketKind(getField(f, ['finalclass','class','class_friendlyname','ticket_class','ticket_type','type'], ''), f);\n  return {\n    ref,\n    finalclass: getField(f, ['finalclass','class'], '-'),\n    ticketType: ticketKind.key,\n    ticketTypeLabel: ticketKind.label,\n    title: getField(f, ['title','description','friendlyname'], '-'),\n    status,\n    priority,\n    caller: getField(f, ['caller_id_friendlyname','caller_name','user_id_friendlyname','requestor_id_friendlyname'], '-'),\n    team: getField(f, ['team_id_friendlyname','team_name','assignment_team_id_friendlyname'], '-'),\n    agent: getField(f, ['agent_id_friendlyname','agent_name','assignee_id_friendlyname'], ''),\n    start,\n    last,\n    openHours: ageHours(start),\n    inactiveHours: ageHours(last),\n    slaDeadline: sla,\n    lastNote: getLastReadableNote(f),\n  };\n}).filter(t => !openStatusBlacklist.some(x => String(t.status || '').toLowerCase().includes(x)))\n  .filter(t => enabledTicketTypes.has(t.ticketType));\nfunction isSlaBreached(t) { if (!t.slaDeadline) return false; const d=new Date(String(t.slaDeadline).replace(' ','T')); return !Number.isNaN(d.getTime()) && d.getTime() < Date.now(); }\nfunction isCritical(t) { const p=String(t.priority||'').toLowerCase(); return p.includes('critical') || p.includes('crítica') || p.includes('critica') || p.includes('1') || isSlaBreached(t) || t.openHours >= 72; }\nfunction critBadge(t, byInactive=false) {\n  const h = byInactive ? t.inactiveHours : t.openHours;\n  if (isSlaBreached(t) || h >= 72 || isCritical(t)) return badge('Crítico','badge-red');\n  if (h >= 48) return badge('Alto','badge-orange');\n  if (h >= 24) return badge('Medio','badge-yellow');\n  return badge('Normal','badge-green');\n}\nfunction slaBadge(t) { return isSlaBreached(t) ? badge('Vencido','badge-red') : badge('Sin vencimiento','badge-green'); }\n\ntickets.sort((a,b) => b.openHours - a.openHours || String(a.ref).localeCompare(String(b.ref),'es'));\n\nfunction agentKey(ticket) {\n  const agent = String(ticket.agent || '').trim();\n  return agent || 'Sin agente';\n}\n\nfunction ticketTableHeader() {\n  return `<thead><tr>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Crit.</th>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Referencia</th>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Título / asunto</th>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Solicitante</th>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Creación</th>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Últ. mod.</th>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Tiempo abierto</th>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">SLA</th>\n    <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Última observación / cambio</th>\n  </tr></thead>`;\n}\n\nfunction ticketRow(t) {\n  return `<tr>`\n    + td(critBadge(t))\n    + td(`<strong>${escapeHtml(t.ref)}</strong>`)\n    + td(escapeHtml(t.title))\n    + td(escapeHtml(t.caller))\n    + td(escapeHtml(fmtDate(t.start)))\n    + td(escapeHtml(fmtDate(t.last)))\n    + td(`<strong>${ageTextFromHours(t.openHours)}</strong>`)\n    + td(slaBadge(t))\n    + td(escapeHtml(normalizeLogText(t.lastNote) || '-').slice(0, 400))\n    + `</tr>`;\n}\n\nfunction groupByAgent(list) {\n  const groups = new Map();\n  const sorted = [...list].sort((a,b) => b.openHours - a.openHours || String(a.ref).localeCompare(String(b.ref),'es'));\n\n  for (const ticket of sorted) {\n    const key = agentKey(ticket);\n    if (!groups.has(key)) groups.set(key, []);\n    groups.get(key).push(ticket);\n  }\n\n  return Array.from(groups.entries()).sort((a, b) => {\n    const aOldest = a[1][0]?.openHours || 0;\n    const bOldest = b[1][0]?.openHours || 0;\n    return bOldest - aOldest || a[0].localeCompare(b[0], 'es');\n  });\n}\n\nfunction renderAgentBlock(agent, list) {\n  const oldest = list[0] ? ageTextFromHours(list[0].openHours) : '-';\n  const slaCount = list.filter(isSlaBreached).length;\n  const criticalCount = list.filter(isCritical).length;\n\n  return `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:16px; border:1px solid #dbe3ec;\">\n    <tr>\n      <td style=\"background-color:#f8fafc; padding:10px 12px; border-bottom:1px solid #dbe3ec;\">\n        <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#0f172a;\">${escapeHtml(agent)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} tickets)</span></div>\n        <div style=\"font-size:12px; line-height:18px; color:#64748b; margin-top:2px;\">Más antiguo: ${escapeHtml(oldest)} · Críticos: ${criticalCount} · SLA vencido: ${slaCount}</div>\n      </td>\n    </tr>\n    <tr>\n      <td>\n        <div class=\"ticket-scroll\" style=\"width:100%; overflow-x:auto;\">\n          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"ticket-table\" style=\"width:100%;\">\n            ${ticketTableHeader()}\n            <tbody>${list.map(ticketRow).join('')}</tbody>\n          </table>\n        </div>\n      </td>\n    </tr>\n  </table>`;\n}\n\nfunction renderTicketSection(title, description, list, color = 'gray') {\n  if (!list.length) {\n    return `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec; background-color:#ffffff;\">\n      <tr><td style=\"padding:14px; font-size:13px; line-height:19px; color:#64748b;\">${escapeHtml(title)}: sin tickets para listar.</td></tr>\n    </table>`;\n  }\n\n  const grouped = groupByAgent(list).map(([agent, agentTickets]) => renderAgentBlock(agent, agentTickets)).join('');\n  return `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:22px;\">\n    <tr>\n      <td style=\"padding:10px 12px; background-color:${color === 'red' ? '#fef2f2' : '#f8fafc'}; border:1px solid ${color === 'red' ? '#fecaca' : '#dbe3ec'};\">\n        <div style=\"font-size:15px; line-height:21px; font-weight:bold; color:${color === 'red' ? '#991b1b' : '#111827'};\">${escapeHtml(title)} <span style=\"font-weight:normal; color:#64748b;\">(${list.length})</span></div>\n        <div style=\"font-size:12px; line-height:18px; color:#64748b; margin-top:2px;\">${escapeHtml(description)}</div>\n      </td>\n    </tr>\n    <tr><td style=\"padding-top:12px;\">${grouped}</td></tr>\n  </table>`;\n}\n\nconst ticketsOver14Days = tickets.filter(t => t.openHours > (14 * 24));\nconst ticketsUpTo14Days = tickets.filter(t => t.openHours <= (14 * 24));\nconst ticketSections =\n  renderTicketSection('Tickets con más de 14 días abiertos', 'Prioridad de revisión: tickets envejecidos, agrupados por agente y ordenados desde el más antiguo al más reciente.', ticketsOver14Days, 'red') +\n  renderTicketSection('Tickets abiertos hasta 14 días', 'Backlog operacional vigente, agrupado por agente y ordenado desde el más antiguo al más reciente.', ticketsUpTo14Days, 'gray');\n\n\nconst avgHours = tickets.length ? Math.round(tickets.reduce((s,t)=>s+t.openHours,0) / tickets.length) : 0;\nconst oldest = tickets[0] ? `${tickets[0].ref} / ${ageTextFromHours(tickets[0].openHours)}` : '-';\nconst totalOpen = tickets.length;\nconst criticalCount = tickets.filter(isCritical).length;\nconst slaBreachedCount = tickets.filter(isSlaBreached).length;\nconst unassignedCount = tickets.filter(t => !String(t.agent || '').trim()).length;\n\nconst subjectBase = String(config.email_subject || 'Reporte ITSM - tickets abiertos por agente y antigüedad').trim();\nconst emailSubject = itopOrganization ? `${subjectBase} - ${itopOrganization}` : subjectBase;\n\nconst generatedAtFile = new Date()\n  .toISOString()\n  .replace(/[:.]/g, '-')\n  .replace('T', '_')\n  .slice(0, 19);\n\nconst csvHeaders = [\n  'Criticidad',\n  'Referencia',\n  'Tipo',\n  'Titulo / Asunto',\n  'Solicitante',\n  'Agente',\n  'Creacion',\n  'Ultima modificacion',\n  'Tiempo abierto',\n  'Horas sin modificacion',\n  'SLA',\n  'Ultima observacion / cambio'\n];\n\nfunction criticalityText(t) {\n  if (isSlaBreached(t) || t.openHours >= 72 || isCritical(t)) return 'Critico';\n  if (t.openHours >= 48) return 'Alto';\n  if (t.openHours >= 24) return 'Medio';\n  return 'Normal';\n}\n\nconst csvRows = tickets.map(t => [\n  criticalityText(t),\n  t.ref,\n  t.ticketTypeLabel,\n  t.title,\n  t.caller,\n  agentKey(t),\n  fmtDate(t.start),\n  fmtDate(t.last),\n  ageTextFromHours(t.openHours),\n  ageTextFromHours(t.inactiveHours),\n  isSlaBreached(t) ? 'Vencido' : 'Sin vencimiento',\n  normalizeLogText(t.lastNote) || '-'\n]);\n\nconst csvContent = '\\uFEFF' + [\n  csvHeaders.map(csvEscape).join(';'),\n  ...csvRows.map(row => row.map(csvEscape).join(';')),\n].join('\\r\\n');\n\nreturn [{\n  json: {\n    email_from: config.email_from,\n    email_to: config.email_to,\n    email_cc: config.email_cc || '',\n    email_bcc: config.email_bcc || '',\n    email_subject: emailSubject,\n    company,\n    Company: company,\n    itop_organization: itopOrganization || '-',\n    generated_at: generatedAt,\n    total_open: String(totalOpen),\n    critical_count: String(criticalCount),\n    sla_breached_count: String(slaBreachedCount),\n    unassigned_count: String(unassignedCount),\n    oldest_ticket: oldest,\n    average_age: ageTextFromHours(avgHours),\n    enabled_ticket_types: enabledTicketTypeText(),\n    include_requirements: String(includeRequirements),\n    include_incidents: String(includeIncidents),\n    include_changes: String(includeChanges),\n    include_problems: String(includeProblems),\n    ticket_sections: ticketSections,\n    itop_url: config.itop_url || '#',\n    csv_filename: `tickets_abiertos_${generatedAtFile}.csv`,\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csvContent, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `tickets_abiertos_${generatedAtFile}.csv`,\n    },\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        288
+      ],
+      "id": "a65c47fe-be7e-4e21-aa80-8e9261f2583d",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst data = input.json || {};\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nconst template = `<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Reporte operacional de tickets abiertos</title>\n  <style type=\"text/css\">\n    body { margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937; }\n    table { border-collapse:collapse; }\n    a { color:#1d4ed8; text-decoration:none; }\n    .wrapper { width:100%; background-color:#eef2f6; padding:24px 0; }\n    .container { width:100%; max-width:1000px; background-color:#ffffff; border:1px solid #d9e2ec; }\n    .mobile-padding { padding-left:28px; padding-right:28px; }\n    .summary-card { padding:4px; }\n    .small { font-size:12px; line-height:18px; }\n    .badge { display:inline-block; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold; line-height:14px; white-space:nowrap; }\n    .badge-red { background-color:#fee2e2; color:#991b1b; border:1px solid #fecaca; }\n    .badge-orange { background-color:#ffedd5; color:#9a3412; border:1px solid #fed7aa; }\n    .badge-yellow { background-color:#fef9c3; color:#854d0e; border:1px solid #fde68a; }\n    .badge-green { background-color:#dcfce7; color:#166534; border:1px solid #bbf7d0; }\n    .badge-blue { background-color:#dbeafe; color:#1e3a8a; border:1px solid #bfdbfe; }\n    .badge-gray { background-color:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }\n    .ticket-table th { background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap; }\n    .ticket-table td { font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top; }\n    @media only screen and (max-width:760px) { .container{width:100%!important;} .mobile-padding{padding-left:14px!important;padding-right:14px!important;} .summary-card{width:100%!important;display:block!important;margin-bottom:8px!important;} .ticket-scroll{overflow-x:auto!important;display:block!important;width:100%!important;} }\n  </style>\n</head>\n<body style=\"margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937;\">\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"wrapper\" style=\"width:100%; background-color:#eef2f6; padding:24px 0;\"><tr><td align=\"center\">\n    <table role=\"presentation\" width=\"1000\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"container\" style=\"width:100%; max-width:1000px; background-color:#ffffff; border:1px solid #d9e2ec;\">\n      <tr><td style=\"background-color:#0f172a; padding:24px 28px;\" class=\"mobile-padding\">\n        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n          <td valign=\"top\" style=\"width:65%;\">\n            <div style=\"font-size:13px; line-height:18px; color:#93c5fd; font-weight:bold; letter-spacing:0.4px;\">Automatización ITSM / CMDB</div>\n            <div style=\"font-size:26px; line-height:32px; color:#ffffff; font-weight:bold; margin-top:6px;\">Reporte operacional de tickets abiertos</div>\n            <div style=\"font-size:14px; line-height:20px; color:#cbd5e1; margin-top:6px;\">Sincronizado desde Combodo iTop</div>\n            <div style=\"font-size:12px; line-height:18px; color:#cbd5e1; margin-top:10px;\"><strong style=\"color:#ffffff;\">Organización iTop:</strong> {{itop_organization}}</div>\n          </td>\n          <td valign=\"top\" align=\"right\" style=\"width:35%;\">\n            <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" align=\"right\">\n              <tr><td style=\"font-size:12px; line-height:18px; color:#cbd5e1; text-align:right;\"><strong style=\"color:#ffffff;\">Generado:</strong><br>{{generated_at}}</td></tr>\n              <tr><td style=\"font-size:12px; line-height:18px; color:#cbd5e1; text-align:right; padding-top:8px;\"><strong style=\"color:#ffffff;\">Fuente:</strong><br>Producción / iTop</td></tr>\n            </table>\n          </td>\n        </tr></table>\n      </td></tr>\n\n      <tr><td style=\"padding:24px 28px 12px 28px;\" class=\"mobile-padding\">\n        <div style=\"font-size:18px; line-height:24px; font-weight:bold; color:#111827;\">Resumen ejecutivo</div>\n        <div style=\"font-size:13px; line-height:19px; color:#6b7280; margin-top:4px;\">Vista consolidada del backlog operacional para la organización <strong>{{itop_organization}}</strong>. Los tickets se agrupan por antigüedad y agente asignado, ordenados desde el ticket más antiguo al más reciente.</div>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\" style=\"padding:4px;\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #cbd5e1; background-color:#f8fafc;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#475569; font-weight:bold;\">TOTAL ABIERTOS</div><div style=\"font-size:24px; color:#0f172a; font-weight:bold;\">{{total_open}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\" style=\"padding:4px;\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fecaca; background-color:#fff1f2;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#991b1b; font-weight:bold;\">CRÍTICOS</div><div style=\"font-size:24px; color:#991b1b; font-weight:bold;\">{{critical_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\" style=\"padding:4px;\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fecaca; background-color:#fef2f2;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#991b1b; font-weight:bold;\">SLA VENCIDO</div><div style=\"font-size:24px; color:#991b1b; font-weight:bold;\">{{sla_breached_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\" style=\"padding:4px;\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fed7aa; background-color:#fff7ed;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#9a3412; font-weight:bold;\">SIN AGENTE</div><div style=\"font-size:24px; color:#9a3412; font-weight:bold;\">{{unassigned_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\" style=\"padding:4px;\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fde68a; background-color:#fffbeb;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#854d0e; font-weight:bold;\">MÁS ANTIGUO</div><div style=\"font-size:16px; line-height:22px; color:#854d0e; font-weight:bold;\">{{oldest_ticket}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"16.66%\" valign=\"top\" style=\"padding:4px;\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #bfdbfe; background-color:#eff6ff;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#1e3a8a; font-weight:bold;\">PROMEDIO BACKLOG</div><div style=\"font-size:16px; line-height:22px; color:#1e3a8a; font-weight:bold;\">{{average_age}}</div></td></tr></table></td>\n      </tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 20px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\"><tr><td style=\"padding:12px 14px;\">\n        <div style=\"font-size:13px; line-height:18px; font-weight:bold; color:#111827; margin-bottom:8px;\">Leyenda de criticidad</div>\n        <div style=\"font-size:12px; line-height:18px; color:#374151;\">Rojo: SLA vencido o criticidad alta · Naranjo: ticket antiguo o riesgo de incumplimiento · Amarillo: requiere seguimiento · Verde: dentro de parámetros normales.</div>\n        <div style=\"font-size:12px; line-height:18px; color:#374151; margin-top:8px;\"><strong>Tipos de ticket considerados:</strong> {{enabled_ticket_types}}</div>\n      </td></tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n        <div style=\"font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px;\">Tickets abiertos por agente</div>\n        <div style=\"font-size:12px; line-height:18px; color:#6b7280; margin-bottom:10px;\">Separados por antigüedad operacional y agrupados por agente. Dentro de cada agente se ordenan desde el ticket más antiguo al más reciente.</div>\n        {{ticket_sections}}\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #dbe3ec; background-color:#f8fafc;\"><tr><td style=\"padding:16px 18px;\"><div style=\"font-size:15px; line-height:21px; color:#111827; font-weight:bold; margin-bottom:8px;\">Observaciones operacionales</div><ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\"><li>Este reporte fue generado automáticamente por \"Automatización ITSM / CMDB\".</li><li>Organización iTop considerada en el reporte: <strong>{{itop_organization}}</strong>.</li><li>Se adjunta un CSV único con el volcado consolidado de tickets abiertos.</li><li>Se recomienda revisar en iTop los tickets críticos, sin agente o con SLA vencido.</li></ul></td></tr></table></td></tr>\n\n      <tr><td align=\"center\" style=\"padding:0 28px 26px 28px;\" class=\"mobile-padding\"><table role=\"presentation\"><tr><td align=\"center\" bgcolor=\"#1d4ed8\" style=\"background-color:#1d4ed8; padding:11px 20px;\"><a href=\"{{itop_url}}\" target=\"_blank\" style=\"font-size:13px; line-height:18px; color:#ffffff; font-weight:bold; text-decoration:none; display:inline-block;\">Abrir Combodo iTop</a></td></tr></table></td></tr>\n\n      <tr><td style=\"background-color:#f1f5f9; border-top:1px solid #dbe3ec; padding:18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\"><tr><td style=\"font-size:12px; line-height:18px; color:#64748b;\"><strong style=\"color:#334155;\">Automatización ITSM / CMDB</strong><br>{{company}}<br>Correo generado automáticamente. No responder a este mensaje.</td><td align=\"right\" style=\"font-size:12px; line-height:18px; color:#64748b;\">Generado:<br>{{generated_at}}</td></tr></table></td></tr>\n    </table>\n  </td></tr></table>\n</body>\n</html>`;\n\nlet html = template;\nfor (const [key, value] of Object.entries(data)) {\n  html = html.replaceAll(`{{${key}}}`, String(value ?? ''));\n}\n\nreturn [{\n  json: {\n    ...data,\n    html,\n  },\n  binary: input.binary || {},\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        288
+      ],
+      "id": "f385c655-8ec4-4e29-a9d0-0062e2357c31",
+      "name": "HTML - Template Reporte"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "csv",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        288
+      ],
+      "id": "c978f007-5cb0-4972-b6e1-4485b7a52edd",
+      "name": "Enviar correo SMTP",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "xNtpGsiFHeoJckRp",
+          "name": "SMTP_MailPit"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Tickets abiertos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Tickets abiertos": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Template Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Template Reporte": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3e023795-5487-4da3-81a1-ae3b19bd7db7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "9q7yCUHIIe6SC5Sj",
+  "tags": []
+}

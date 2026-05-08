@@ -1,0 +1,609 @@
+{
+  "name": "CMDB - Movimientos recientes de inventario - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        30000,
+        14256
+      ],
+      "id": "ed658643-7b52-4ddc-84be-0947c6a3c930",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "03fda60c-aa2e-427e-a706-1eefcab73469",
+              "name": "itop_url",
+              "value": "http://192.168.3.111/web/",
+              "type": "string"
+            },
+            {
+              "id": "6e6e647c-9dbf-491a-abc6-212ff0f88e75",
+              "name": "email_from",
+              "value": "notificaciones@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "1c74908a-7de4-43ed-8693-87281d36d966",
+              "name": "email_to",
+              "value": "destinatario@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "5543d308-a994-4c5a-9a40-8c76b2102d28",
+              "name": "email_cc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "c0367f32-a223-4525-85d2-59ee21a0b51a",
+              "name": "email_bcc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "80413297-97e5-4b5b-ac1a-e0faac799eb7",
+              "name": "email_subject",
+              "value": "Reporte CMDB - movimientos de inventario",
+              "type": "string"
+            },
+            {
+              "id": "e7e5a04d-5084-4ce8-aed6-c9477ad99c4d",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "2e413e0e-e0bd-4f9a-befe-2a78c016bbc1",
+              "name": "itop_organization",
+              "value": "Generadora Metropolitana",
+              "type": "string"
+            },
+            {
+              "id": "1ac1ba5b-4463-4f2c-adf1-69440f3a0729",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "b689798a-2171-4ebe-b356-41c88736c24c",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "46052664-0e21-417e-9302-1eb21f990880",
+              "name": "movement_days",
+              "value": 7,
+              "type": "number"
+            },
+            {
+              "id": "5847102a-cb17-455f-84d3-f5f138fc6c9a",
+              "name": "tracked_status_fields",
+              "value": "status,operational_status",
+              "type": "string"
+            },
+            {
+              "id": "f995a9a7-9ddd-45f1-829c-fd753acb335a",
+              "name": "tracked_location_fields",
+              "value": "location_id",
+              "type": "string"
+            },
+            {
+              "id": "8c9a8d6d-438e-4ff4-bc7d-ec5fb17c2fc5",
+              "name": "tracked_contact_relation_class",
+              "value": "lnkContactToFunctionalCI",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        30224,
+        14256
+      ],
+      "id": "75bf0d8d-3ae9-4dde-9950-c5928150373c",
+      "name": "Config Reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $input.first().json;\nconst timezone = config.timezone || 'America/Santiago';\nconst days = Math.max(1, Number(config.movement_days || 7));\nconst now = new Date();\nconst since = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));\n\nfunction fmtLocal(date) {\n  return date.toLocaleString('es-CL', {\n    timeZone: timezone,\n    year: 'numeric', month: '2-digit', day: '2-digit',\n    hour: '2-digit', minute: '2-digit'\n  });\n}\n\n// iTop/OQL trabaja normalmente con formato YYYY-MM-DD HH:mm:ss.\nfunction fmtOql(date) {\n  const p = (n) => String(n).padStart(2, '0');\n  return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())} ${p(date.getHours())}:${p(date.getMinutes())}:${p(date.getSeconds())}`;\n}\n\nreturn [{\n  json: {\n    ...config,\n    movement_days: days,\n    since_date: fmtOql(since),\n    until_date: fmtOql(now),\n    since_date_display: fmtLocal(since),\n    until_date_display: fmtLocal(now),\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        30448,
+        14256
+      ],
+      "id": "d47cc160-d36c-48d8-b30e-0191e35bc6a9",
+      "name": "Preparar ventana de consulta"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "CMDBChangeOpSetAttributeScalar",
+        "key": "=SELECT CMDBChangeOpSetAttributeScalar AS op\nJOIN CMDBChange AS ch ON op.change = ch.id\nWHERE ch.date >= '{{ $json.since_date }}'\nAND op.objclass IN (\n  'PhysicalDevice',\n  'PC',\n  'Laptop',\n  'MobilePhone',\n  'Tablet',\n  'Printer',\n  'Peripheral',\n  'NetworkDevice'\n)\nAND op.attcode IN (\n  'status',\n  'operational_status',\n  'location_id'\n)",
+        "output_fields": "id,change,objclass,objkey,finalclass,attcode,oldvalue,newvalue",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        30672,
+        14064
+      ],
+      "id": "916910fd-6f9a-414d-9e2e-3a443ec7087b",
+      "name": "iTop - Movimientos atributos",
+      "alwaysOutputData": true,
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Historial de cambios de estado y bodega/localidad. Campos explícitos de la operación; fecha/agente/origen se resuelven por lookup separado contra CMDBChange para evitar selector *."
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "CMDBChangeOp",
+        "key": "=SELECT CMDBChangeOp AS op\nJOIN CMDBChange AS ch ON op.change = ch.id\nWHERE ch.date >= '{{ $json.since_date }}'\nAND op.objclass = 'lnkContactToFunctionalCI'",
+        "output_fields": "id,change,objclass,objkey,finalclass",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        30672,
+        14256
+      ],
+      "id": "48d216ea-1567-4688-97e8-0ff12366a501",
+      "name": "iTop - Movimientos usuarios",
+      "alwaysOutputData": true,
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Eventos sobre relación usuario-activo. Campos explícitos de la operación; fecha/agente/origen se resuelven por lookup separado contra CMDBChange."
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "CMDBChangeOpSetAttributeScalar",
+        "key": "=SELECT CMDBChangeOpSetAttributeScalar AS op\nJOIN CMDBChange AS ch ON op.change = ch.id\nWHERE ch.date >= '{{ $json.since_date }}'\nAND op.objclass = 'lnkContactToFunctionalCI'\nAND op.attcode IN ('functionalci_id', 'contact_id')",
+        "output_fields": "id,change,objclass,objkey,finalclass,attcode,oldvalue,newvalue",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        30896,
+        14432
+      ],
+      "id": "011a3790-2a7c-4135-a70e-d566eb951f5c",
+      "name": "iTop - Histórico relación usuario-activo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Lookup histórico mínimo de relaciones usuario-activo. Se mantienen oldvalue/newvalue y sus friendlyname para resolver activo/contacto sin selector *."
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        30896,
+        14160
+      ],
+      "id": "3c533b5f-cc5b-4d1a-907d-71c27bbff954",
+      "name": "Unificar movimientos base"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        31120,
+        14256
+      ],
+      "id": "b70eec3e-004c-4ab9-bcf6-cb90c13aa796",
+      "name": "Unificar histórico usuario-activo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Preparar ventana de consulta').first().json;\n\nfunction flattenItems(items) {\n  const rows = [];\n  for (const item of items || []) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    if (Object.keys(j).length) rows.push(j);\n  }\n  return rows;\n}\n\nfunction getNodeItemsSafe(nodeName) {\n  try { return $items(nodeName); } catch (error) { return []; }\n}\n\nfunction valueToText(value, options = {}) {\n  const preferId = options.preferId === true;\n  if (value === undefined || value === null) return '';\n  if (typeof value === 'object') {\n    if (Array.isArray(value)) return value.map(v => valueToText(v, options)).filter(Boolean).join(', ');\n    const idKeys = ['id', '_key', 'key', 'code', 'value'];\n    const nameKeys = ['friendlyname', 'friendly_name', 'name', 'label', 'display_name', 'displayName'];\n    const ordered = preferId ? [...idKeys, ...nameKeys] : [...nameKeys, ...idKeys];\n    for (const k of ordered) {\n      if (value[k] !== undefined && value[k] !== null && String(value[k]).trim() !== '') return valueToText(value[k], options);\n    }\n    return '';\n  }\n  return String(value).trim();\n}\n\nfunction getField(obj, names, fallback = '', options = {}) {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && valueToText(obj[name], options) !== '') return valueToText(obj[name], options);\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && valueToText(obj.fields[name], options) !== '') return valueToText(obj.fields[name], options);\n  }\n  return valueToText(fallback, options);\n}\n\nfunction normalizeKey(value) {\n  const text = valueToText(value, { preferId: true }).trim();\n  if (!text) return '';\n  return text.replace(/^[A-Za-z_][A-Za-z0-9_]*::/, '').trim();\n}\n\nfunction addId(set, value) {\n  const id = normalizeKey(value);\n  if (/^\\d+$/.test(id)) set.add(id);\n}\n\nfunction addChangeId(value) {\n  const id = normalizeKey(value);\n  if (/^\\d+$/.test(id)) changeIds.add(id);\n}\n\nconst ids = new Set();\nconst locationIds = new Set();\nconst changeIds = new Set();\nconst locationFields = String(config.tracked_location_fields || 'location_id').split(',').map(v => v.trim()).filter(Boolean);\n\n// Cambios directos sobre activos: objkey es el ID del objeto modificado.\n// Si el atributo modificado es location_id, oldvalue/newvalue son los ID de Location.\nfor (const row of flattenItems(getNodeItemsSafe('iTop - Movimientos atributos'))) {\n  const f = row.fields || row;\n  addChangeId(getField(f, ['change', 'change_id'], '', { preferId: true }));\n  const attcode = String(getField(f, ['attcode', 'attribute_code'], '')).trim();\n  addId(ids, getField(f, ['objkey', 'obj_key', 'object_id', 'object_key'], '', { preferId: true }));\n\n  if (locationFields.includes(attcode)) {\n    addId(locationIds, getField(f, ['oldvalue', 'old_value'], '', { preferId: true }));\n    addId(locationIds, getField(f, ['newvalue', 'new_value'], '', { preferId: true }));\n  }\n}\n\n// Histórico de relación usuario-activo: functionalci_id apunta al activo real.\nfor (const row of flattenItems(getNodeItemsSafe('iTop - Histórico relación usuario-activo'))) {\n  const f = row.fields || row;\n  addChangeId(getField(f, ['change', 'change_id'], '', { preferId: true }));\n  const attcode = String(getField(f, ['attcode', 'attribute_code'], '')).trim();\n  if (attcode !== 'functionalci_id') continue;\n  addId(ids, getField(f, ['newvalue', 'new_value', 'oldvalue', 'old_value'], '', { preferId: true }));\n}\n\n// Algunos conectores devuelven el functionalci_id directo en el movimiento de usuario.\nfor (const row of flattenItems(getNodeItemsSafe('iTop - Movimientos usuarios'))) {\n  const f = row.fields || row;\n  addChangeId(getField(f, ['change', 'change_id'], '', { preferId: true }));\n  addId(ids, getField(f, ['functionalci_id', 'functionalci'], '', { preferId: true }));\n}\n\nconst idList = [...ids].sort((a, b) => Number(a) - Number(b));\nconst locationIdList = [...locationIds].sort((a, b) => Number(a) - Number(b));\nconst changeIdList = [...changeIds].sort((a, b) => Number(a) - Number(b));\n\nconst assetOql = idList.length\n  ? `SELECT PhysicalDevice WHERE id IN (${idList.join(',')})`\n  : 'SELECT PhysicalDevice WHERE id = 0';\n\nconst locationOql = locationIdList.length\n  ? `SELECT Location WHERE id IN (${locationIdList.join(',')})`\n  : 'SELECT Location WHERE id = 0';\n\nconst changeOql = changeIdList.length\n  ? `SELECT CMDBChange WHERE id IN (${changeIdList.join(',')})`\n  : 'SELECT CMDBChange WHERE id = 0';\n\nreturn [{\n  json: {\n    ...config,\n    affected_asset_ids: idList.join(','),\n    affected_asset_count: idList.length,\n    affected_location_ids: locationIdList.join(','),\n    affected_location_count: locationIdList.length,\n    affected_change_ids: changeIdList.join(','),\n    affected_change_count: changeIdList.length,\n    asset_oql: assetOql,\n    location_oql: locationOql,\n    change_oql: changeOql,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        31344,
+        14256
+      ],
+      "id": "4bf3d808-7c14-4069-b227-a6b34ceec358",
+      "name": "Preparar consulta activos afectados"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "PhysicalDevice",
+        "key": "={{ $json.asset_oql }}",
+        "output_fields": "id,name,friendlyname,finalclass,status,location_id,serialnumber",
+        "limit": "={{ Math.max(1, Number($json.affected_asset_count || 1)) }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        31568,
+        14064
+      ],
+      "id": "91ec3ed7-b7fe-4922-bde0-82dd636c97b3",
+      "name": "iTop - Activos afectados",
+      "alwaysOutputData": true,
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Activos afectados por los movimientos. Output Fields acotado: id,name,friendlyname,finalclass,status,location_id,serialnumber. No usar selector * para evitar expansión innecesaria de relaciones/campos derivados."
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "Location",
+        "key": "={{ $json.location_oql }}",
+        "output_fields": "id,name,friendlyname",
+        "limit": "={{ Math.max(1, Number($json.affected_location_count || 1)) }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        31568,
+        14256
+      ],
+      "id": "9eb0a573-1618-4ec8-9126-3ebe0c528e45",
+      "name": "iTop - Localidades afectadas",
+      "alwaysOutputData": true,
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Lookup acotado de localidades afectadas. Output Fields: id,name,friendlyname. No usar selector *; evita error 500 por expansión de relaciones/campos derivados."
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        31792,
+        14160
+      ],
+      "id": "dd5f34fc-3d19-4f9f-820d-1f48e07f111b",
+      "name": "Unificar activos y localidades"
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Preparar ventana de consulta').first().json;\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst itopOrganization = String(config.itop_organization || '-').trim() || '-';\nconst timezone = config.timezone || 'America/Santiago';\nconst statusFields = String(config.tracked_status_fields || 'status,operational_status').split(',').map(v => v.trim()).filter(Boolean);\nconst locationFields = String(config.tracked_location_fields || 'location_id').split(',').map(v => v.trim()).filter(Boolean);\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\"/g, '\"\"');\n  return `\"${text}\"`;\n}\n\nfunction flattenItems(items) {\n  const rows = [];\n  for (const item of items || []) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    if (Object.keys(j).length) rows.push(j);\n  }\n  return rows;\n}\n\nfunction getNodeItemsSafe(nodeName) {\n  try { return $items(nodeName); } catch (error) { return []; }\n}\n\nfunction isBlank(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined' || v.toLowerCase() === '[object object]';\n}\n\nfunction valueToText(value, options = {}) {\n  const preferId = options.preferId === true;\n  if (value === undefined || value === null) return '';\n  if (typeof value === 'object') {\n    if (Array.isArray(value)) return value.map(v => valueToText(v, options)).filter(Boolean).join(', ');\n    const idKeys = ['id', '_key', 'key', 'code', 'value'];\n    const nameKeys = ['friendlyname', 'friendly_name', 'name', 'label', 'display_name', 'displayName'];\n    const ordered = preferId ? [...idKeys, ...nameKeys] : [...nameKeys, ...idKeys];\n    for (const k of ordered) {\n      if (value[k] !== undefined && value[k] !== null && String(value[k]).trim() !== '') return valueToText(value[k], options);\n    }\n    return '';\n  }\n  return String(value).trim();\n}\n\nfunction getField(obj, names, fallback = '', options = {}) {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && valueToText(obj[name], options) !== '') return valueToText(obj[name], options);\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && valueToText(obj.fields[name], options) !== '') return valueToText(obj.fields[name], options);\n  }\n  return valueToText(fallback, options);\n}\n\nfunction normalizeKey(value) {\n  const text = valueToText(value, { preferId: true }).trim();\n  if (!text) return '';\n  return text.replace(/^[A-Za-z_][A-Za-z0-9_]*::/, '').trim();\n}\n\nfunction normalizeClass(value) {\n  const raw = String(value || '-').trim();\n  const lower = raw.toLowerCase();\n  if (lower === 'pc' || lower.includes('desktop')) return 'PC';\n  if (lower === 'laptop' || lower.includes('notebook') || lower.includes('portable')) return 'Laptop';\n  if (lower === 'mobilephone' || lower.includes('phone') || lower.includes('telefono') || lower.includes('teléfono')) return 'Teléfonos móviles';\n  if (lower === 'tablet') return 'Tablets';\n  if (lower === 'printer' || lower.includes('impresora')) return 'Impresoras';\n  if (lower === 'peripheral' || lower.includes('periferico') || lower.includes('periférico')) return 'Periféricos';\n  if (lower === 'networkdevice') return 'Dispositivos de red';\n  return raw || 'Otros';\n}\n\nfunction normalizeStatus(value) {\n  const raw = String(value || '').trim();\n  const s = raw.toLowerCase();\n  if (s === 'stock' || s.includes('stock') || s.includes('inventario') || s.includes('available')) return 'En Inventario';\n  if (s === 'implementation' || s.includes('implementation') || s.includes('implementacion') || s.includes('implementación')) return 'No Productivo';\n  if (s === 'production' || s.includes('production') || s.includes('produccion') || s.includes('producción')) return 'Productivo';\n  if (s === 'obsolete' || s.includes('obsolete') || s.includes('obsoleto') || s.includes('retired')) return 'Obsoleto';\n  return raw || '-';\n}\n\nfunction looksLikeCiCode(value) {\n  const text = valueToText(value).trim();\n  return /^CI\\s*\\d+$/i.test(text) || /^[A-Za-z_][A-Za-z0-9_]*::\\d+$/.test(text);\n}\n\nfunction isNumericOnly(value) {\n  return /^\\d+$/.test(String(value ?? '').trim());\n}\n\nfunction cleanAssetName(value) {\n  const text = valueToText(value).trim();\n  if (isBlank(text)) return '';\n  if (text.includes('/')) {\n    const parts = text.split('/').map(v => v.trim()).filter(Boolean);\n    if (parts.length >= 2) return parts[parts.length - 1];\n  }\n  return text;\n}\n\nfunction cleanContactName(value) {\n  const text = valueToText(value).trim();\n  if (isBlank(text)) return '';\n  if (text.includes('/')) {\n    const parts = text.split('/').map(v => v.trim()).filter(Boolean);\n    if (parts.length >= 2) return parts[0];\n  }\n  return text;\n}\n\nfunction registerMapKey(map, key, value) {\n  const normalized = normalizeKey(key);\n  if (normalized && !map.has(normalized)) map.set(normalized, value);\n  const raw = valueToText(key, { preferId: true }).trim();\n  if (raw && !map.has(raw)) map.set(raw, value);\n}\n\nfunction movementBadge(type) {\n  const color = type === 'Cambio de estado' ? 'green' : type === 'Cambio de bodega' ? 'blue' : type === 'Asignación de usuario' ? 'orange' : type === 'Remoción de usuario' ? 'gray' : 'yellow';\n  return `<span class=\"badge badge-${color}\">${escapeHtml(type)}</span>`;\n}\n\nfunction td(value, align = 'left') {\n  return `<td align=\"${align}\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${value}</td>`;\n}\n\nfunction parseMaybeDate(value) {\n  if (isBlank(value)) return null;\n  const text = String(value);\n  const direct = new Date(text.replace(' ', 'T'));\n  if (!Number.isNaN(direct.getTime())) return direct;\n  const match = text.match(/(\\d{4}-\\d{2}-\\d{2}[ T]\\d{2}:\\d{2}:\\d{2})/);\n  if (match) {\n    const d = new Date(match[1].replace(' ', 'T'));\n    if (!Number.isNaN(d.getTime())) return d;\n  }\n  return null;\n}\n\nfunction fmtDate(value) {\n  const d = parseMaybeDate(value);\n  if (!d) return String(value || '-');\n  return d.toLocaleString('es-CL', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });\n}\n\nfunction getBestFriendlyValue(f, prefix) {\n  const friendly = getField(f, [`${prefix}_friendlyname`, `${prefix}_friendly_name`, `${prefix}value_friendlyname`, `${prefix}value_friendly_name`], '');\n  if (!isBlank(friendly) && !isNumericOnly(friendly) && !looksLikeCiCode(friendly)) return friendly;\n  return getField(f, [`${prefix}value`, `${prefix}_value`, prefix], '');\n}\n\nconst locationRows = flattenItems(getNodeItemsSafe('iTop - Localidades afectadas'));\nconst locationMap = new Map();\n\nfor (const row of locationRows) {\n  const f = row.fields || row;\n  const id = normalizeKey(getField(f, ['id', '_key', 'key'], row._key || row.key || '', { preferId: true }));\n  const name = getField(f, ['name', 'friendlyname', 'friendly_name'], '');\n  if (!isBlank(id) && !isBlank(name)) {\n    registerMapKey(locationMap, id, name);\n    registerMapKey(locationMap, row._key || row.key, name);\n    registerMapKey(locationMap, `Location::${id}`, name);\n  }\n}\n\nfunction resolveLocationValue(raw, assetCurrentLocationId = '', assetCurrentLocationName = '') {\n  const text = valueToText(raw).trim();\n  if (isBlank(text)) return '-';\n  if (!isNumericOnly(text)) return text;\n\n  const key = normalizeKey(text);\n  if (key && locationMap.has(key)) return locationMap.get(key);\n  if (!isBlank(assetCurrentLocationId) && key === normalizeKey(assetCurrentLocationId) && !isBlank(assetCurrentLocationName)) return assetCurrentLocationName;\n  return `Localidad ID ${text}`;\n}\n\n// -----------------------------------------------------------------------------\n// 0) Catálogo de cambios CMDB: fecha, agente responsable y origen.\n//    Estos datos vienen desde CMDBChange para no depender de selector * en los\n//    nodos CMDBChangeOp / CMDBChangeOpSetAttributeScalar.\n// -----------------------------------------------------------------------------\nconst changeRows = flattenItems(getNodeItemsSafe('iTop - Cambios CMDB'));\nconst changeMap = new Map();\n\nfor (const row of changeRows) {\n  const f = row.fields || row;\n  const id = normalizeKey(getField(f, ['id', '_key', 'key'], row._key || row.key || '', { preferId: true }));\n  if (!id) continue;\n  const rec = {\n    id,\n    date: getField(f, ['date', 'change_date'], ''),\n    userinfo: getField(f, ['userinfo', 'user_info', 'user_id_friendlyname', 'user_id_friendly_name'], ''),\n    origin: getField(f, ['origin', 'change_origin'], ''),\n  };\n  registerMapKey(changeMap, id, rec);\n  registerMapKey(changeMap, row._key || row.key, rec);\n  registerMapKey(changeMap, `CMDBChange::${id}`, rec);\n}\n\nfunction getChangeInfo(f) {\n  const changeId = normalizeKey(getField(f, ['change', 'change_id'], '', { preferId: true }));\n  const rec = changeId ? changeMap.get(changeId) : null;\n  return {\n    id: changeId,\n    date: rec?.date || getField(f, ['date', 'change_date', 'change_id_friendlyname', 'change_friendlyname'], config.until_date_display),\n    userinfo: rec?.userinfo || getField(f, ['userinfo', 'user_info', 'user_id_friendlyname', 'change_userinfo'], '-'),\n    origin: rec?.origin || getField(f, ['origin', 'change_origin'], '-'),\n  };\n}\n\n// -----------------------------------------------------------------------------\n// 1) Catálogo de activos y lookup de localidades, ambos acotados por ID.\n// -----------------------------------------------------------------------------\nconst assetRows = flattenItems(getNodeItemsSafe('iTop - Activos afectados'));\nconst assetMap = new Map();\n\nfor (const row of assetRows) {\n  const f = row.fields || row;\n  const id = normalizeKey(getField(f, ['id', '_key', 'key'], row._key || row.key || '', { preferId: true }));\n  const rawKey = valueToText(row._key || row.key || getField(f, ['_key', 'key'], '', { preferId: true }), { preferId: true });\n  const assetId = id || normalizeKey(rawKey);\n  const finalclass = getField(f, ['finalclass', 'class', 'class_friendlyname'], 'PhysicalDevice');\n\n  // El nodo iTop puede entregar el nombre técnico en name o el nombre visible en friendlyname.\n  // Se selecciona el primer valor realmente descriptivo y se descartan IDs puros o códigos tipo CI 123.\n  const candidateNames = [\n    getField(f, ['name'], ''),\n    getField(f, ['friendlyname', 'friendly_name'], ''),\n    getField(f, ['display_name', 'label'], ''),\n  ].map(cleanAssetName).filter(v => !isBlank(v));\n  const descriptiveName = candidateNames.find(v => !isNumericOnly(v) && !looksLikeCiCode(v));\n  const name = descriptiveName || candidateNames[0] || (assetId ? `CI ${assetId}` : 'Activo no resuelto');\n\n  const locationId = normalizeKey(getField(f, ['location_id'], '', { preferId: true }));\n  const locationNameFromAsset = getField(f, [\n    'location_name',\n    'location_id_friendlyname',\n    'location_id_friendly_name',\n    'location_friendlyname',\n    'location_friendly_name'\n  ], '');\n\n  // Aprovecha los datos ya presentes en el activo para enriquecer el lookup de bodegas/localidades.\n  if (!isBlank(locationId) && !isBlank(locationNameFromAsset)) {\n    registerMapKey(locationMap, locationId, locationNameFromAsset);\n    registerMapKey(locationMap, `Location::${locationId}`, locationNameFromAsset);\n  }\n\n  const asset = {\n    id: assetId,\n    rawKey,\n    name,\n    classType: normalizeClass(finalclass),\n    serial: getField(f, ['serialnumber', 'serial_number'], ''),\n    locationId,\n    location: !isBlank(locationNameFromAsset) ? locationNameFromAsset : resolveLocationValue(locationId),\n    status: normalizeStatus(getField(f, ['operational_status_friendlyname', 'operational_status', 'status_friendlyname', 'status'], '-')),\n  };\n\n  if (!asset.id && !asset.rawKey) continue;\n  registerMapKey(assetMap, asset.id, asset);\n  registerMapKey(assetMap, asset.rawKey, asset);\n  registerMapKey(assetMap, row._key || row.key, asset);\n  registerMapKey(assetMap, `PhysicalDevice::${asset.id}`, asset);\n  registerMapKey(assetMap, `FunctionalCI::${asset.id}`, asset);\n  if (!isBlank(finalclass)) registerMapKey(assetMap, `${finalclass}::${asset.id}`, asset);\n}\n\nfunction getAssetById(id, fallbackName = '') {\n  const key = normalizeKey(id);\n  const fallback = cleanAssetName(fallbackName);\n  const asset = key ? assetMap.get(key) : null;\n  if (asset) {\n    const assetName = cleanAssetName(asset.name);\n    const finalName = (!isBlank(fallback) && !looksLikeCiCode(fallback) && !isNumericOnly(fallback) && looksLikeCiCode(assetName)) ? fallback : assetName;\n    return { ...asset, name: finalName || fallback || assetName || `CI ${key}` };\n  }\n  return { id: key || '-', name: (!isBlank(fallback) && !isNumericOnly(fallback)) ? fallback : (key ? `CI ID ${key} no resuelto` : 'Activo no resuelto'), classType: '-', serial: '', locationId: '', location: '-', status: '-' };\n}\n\nfunction movementPreviousValue(m) {\n  return m.oldStatus || m.oldLocation || m.oldUser || '-';\n}\nfunction movementNewValue(m) {\n  return m.newStatus || m.newLocation || m.newUser || '-';\n}\n\n// -----------------------------------------------------------------------------\n// 2) Histórico mínimo de relación usuario-activo.\n//    Evita depender de SELECT lnkContactToFunctionalCI, porque las remociones ya\n//    no existen en la tabla vigente.\n// -----------------------------------------------------------------------------\nconst relationHistoryRows = flattenItems(getNodeItemsSafe('iTop - Histórico relación usuario-activo'));\nconst relationHistoryMap = new Map();\n\nfor (const row of relationHistoryRows) {\n  const f = row.fields || row;\n  const relationId = normalizeKey(getField(f, ['objkey', 'obj_key', 'object_id', 'object_key'], row._key || row.key || '', { preferId: true }));\n  if (!relationId) continue;\n  const attcode = String(getField(f, ['attcode', 'attribute_code'], '')).trim();\n  const oldVal = getBestFriendlyValue(f, 'old');\n  const newVal = getBestFriendlyValue(f, 'new');\n  const rawOld = getField(f, ['oldvalue', 'old_value'], '', { preferId: true });\n  const rawNew = getField(f, ['newvalue', 'new_value'], '', { preferId: true });\n  const rec = relationHistoryMap.get(relationId) || { relationId, assetId: '', assetName: '', contactId: '', contactName: '' };\n\n  if (attcode === 'functionalci_id') {\n    rec.assetId = normalizeKey(rawNew || rawOld || newVal || oldVal) || rec.assetId;\n    rec.assetName = cleanAssetName(newVal || oldVal) || rec.assetName;\n  }\n  if (attcode === 'contact_id') {\n    rec.contactId = normalizeKey(rawNew || rawOld || newVal || oldVal) || rec.contactId;\n    rec.contactName = cleanContactName(newVal || oldVal) || rec.contactName;\n  }\n  relationHistoryMap.set(relationId, rec);\n}\n\n// -----------------------------------------------------------------------------\n// 3) Movimientos de estado/bodega.\n// -----------------------------------------------------------------------------\nconst attrRows = flattenItems(getNodeItemsSafe('iTop - Movimientos atributos'));\nconst userRows = flattenItems(getNodeItemsSafe('iTop - Movimientos usuarios'));\nconst movements = [];\nlet unresolvedLocationCount = 0;\nlet unresolvedAssetCount = 0;\n\nfor (const row of attrRows) {\n  const f = row.fields || row;\n  const attcode = String(getField(f, ['attcode', 'attribute_code'], '')).trim();\n  if (!attcode) continue;\n\n  const changeInfo = getChangeInfo(f);\n  const objKey = getField(f, ['objkey', 'obj_key', 'object_id', 'object_key'], '', { preferId: true });\n  const objFriendlyName = getField(f, ['objkey_friendlyname', 'object_friendlyname', 'objname', 'obj_name', 'friendlyname'], '');\n  const asset = getAssetById(objKey, objFriendlyName);\n  if (looksLikeCiCode(asset.name) || asset.name === 'Activo no resuelto') unresolvedAssetCount++;\n\n  const rawOld = getBestFriendlyValue(f, 'old');\n  const rawNew = getBestFriendlyValue(f, 'new');\n  const isStatus = statusFields.includes(attcode);\n  const isLocation = locationFields.includes(attcode);\n  const type = isStatus ? 'Cambio de estado' : isLocation ? 'Cambio de bodega' : `Cambio ${attcode}`;\n\n  const oldLocation = isLocation ? resolveLocationValue(rawOld, asset.locationId, asset.location) : '';\n  const newLocation = isLocation ? resolveLocationValue(rawNew, asset.locationId, asset.location) : '';\n  if (isLocation && (/^Localidad ID \\d+$/.test(oldLocation) || /^Localidad ID \\d+$/.test(newLocation))) unresolvedLocationCount++;\n\n  movements.push({\n    dateRaw: changeInfo.date,\n    movementType: type,\n    assetName: asset.name,\n    classType: asset.classType,\n    serial: asset.serial,\n    oldStatus: isStatus ? normalizeStatus(rawOld) : '',\n    newStatus: isStatus ? normalizeStatus(rawNew) : '',\n    oldLocation,\n    newLocation,\n    oldUser: '',\n    newUser: '',\n    operator: changeInfo.userinfo || '-',\n    origin: changeInfo.origin || '-',\n    changeRef: changeInfo.id || getField(f, ['change_id', 'change', 'change_id_friendlyname'], '-'),\n  });\n}\n\n// -----------------------------------------------------------------------------\n// 4) Movimientos de usuario/contacto.\n// -----------------------------------------------------------------------------\nfor (const row of userRows) {\n  const f = row.fields || row;\n  const changeInfo = getChangeInfo(f);\n  const opClass = String(getField(f, ['finalclass', 'class', 'class_friendlyname'], '')).toLowerCase();\n  const operation = String(getField(f, ['operation', 'op'], '')).toLowerCase();\n  const isDelete = opClass.includes('delete') || opClass.includes('remove') || operation.includes('delete') || operation.includes('remove');\n  const isCreate = opClass.includes('create') || opClass.includes('add') || operation.includes('create') || operation.includes('add');\n  const type = isDelete ? 'Remoción de usuario' : isCreate ? 'Asignación de usuario' : 'Cambio de usuario';\n\n  const relationObjKey = getField(f, ['objkey', 'obj_key', 'object_id', 'object_key'], '', { preferId: true });\n  const relationId = normalizeKey(relationObjKey);\n  const hist = relationHistoryMap.get(relationId) || {};\n  const linkFriendly = getField(f, ['objkey_friendlyname', 'object_friendlyname', 'friendlyname', 'friendly_name', 'name'], '');\n\n  const assetId = hist.assetId || '';\n  const assetNameFromFriendly = cleanAssetName(linkFriendly);\n  const contactFromFriendly = cleanContactName(linkFriendly);\n  const contact = cleanContactName(hist.contactName || getField(f, ['contact_id_friendlyname', 'person_id_friendlyname', 'user_id_friendlyname', 'contact_name'], '') || contactFromFriendly);\n  const asset = assetId ? getAssetById(assetId, hist.assetName || assetNameFromFriendly) : getAssetById('', hist.assetName || assetNameFromFriendly);\n\n  if (asset.name === 'Activo no resuelto' || looksLikeCiCode(asset.name)) unresolvedAssetCount++;\n\n  movements.push({\n    dateRaw: changeInfo.date,\n    movementType: type,\n    assetName: asset.name,\n    classType: asset.classType,\n    serial: asset.serial,\n    oldStatus: '',\n    newStatus: '',\n    oldLocation: '',\n    newLocation: '',\n    oldUser: type === 'Remoción de usuario' ? (contact || '-') : '',\n    newUser: type !== 'Remoción de usuario' ? (contact || '-') : '',\n    operator: changeInfo.userinfo || '-',\n    origin: changeInfo.origin || '-',\n    changeRef: changeInfo.id || getField(f, ['change_id', 'change', 'change_id_friendlyname'], '-'),\n  });\n}\n\nfunction isUnresolvedAssetName(value) {\n  const text = String(value ?? '').trim();\n  return isBlank(text)\n    || text === 'Activo no resuelto'\n    || text.toLowerCase().includes('no resuelto')\n    || looksLikeCiCode(text)\n    || /^\\d+$/.test(text);\n}\n\n// Se excluye cualquier movimiento sin activo CMDB resuelto.\n// Esto evita mostrar filas operativamente ambiguas como \"Activo no resuelto\".\nconst unresolvedAssetMovements = movements.filter(m => isUnresolvedAssetName(m.assetName));\nconst reportMovements = movements.filter(m => !isUnresolvedAssetName(m.assetName));\n\nreportMovements.sort((a, b) => {\n  const da = parseMaybeDate(a.dateRaw)?.getTime() || 0;\n  const db = parseMaybeDate(b.dateRaw)?.getTime() || 0;\n  if (db !== da) return db - da;\n  return String(a.assetName).localeCompare(String(b.assetName), 'es');\n});\n\nconst counts = movements.reduce((acc, m) => { acc[m.movementType] = (acc[m.movementType] || 0) + 1; return acc; }, {});\nconst visibleCounts = reportMovements.reduce((acc, m) => { acc[m.movementType] = (acc[m.movementType] || 0) + 1; return acc; }, {});\nconst countStatus = counts['Cambio de estado'] || 0;\nconst countLocation = counts['Cambio de bodega'] || 0;\nconst countAssign = counts['Asignación de usuario'] || 0;\nconst countRemove = counts['Remoción de usuario'] || 0;\nconst unresolvedAssetHiddenCount = unresolvedAssetMovements.length;\nconst unresolvedUserRemovalCount = unresolvedAssetMovements.filter(m => m.movementType === 'Remoción de usuario').length;\n\nconst movementRows = reportMovements.map(m => `<tr>\n  ${td(`<strong>${escapeHtml(m.assetName)}</strong>`)}\n  ${td(movementBadge(m.movementType))}\n  ${td(escapeHtml(fmtDate(m.dateRaw)))}\n  ${td(escapeHtml(m.operator || '-'))}\n  ${td(escapeHtml(movementPreviousValue(m)))}\n  ${td(escapeHtml(movementNewValue(m)))}\n</tr>`).join('');\n\nconst csvHeaders = ['Equipo','Movimiento','Fecha','Agente responsable','Valor anterior','Valor nuevo','Clase/Tipo','Serie','Origen','Referencia cambio'];\nconst csvRows = reportMovements.map(m => [m.assetName, m.movementType, fmtDate(m.dateRaw), m.operator, movementPreviousValue(m), movementNewValue(m), m.classType, m.serial, m.origin, m.changeRef]);\nconst csvContent = '\\uFEFF' + [csvHeaders.map(csvEscape).join(';'), ...csvRows.map(row => row.map(csvEscape).join(';'))].join('\\r\\n');\nconst generatedAt = new Date().toLocaleString('es-CL', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });\nconst generatedAtFile = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);\nconst subjectBase = String(config.email_subject || 'Reporte CMDB - movimientos de inventario').trim();\nconst emailSubject = `${subjectBase} - ${itopOrganization} - últimos ${config.movement_days} días`;\n\nreturn [{\n  json: {\n    email_from: config.email_from,\n    email_to: config.email_to,\n    email_cc: config.email_cc || '',\n    email_bcc: config.email_bcc || '',\n    email_subject: emailSubject,\n    company,\n    itop_organization: itopOrganization,\n    itop_url: config.itop_url || '#',\n    generated_at: generatedAt,\n    movement_days: String(config.movement_days),\n    since_date_display: config.since_date_display,\n    until_date_display: config.until_date_display,\n    total_movements: String(movements.length),\n    reported_movements: String(reportMovements.length),\n    status_movement_count: String(countStatus),\n    location_movement_count: String(countLocation),\n    assignment_count: String(countAssign),\n    removal_count: String(countRemove),\n    unresolved_location_count: String(unresolvedLocationCount),\n    unresolved_asset_count: String(unresolvedAssetCount),\n    unresolved_user_removal_count: String(unresolvedUserRemovalCount),\n    unresolved_asset_hidden_count: String(unresolvedAssetHiddenCount),\n    visible_status_movement_count: String(visibleCounts['Cambio de estado'] || 0),\n    visible_location_movement_count: String(visibleCounts['Cambio de bodega'] || 0),\n    visible_assignment_count: String(visibleCounts['Asignación de usuario'] || 0),\n    visible_removal_count: String(visibleCounts['Remoción de usuario'] || 0),\n    movement_rows: movementRows || '<tr><td colspan=\"6\" style=\"padding:12px; font-size:12px; color:#64748b;\">No se detectaron movimientos de inventario con activo CMDB resuelto para la ventana consultada.</td></tr>',\n    csv_filename: `cmdb_movimientos_inventario_${generatedAtFile}.csv`,\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csvContent, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `cmdb_movimientos_inventario_${generatedAtFile}.csv`,\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32240,
+        14256
+      ],
+      "id": "7e20c295-fa98-4d6e-b045-2f6b9c6ae123",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst data = input.json || {};\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction th(text, align = 'left') {\n  return `<th align=\"${align}\" style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:${align}; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap;\">${escapeHtml(text)}</th>`;\n}\n\nconst template = `<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Reporte CMDB - movimientos de inventario</title>\n  <style type=\"text/css\">\n    body { margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937; }\n    table { border-collapse:collapse; }\n    a { color:#1d4ed8; text-decoration:none; }\n    .wrapper { width:100%; background-color:#eef2f6; padding:24px 0; }\n    .container { width:100%; max-width:1000px; background-color:#ffffff; border:1px solid #d9e2ec; }\n    .mobile-padding { padding-left:28px; padding-right:28px; }\n    .summary-card { padding:4px; }\n    .data-table th { background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap; }\n    .data-table td { font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top; }\n    .section-title { font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px; }\n    .section-subtitle { font-size:12px; line-height:18px; color:#6b7280; margin-bottom:10px; }\n    .badge { display:inline-block; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:bold; line-height:14px; white-space:nowrap; }\n    .badge-green { background-color:#dcfce7; color:#166534; border:1px solid #bbf7d0; }\n    .badge-blue { background-color:#dbeafe; color:#1e3a8a; border:1px solid #bfdbfe; }\n    .badge-yellow { background-color:#fef9c3; color:#854d0e; border:1px solid #fde68a; }\n    .badge-orange { background-color:#ffedd5; color:#9a3412; border:1px solid #fed7aa; }\n    .badge-gray { background-color:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }\n    @media only screen and (max-width:760px) { .container{width:100%!important;} .mobile-padding{padding-left:14px!important;padding-right:14px!important;} .summary-card{width:100%!important;display:block!important;margin-bottom:8px!important;} .table-scroll{overflow-x:auto!important;display:block!important;width:100%!important;} }\n  </style>\n</head>\n<body style=\"margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937;\">\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"wrapper\"><tr><td align=\"center\">\n    <table role=\"presentation\" width=\"1000\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"container\">\n      <tr><td style=\"background-color:#0f172a; padding:24px 28px;\" class=\"mobile-padding\">\n        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n          <td valign=\"top\" style=\"width:65%;\">\n            <div style=\"font-size:13px; line-height:18px; color:#93c5fd; font-weight:bold; letter-spacing:0.4px;\">Automatización ITSM / CMDB</div>\n            <div style=\"font-size:26px; line-height:32px; color:#ffffff; font-weight:bold; margin-top:6px;\">Movimientos de inventario CMDB</div>\n            <div style=\"font-size:14px; line-height:20px; color:#cbd5e1; margin-top:6px;\">Cambios de estado, bodega y asignación de usuarios desde Combodo iTop</div>\n            <div style=\"font-size:12px; line-height:18px; color:#cbd5e1; margin-top:8px;\"><strong style=\"color:#ffffff;\">Organización iTop:</strong> {{itop_organization}}</div>\n          </td>\n          <td valign=\"top\" align=\"right\" style=\"width:35%; font-size:12px; line-height:18px; color:#cbd5e1; text-align:right;\"><strong style=\"color:#ffffff;\">Generado:</strong><br>{{generated_at}}<br><br><strong style=\"color:#ffffff;\">Fuente:</strong><br>Producción / iTop CMDB</td>\n        </tr></table>\n      </td></tr>\n\n      <tr><td style=\"padding:24px 28px 12px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Resumen ejecutivo</div>\n        <div style=\"font-size:13px; line-height:19px; color:#6b7280; margin-top:4px;\">Movimientos de inventario detectados durante los últimos <strong>{{movement_days}}</strong> días, entre <strong>{{since_date_display}}</strong> y <strong>{{until_date_display}}</strong>. Se consideran movimientos los cambios de estado, cambios de bodega/localidad, asignación de usuario/contacto y remoción de usuario/contacto.</div>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #cbd5e1; background-color:#f8fafc;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#475569; font-weight:bold;\">TOTAL MOVIMIENTOS</div><div style=\"font-size:24px; color:#0f172a; font-weight:bold;\">{{total_movements}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #bbf7d0; background-color:#f0fdf4;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#166534; font-weight:bold;\">CAMBIO ESTADO</div><div style=\"font-size:24px; color:#166534; font-weight:bold;\">{{status_movement_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #bfdbfe; background-color:#eff6ff;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#1e3a8a; font-weight:bold;\">CAMBIO BODEGA</div><div style=\"font-size:24px; color:#1e3a8a; font-weight:bold;\">{{location_movement_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #fed7aa; background-color:#fff7ed;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#9a3412; font-weight:bold;\">ASIGNACIONES</div><div style=\"font-size:24px; color:#9a3412; font-weight:bold;\">{{assignment_count}}</div></td></tr></table></td>\n        <td class=\"summary-card\" width=\"20%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:#374151; font-weight:bold;\">REMOCIONES</div><div style=\"font-size:24px; color:#374151; font-weight:bold;\">{{removal_count}}</div></td></tr></table></td>\n      </tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 20px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\"><tr><td style=\"padding:12px 14px;\">\n        <div style=\"font-size:13px; line-height:18px; font-weight:bold; color:#111827; margin-bottom:8px;\">Criterio del reporte</div>\n        <div style=\"font-size:12px; line-height:18px; color:#374151;\">Este reporte resume los movimientos de inventario registrados durante la ventana seleccionada, permitiendo revisar cambios relevantes sobre activos CMDB, tales como variaciones de estado, traslados entre bodegas o localidades, asignaciones y remociones de usuarios o contactos asociados.<br><br></div>\n      </td></tr></table></td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n        <div class=\"section-title\">Detalle de movimientos</div><div class=\"section-subtitle\">Listado consolidado sin agrupación. Se muestran únicamente movimientos asociados a un activo CMDB resuelto, ordenados desde el más reciente al más antiguo.</div>\n        <div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\"><table role=\"presentation\" width=\"100%\" class=\"data-table\" style=\"width:100%; border:1px solid #dbe3ec;\"><thead><tr>${th('Equipo')}${th('Movimiento')}${th('Fecha')}${th('Agente (responsable)')}${th('Valor anterior')}${th('Valor nuevo')}</tr></thead><tbody>{{movement_rows}}</tbody></table></div>\n      </td></tr>\n\n      <tr><td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid #dbe3ec; background-color:#f8fafc;\"><tr><td style=\"padding:16px 18px;\"><div style=\"font-size:15px; line-height:21px; color:#111827; font-weight:bold; margin-bottom:8px;\">Observaciones operacionales</div><ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\"><li>Este reporte fue generado automáticamente por \"Automatización ITSM / CMDB\".</li><li>Organización iTop considerada en el reporte: <strong>{{itop_organization}}</strong>.</li><li>Se adjunta un CSV único con los movimientos mostrados en el detalle principal.</li><li>Si una fecha aparece incompleta o no permite identificar claramente el evento, confirme el detalle directamente en iTop con el registro del activo o con el historial de cambios asociado.</li></ul></td></tr></table></td></tr>\n\n      <tr><td align=\"center\" style=\"padding:0 28px 26px 28px;\" class=\"mobile-padding\"><table role=\"presentation\"><tr><td align=\"center\" bgcolor=\"#1d4ed8\" style=\"background-color:#1d4ed8; padding:11px 20px;\"><a href=\"{{itop_url}}\" target=\"_blank\" style=\"font-size:13px; line-height:18px; color:#ffffff; font-weight:bold; text-decoration:none; display:inline-block;\">Abrir Combodo iTop</a></td></tr></table></td></tr>\n      <tr><td style=\"background-color:#f1f5f9; border-top:1px solid #dbe3ec; padding:18px 28px;\" class=\"mobile-padding\"><table role=\"presentation\" width=\"100%\"><tr><td style=\"font-size:12px; line-height:18px; color:#64748b;\"><strong style=\"color:#334155;\">Automatización ITSM / CMDB</strong><br>{{company}}<br>Correo generado automáticamente. No responder a este mensaje.</td><td align=\"right\" style=\"font-size:12px; line-height:18px; color:#64748b;\">Generado:<br>{{generated_at}}</td></tr></table></td></tr>\n    </table>\n  </td></tr></table>\n</body>\n</html>`;\n\nlet html = template;\nfor (const [key, value] of Object.entries(data)) html = html.replaceAll(`{{${key}}}`, String(value ?? ''));\n\nreturn [{ json: { ...data, html }, binary: input.binary || {} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32464,
+        14256
+      ],
+      "id": "7bd11f54-5dea-4625-8ae6-2c14a3d9f10d",
+      "name": "HTML - Template Reporte"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "csv",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        32688,
+        14256
+      ],
+      "id": "bb82e359-2f9d-4cfd-b453-3ab2c72c1b8f",
+      "name": "Enviar correo SMTP",
+      "webhookId": "31ca44c3-2daa-4ffe-9de3-99e87c77b4ff",
+      "credentials": {
+        "smtp": {
+          "id": "xNtpGsiFHeoJckRp",
+          "name": "SMTP_MailPit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "CMDBChange",
+        "key": "={{ $json.change_oql }}",
+        "output_fields": "id,date,userinfo,origin",
+        "limit": "={{ Math.max(1, Number($json.affected_change_count || 1)) }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        31792,
+        14432
+      ],
+      "id": "bf106a50-5119-4afa-b06a-28049f349b5c",
+      "name": "iTop - Cambios CMDB",
+      "alwaysOutputData": true,
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      },
+      "notes": "Lookup acotado de cambios CMDB. Permite recuperar fecha, agente responsable y origen sin volver a usar selector * en los nodos de operaciones."
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        32016,
+        14256
+      ],
+      "id": "0169826a-c490-4303-b3eb-b792e2604bea",
+      "name": "Unificar datos complementarios"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "Preparar ventana de consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar ventana de consulta": {
+      "main": [
+        [
+          {
+            "node": "iTop - Movimientos atributos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "iTop - Movimientos usuarios",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "iTop - Histórico relación usuario-activo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Movimientos atributos": {
+      "main": [
+        [
+          {
+            "node": "Unificar movimientos base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Movimientos usuarios": {
+      "main": [
+        [
+          {
+            "node": "Unificar movimientos base",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Unificar movimientos base": {
+      "main": [
+        [
+          {
+            "node": "Unificar histórico usuario-activo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Histórico relación usuario-activo": {
+      "main": [
+        [
+          {
+            "node": "Unificar histórico usuario-activo",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Unificar histórico usuario-activo": {
+      "main": [
+        [
+          {
+            "node": "Preparar consulta activos afectados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar consulta activos afectados": {
+      "main": [
+        [
+          {
+            "node": "iTop - Activos afectados",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "iTop - Localidades afectadas",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "iTop - Cambios CMDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Activos afectados": {
+      "main": [
+        [
+          {
+            "node": "Unificar activos y localidades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Template Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Template Reporte": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Localidades afectadas": {
+      "main": [
+        [
+          {
+            "node": "Unificar activos y localidades",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Unificar activos y localidades": {
+      "main": [
+        [
+          {
+            "node": "Unificar datos complementarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Cambios CMDB": {
+      "main": [
+        [
+          {
+            "node": "Unificar datos complementarios",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Unificar datos complementarios": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "366cbaf8-fc29-4026-ada4-f1b521230ce3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "a5XGglr3V1X86dTx",
+  "tags": []
+}

@@ -1,0 +1,254 @@
+{
+  "name": "CMDB - Activos disponibles por bodega - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        384
+      ],
+      "id": "1679ed2a-d621-4495-9e63-1c683536d966",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "572f2e2b-e041-413d-a69d-66249554510b",
+              "name": "itop_url",
+              "value": "http://172.16.123.132/itop/",
+              "type": "string"
+            },
+            {
+              "id": "b1845c29-6f15-4c9d-9b56-121b8017be37",
+              "name": "email_from",
+              "value": "blk.zeus@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "94013444-9067-4ec1-a912-ecf4d555e31a",
+              "name": "email_to",
+              "value": "destinatario@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "a9bf1efb-32f6-4800-955a-f7fe0d9e030f",
+              "name": "email_cc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "61c7529a-723e-415b-b6a1-b107f6156336",
+              "name": "email_bcc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "99a87b12-5802-476b-91a6-9cd4155fb209",
+              "name": "email_subject",
+              "value": "Reporte CMDB - activos en inventario agrupados por clase",
+              "type": "string"
+            },
+            {
+              "id": "d63bfbcd-d11e-4e32-8de5-c58c397da73b",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "742048d3-2a95-4763-ad72-4df22c331a2e",
+              "name": "available_status_values",
+              "value": "stock",
+              "type": "string"
+            },
+            {
+              "id": "4ab305fd-1763-47c2-8c3a-f615e94c4756",
+              "name": "report_source_label",
+              "value": "Producción / iTop CMDB",
+              "type": "string"
+            },
+            {
+              "id": "e11ceb3f-f055-4c65-8d6a-92ccb5744c22",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "acc8f255-3d29-4047-a0d2-4c498295ed8a",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "32413de7-a98e-4701-90be-0f39a8f3a9d9",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1744,
+        384
+      ],
+      "id": "d29996ec-7ba8-4848-8a83-5643a8fbee41",
+      "name": "Config Reporte"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "PhysicalDevice",
+        "key": "SELECT PhysicalDevice\nWHERE finalclass IN ('PC', 'Laptop', 'MobilePhone', 'Tablet', 'Printer', 'Peripheral')\nAND status = 'stock'",
+        "output_fields": "id,name,friendlyname,finalclass,status,org_id,org_id_friendlyname,location_id,location_id_friendlyname,brand_id,brand_id_friendlyname,model_id,model_id_friendlyname,serialnumber,asset_number,move2production,purchase_date,end_of_warranty",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        384
+      ],
+      "id": "9c01a592-0a80-4586-8b6c-049973a22519",
+      "name": "iTop - Activos en inventario",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "9wFstaIYKt1u82UQ",
+          "name": "iTopTokenGF"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Config Reporte').first().json;\n\nconst statusInventario = String(config.available_status_values || 'stock')\n  .split(',')\n  .map(v => v.trim().toLowerCase())\n  .filter(Boolean);\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n\n  for (const item of items) {\n    const j = item.json || {};\n\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({\n          key,\n          ...(value || {}),\n          fields: value?.fields || value || {},\n        });\n      }\n      continue;\n    }\n\n    if (Array.isArray(j)) {\n      rows.push(...j);\n      continue;\n    }\n\n    rows.push(j);\n  }\n\n  return rows;\n}\n\nfunction normalizeClass(value) {\n  const raw = String(value || '-').trim();\n  const lower = raw.toLowerCase();\n\n  if (lower === 'pc' || lower.includes('desktop')) return 'PC';\n  if (lower === 'laptop' || lower.includes('notebook') || lower.includes('portable')) return 'Laptop';\n  if (lower === 'mobilephone' || lower.includes('phone') || lower.includes('telefono') || lower.includes('teléfono')) return 'Teléfonos móviles';\n  if (lower === 'tablet') return 'Tablets';\n  if (lower === 'printer' || lower.includes('impresora')) return 'Impresoras';\n  if (lower === 'peripheral' || lower.includes('periferico') || lower.includes('periférico')) return 'Periféricos';\n\n  return raw || 'Otros';\n}\n\nfunction classSortWeight(className) {\n  const order = {\n    'PC': 10,\n    'Laptop': 20,\n    'Tablets': 30,\n    'Teléfonos móviles': 40,\n    'Impresoras': 50,\n    'Periféricos': 60,\n    'Otros': 90,\n  };\n  return order[className] || 80;\n}\n\nfunction isBlankValue(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'n/a' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined';\n}\n\n\nfunction translatePhysicalDeviceStatus(value) {\n  const status = String(value || '').trim().toLowerCase();\n  const map = {\n    stock: 'En Inventario',\n    implementation: 'No Productivo',\n    production: 'Productivo',\n    obsolete: 'Obsoleto',\n  };\n  return map[status] || String(value || '-');\n}\n\nfunction reviewReasons(asset) {\n  const reasons = [];\n  if (isBlankValue(asset.serial)) reasons.push('sin serie');\n  if (isBlankValue(asset.brand)) reasons.push('sin marca');\n  if (isBlankValue(asset.model)) reasons.push('sin modelo');\n  if (isBlankValue(asset.warehouse) || asset.warehouse === 'Sin bodega/localidad') reasons.push('sin bodega/localidad');\n  return reasons;\n}\n\nfunction badge(text, color = 'gray') {\n  return `<span class=\"badge badge-${color}\">${escapeHtml(text)}</span>`;\n}\n\nconst rawRows = flattenInput($input.all());\n\nconst assets = rawRows\n  .map((row) => {\n    const fields = row.fields || row;\n    const finalclassRaw = getField(fields, ['finalclass', 'class'], '-');\n    const finalclass = normalizeClass(finalclassRaw);\n\n    return {\n      name: getField(fields, ['name', 'friendlyname'], '-'),\n      finalclass,\n      finalclassRaw,\n      statusRaw: String(getField(fields, ['status'], '-')).trim().toLowerCase(),\n      status: translatePhysicalDeviceStatus(getField(fields, ['status'], '-')),\n      organization: getField(fields, ['org_id_friendlyname', 'organization_name'], '-'),\n      warehouse: getField(fields, ['location_id_friendlyname', 'location_name', 'location_id'], 'Sin bodega/localidad'),\n      brand: getField(fields, ['brand_id_friendlyname', 'brand'], '-'),\n      model: getField(fields, ['model_id_friendlyname', 'model'], '-'),\n      serial: getField(fields, ['serialnumber', 'serial_number'], ''),\n      assetNumber: getField(fields, ['asset_number', 'asset_tag'], ''),\n      move2production: getField(fields, ['move2production', 'production_date'], '-'),\n      purchaseDate: getField(fields, ['purchase_date'], '-'),\n      warrantyEnd: getField(fields, ['end_of_warranty'], '-'),\n    };\n  })\n  .filter(asset => {\n    const currentStatus = String(asset.statusRaw || '').toLowerCase();\n    return statusInventario.some(s => currentStatus === s);\n  });\n\nassets.sort((a, b) =>\n  classSortWeight(a.finalclass) - classSortWeight(b.finalclass) ||\n  String(a.finalclass).localeCompare(String(b.finalclass), 'es') ||\n  String(a.warehouse).localeCompare(String(b.warehouse), 'es') ||\n  String(a.name).localeCompare(String(b.name), 'es')\n);\n\nconst classGroups = new Map();\nconst warehouses = new Map();\nconst reviewAssets = [];\n\nlet withoutSerial = 0;\n\nfor (const asset of assets) {\n  if (!classGroups.has(asset.finalclass)) classGroups.set(asset.finalclass, []);\n  classGroups.get(asset.finalclass).push(asset);\n\n  if (!warehouses.has(asset.warehouse)) warehouses.set(asset.warehouse, []);\n  warehouses.get(asset.warehouse).push(asset);\n\n  if (isBlankValue(asset.serial)) withoutSerial++;\n\n  const reasons = reviewReasons(asset);\n  if (reasons.length > 0) {\n    reviewAssets.push({ ...asset, reviewReasonText: reasons.join(', ') });\n  }\n}\n\nconst orderedClassEntries = Array.from(classGroups.entries()).sort(([a], [b]) =>\n  classSortWeight(a) - classSortWeight(b) || a.localeCompare(b, 'es')\n);\n\nconst classSummaryRows = orderedClassEntries.map(([className, list]) => {\n  const byWarehouse = {};\n  let incomplete = 0;\n\n  for (const asset of list) {\n    byWarehouse[asset.warehouse] = (byWarehouse[asset.warehouse] || 0) + 1;\n    if (reviewReasons(asset).length > 0) incomplete++;\n  }\n\n  const warehousesText = Object.entries(byWarehouse)\n    .sort(([a], [b]) => a.localeCompare(b, 'es'))\n    .map(([warehouse, count]) => `${escapeHtml(warehouse)}: ${count}`)\n    .join('<br>');\n\n  const observation = incomplete > 0\n    ? `<span class=\"badge badge-yellow\">Por revisar: ${incomplete}</span>`\n    : `<span class=\"badge badge-green\">Sin observaciones</span>`;\n\n  return `\n    <tr>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"><strong>${escapeHtml(className)}</strong></td>\n      <td align=\"right\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"><strong>${list.length}</strong></td>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${warehousesText || '-'}</td>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${observation}</td>\n    </tr>\n  `;\n}).join('');\n\nconst warehouseSummaryRows = Array.from(warehouses.entries()).sort(([a], [b]) => a.localeCompare(b, 'es')).map(([warehouse, list]) => {\n  const classCounts = {};\n  for (const asset of list) {\n    classCounts[asset.finalclass] = (classCounts[asset.finalclass] || 0) + 1;\n  }\n\n  const classesText = Object.entries(classCounts)\n    .sort(([a], [b]) => classSortWeight(a) - classSortWeight(b) || a.localeCompare(b, 'es'))\n    .map(([name, count]) => `${escapeHtml(name)}: ${count}`)\n    .join('<br>');\n\n  const incomplete = list.filter(a => reviewReasons(a).length > 0).length;\n\n  const observation = incomplete > 0\n    ? `<span class=\"badge badge-yellow\">Por revisar: ${incomplete}</span>`\n    : `<span class=\"badge badge-green\">Sin observaciones</span>`;\n\n  return `\n    <tr>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(warehouse)}</td>\n      <td align=\"right\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"><strong>${list.length}</strong></td>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${classesText}</td>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${observation}</td>\n    </tr>\n  `;\n}).join('');\n\nfunction assetRows(list, includeReviewColumn = false) {\n  return list.map(asset => {\n    const serialBadge = !isBlankValue(asset.serial)\n      ? escapeHtml(asset.serial)\n      : '<span class=\"badge badge-yellow\">Sin serie</span>';\n\n    const reviewColumn = includeReviewColumn\n      ? `<td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${badge(asset.reviewReasonText || reviewReasons(asset).join(', '), 'yellow')}</td>`\n      : '';\n\n    return `\n      <tr>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.finalclass)}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"><strong>${escapeHtml(asset.name)}</strong></td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.warehouse)}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.brand)}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.model)}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${serialBadge}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.warrantyEnd)}</td>\n        ${reviewColumn}\n      </tr>\n    `;\n  }).join('');\n}\n\nfunction assetsTable(list, includeReviewColumn = false) {\n  const reviewHead = includeReviewColumn\n    ? '<th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Criterio</th>'\n    : '';\n\n  const colSpan = includeReviewColumn ? 8 : 7;\n\n  return `\n    <div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\">\n      <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%;\">\n        <thead>\n          <tr>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Clase/Tipo</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Nombre</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Bodega</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Marca</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Modelo</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Serie</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Garantía</th>\n            ${reviewHead}\n          </tr>\n        </thead>\n        <tbody>\n          ${list.length ? assetRows(list, includeReviewColumn) : `<tr><td colspan=\"${colSpan}\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin activos para listar.</td></tr>`}\n        </tbody>\n      </table>\n    </div>\n  `;\n}\n\nconst classAssetBlocks = orderedClassEntries.map(([className, list]) => `\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n    <tr>\n      <td style=\"background-color:#f1f5f9; padding:10px 12px;\">\n        <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#0f172a;\">\n          ${escapeHtml(className)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} activos)</span>\n        </div>\n        <div style=\"font-size:12px; line-height:18px; color:#64748b; margin-top:2px;\">\n          Bloque agrupado por clase CMDB normalizada desde iTop. PC y Laptop se mantienen como secciones independientes.\n        </div>\n      </td>\n    </tr>\n    <tr>\n      <td>${assetsTable(list, false)}</td>\n    </tr>\n  </table>\n`).join('');\n\nconst reviewCriteria = [\n  {\n    key: 'sin_serie',\n    title: 'Sin número de serie',\n    description: 'Activos en inventario sin serial registrado en iTop.',\n    match: (asset) => isBlankValue(asset.serial),\n  },\n  {\n    key: 'sin_marca',\n    title: 'Sin marca',\n    description: 'Activos en inventario sin fabricante o marca asociada.',\n    match: (asset) => isBlankValue(asset.brand),\n  },\n  {\n    key: 'sin_modelo',\n    title: 'Sin modelo',\n    description: 'Activos en inventario sin modelo técnico registrado.',\n    match: (asset) => isBlankValue(asset.model),\n  },\n  {\n    key: 'sin_bodega',\n    title: 'Sin bodega/localidad',\n    description: 'Activos en inventario sin ubicación física clara para control de stock.',\n    match: (asset) => isBlankValue(asset.warehouse) || asset.warehouse === 'Sin bodega/localidad',\n  },\n];\n\nconst reviewAssetBlocks = reviewAssets.length\n  ? reviewCriteria.map((criterion) => {\n      const list = reviewAssets\n        .filter(asset => criterion.match(asset))\n        .sort((a, b) =>\n          String(a.finalclass).localeCompare(String(b.finalclass), 'es') ||\n          String(a.warehouse).localeCompare(String(b.warehouse), 'es') ||\n          String(a.name).localeCompare(String(b.name), 'es')\n        );\n\n      if (!list.length) return '';\n\n      return `\n        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n          <tr>\n            <td style=\"background-color:#fff7ed; padding:10px 12px; border-bottom:1px solid #fed7aa;\">\n              <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#9a3412;\">\n                ${escapeHtml(criterion.title)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} activos)</span>\n              </div>\n              <div style=\"font-size:12px; line-height:18px; color:#854d0e; margin-top:2px;\">\n                ${escapeHtml(criterion.description)} Un mismo activo puede aparecer en más de un criterio si presenta múltiples datos incompletos.\n              </div>\n            </td>\n          </tr>\n          <tr>\n            <td>${assetsTable(list, true)}</td>\n          </tr>\n        </table>\n      `;\n    }).join('')\n  : '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#166534;\">No se detectaron activos con datos críticos incompletos según el criterio del reporte.</td></tr></table>';\n\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\\r?\\n/g, ' ').trim();\n  if (/[\";\\r\\n]/.test(text)) {\n    return `\"${text.replace(/\"/g, '\"\"')}\"`;\n  }\n  return text;\n}\n\nfunction slug(value) {\n  return String(value || 'cmdb')\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .toLowerCase()\n    .replace(/[^a-z0-9]+/g, '_')\n    .replace(/^_+|_+$/g, '') || 'cmdb';\n}\n\nconst csvHeaders = [\n  'Clase/Tipo',\n  'Nombre',\n  'Estado',\n  'Bodega/Localidad',\n  'Marca',\n  'Modelo',\n  'Serie',\n  'Puesto en Produccion',\n  'Fecha de Compra',\n  'Vencimiento de Garantia',\n];\n\nconst csvRows = assets.map(asset => [\n  asset.finalclass,\n  asset.name,\n  asset.status,\n  asset.warehouse,\n  asset.brand,\n  asset.model,\n  asset.serial,\n  asset.move2production,\n  asset.purchaseDate,\n  asset.warrantyEnd,\n]);\n\nconst csvContent = '\\uFEFF' + [\n  csvHeaders.map(csvEscape).join(';'),\n  ...csvRows.map(row => row.map(csvEscape).join(';')),\n].join('\\r\\n');\n\nconst generatedAt = new Date().toLocaleString('es-CL', {\n  timeZone: config.timezone || 'America/Santiago',\n  year: 'numeric',\n  month: '2-digit',\n  day: '2-digit',\n  hour: '2-digit',\n  minute: '2-digit',\n});\n\n\nconst itopOrganization = String(config.itop_organization || '').trim();\nconst generatedAtFile = new Date()\n  .toISOString()\n  .replace(/[:.]/g, '-')\n  .replace('T', '_')\n  .slice(0, 19);\n\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst baseSubject = String(config.email_subject || 'Reporte CMDB - activos en inventario agrupados por clase').trim();\nconst subjectWithOrganization = itopOrganization\n  ? `${baseSubject} - ${itopOrganization}`\n  : baseSubject;\n\nreturn [\n  {\n    json: {\n      email_from: config.email_from || 'blk.zeus@gmail.com',\n      email_to: config.email_to,\n      email_cc: config.email_cc || '',\n      email_bcc: config.email_bcc || '',\n      email_subject: subjectWithOrganization,\n      itop_organization: itopOrganization,\n      Company: company,\n      company,\n      report_source_label: config.report_source_label || 'Producción / iTop CMDB',\n      generated_at: generatedAt,\n      total_available: String(assets.length),\n      warehouse_count: String(warehouses.size),\n      class_count: String(classGroups.size),\n      without_serial_count: String(withoutSerial),\n      review_count: String(reviewAssets.length),\n      csv_file_name: `cmdb_stock_${slug(itopOrganization || company)}_${generatedAtFile}.csv`,\n      class_summary_rows: classSummaryRows || '<tr><td colspan=\"4\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin activos en inventario recuperados desde iTop.</td></tr>',\n      warehouse_summary_rows: warehouseSummaryRows || '<tr><td colspan=\"4\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin activos en inventario recuperados desde iTop.</td></tr>',\n      class_asset_blocks: classAssetBlocks || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin activos en inventario para listar.</td></tr></table>',\n      review_asset_blocks: reviewAssetBlocks,\n      itop_url: config.itop_url || '#',\n    },\n    binary: {\n      csv: {\n        data: Buffer.from(csvContent, 'utf8').toString('base64'),\n        mimeType: 'text/csv; charset=utf-8',\n        fileName: `cmdb_stock_${slug(itopOrganization || company)}_${generatedAtFile}.csv`,\n        fileExtension: 'csv',\n      },\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        384
+      ],
+      "id": "530591f0-34b8-4d90-a3cc-7a14b2895803",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItem = $input.first();\nconst data = inputItem.json || {};\nconst binary = inputItem.binary || {};\n\nconst template = `<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\n  <title>Reporte CMDB de activos en inventario agrupados por clase</title>\n\n  <style type=\"text/css\">\n    body {\n      margin: 0;\n      padding: 0;\n      background-color: #eef2f6;\n      font-family: Arial, Helvetica, sans-serif;\n      color: #1f2937;\n    }\n\n    table {\n      border-collapse: collapse;\n    }\n\n    img {\n      border: 0;\n      outline: none;\n      text-decoration: none;\n      display: block;\n    }\n\n    a {\n      color: #1d4ed8;\n      text-decoration: none;\n    }\n\n    .wrapper {\n      width: 100%;\n      background-color: #eef2f6;\n      padding: 24px 0;\n    }\n\n    .container {\n      width: 100%;\n      max-width: 1000px;\n      background-color: #ffffff;\n      border: 1px solid #d9e2ec;\n    }\n\n    .mobile-padding {\n      padding-left: 28px;\n      padding-right: 28px;\n    }\n\n    .summary-card {\n      padding: 4px;\n    }\n\n    .data-table th {\n      background-color: #f8fafc;\n      color: #334155;\n      font-size: 11px;\n      line-height: 15px;\n      font-weight: bold;\n      text-align: left;\n      padding: 8px 7px;\n      border-bottom: 1px solid #dbe3ec;\n      white-space: nowrap;\n    }\n\n    .data-table td {\n      font-size: 12px;\n      line-height: 16px;\n      color: #1f2937;\n      padding: 8px 7px;\n      border-bottom: 1px solid #edf2f7;\n      vertical-align: top;\n    }\n\n    .section-title {\n      font-size: 18px;\n      line-height: 24px;\n      font-weight: bold;\n      color: #111827;\n      margin-bottom: 8px;\n    }\n\n    .section-subtitle {\n      font-size: 12px;\n      line-height: 18px;\n      color: #6b7280;\n      margin-bottom: 10px;\n    }\n\n    .badge {\n      display: inline-block;\n      padding: 4px 8px;\n      border-radius: 12px;\n      font-size: 11px;\n      font-weight: bold;\n      line-height: 14px;\n      white-space: nowrap;\n    }\n\n    .badge-green {\n      background-color: #dcfce7;\n      color: #166534;\n      border: 1px solid #bbf7d0;\n    }\n\n    .badge-blue {\n      background-color: #dbeafe;\n      color: #1e3a8a;\n      border: 1px solid #bfdbfe;\n    }\n\n    .badge-yellow {\n      background-color: #fef9c3;\n      color: #854d0e;\n      border: 1px solid #fde68a;\n    }\n\n    .badge-orange {\n      background-color: #ffedd5;\n      color: #9a3412;\n      border: 1px solid #fed7aa;\n    }\n\n    .badge-gray {\n      background-color: #f3f4f6;\n      color: #374151;\n      border: 1px solid #e5e7eb;\n    }\n\n    .nowrap {\n      white-space: nowrap;\n    }\n\n    .wrap {\n      word-break: break-word;\n      overflow-wrap: break-word;\n    }\n\n    @media only screen and (max-width: 760px) {\n      .container {\n        width: 100% !important;\n      }\n\n      .mobile-padding {\n        padding-left: 14px !important;\n        padding-right: 14px !important;\n      }\n\n      .summary-card {\n        width: 100% !important;\n        display: block !important;\n        margin-bottom: 8px !important;\n      }\n\n      .table-scroll {\n        overflow-x: auto !important;\n        display: block !important;\n        width: 100% !important;\n      }\n    }\n  </style>\n</head>\n\n<body style=\"margin:0; padding:0; background-color:#eef2f6; font-family:Arial, Helvetica, sans-serif; color:#1f2937;\">\n\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"wrapper\" style=\"width:100%; background-color:#eef2f6; padding:24px 0;\">\n    <tr>\n      <td align=\"center\">\n\n        <table role=\"presentation\" width=\"1000\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"container\" style=\"width:100%; max-width:1000px; background-color:#ffffff; border:1px solid #d9e2ec;\">\n\n          <tr>\n            <td style=\"background-color:#0f172a; padding:24px 28px;\" class=\"mobile-padding\">\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                <tr>\n                  <td valign=\"top\" style=\"width:65%;\">\n                    <div style=\"font-size:13px; line-height:18px; color:#93c5fd; font-weight:bold; letter-spacing:0.4px;\">\n                      Automatización ITSM / CMDB\n                    </div>\n\n                    <div style=\"font-size:26px; line-height:32px; color:#ffffff; font-weight:bold; margin-top:6px;\">\n                      Activos en inventario agrupados por clase\n                    </div>\n\n                    <div style=\"font-size:14px; line-height:20px; color:#cbd5e1; margin-top:6px;\">\n                      Inventario sincronizado desde Combodo iTop\n                    </div>\n\n                    <div style=\"font-size:13px; line-height:19px; color:#e2e8f0; margin-top:8px;\">\n                      <strong>Organización iTop:</strong> {{itop_organization}}\n                    </div>\n                  </td>\n\n                  <td valign=\"top\" align=\"right\" style=\"width:35%;\">\n                    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" align=\"right\">\n                      <tr>\n                        <td style=\"font-size:12px; line-height:18px; color:#cbd5e1; text-align:right;\">\n                          <strong style=\"color:#ffffff;\">Generado:</strong><br>\n                          {{generated_at}}\n                        </td>\n                      </tr>\n                      <tr>\n                        <td style=\"font-size:12px; line-height:18px; color:#cbd5e1; text-align:right; padding-top:8px;\">\n                          <strong style=\"color:#ffffff;\">Fuente:</strong><br>\n                          {{report_source_label}}\n                        </td>\n                      </tr>\n                    </table>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:24px 28px 12px 28px;\" class=\"mobile-padding\">\n              <div style=\"font-size:18px; line-height:24px; font-weight:bold; color:#111827;\">\n                Resumen ejecutivo\n              </div>\n\n              <div style=\"font-size:13px; line-height:19px; color:#6b7280; margin-top:4px;\">\n                Consolidado de activos CMDB en inventario para asignación, reposición, reasignación o despacho operativo. El detalle se presenta agrupado por clase: PC, Laptop, Tablets, Teléfonos móviles, Impresoras, Periféricos y otros objetos recuperados desde iTop.\n              </div>\n\n              <div style=\"font-size:13px; line-height:19px; color:#374151; margin-top:8px; background-color:#f8fafc; border:1px solid #e5e7eb; padding:9px 11px;\">\n                <strong>Organización iTop:</strong> {{itop_organization}}\n              </div>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:0 28px 18px 28px;\" class=\"mobile-padding\">\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                <tr>\n                  <td class=\"summary-card\" width=\"20%\" valign=\"top\" style=\"padding:4px;\">\n                    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #cbd5e1; background-color:#f8fafc;\">\n                      <tr>\n                        <td style=\"padding:12px;\">\n                          <div style=\"font-size:11px; line-height:15px; color:#475569; font-weight:bold;\">TOTAL EN INVENTARIO</div>\n                          <div style=\"font-size:24px; line-height:30px; color:#0f172a; font-weight:bold;\">{{total_available}}</div>\n                        </td>\n                      </tr>\n                    </table>\n                  </td>\n\n                  <td class=\"summary-card\" width=\"20%\" valign=\"top\" style=\"padding:4px;\">\n                    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #bfdbfe; background-color:#eff6ff;\">\n                      <tr>\n                        <td style=\"padding:12px;\">\n                          <div style=\"font-size:11px; line-height:15px; color:#1e3a8a; font-weight:bold;\">BODEGAS</div>\n                          <div style=\"font-size:24px; line-height:30px; color:#1e3a8a; font-weight:bold;\">{{warehouse_count}}</div>\n                        </td>\n                      </tr>\n                    </table>\n                  </td>\n\n                  <td class=\"summary-card\" width=\"20%\" valign=\"top\" style=\"padding:4px;\">\n                    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #cbd5e1; background-color:#f8fafc;\">\n                      <tr>\n                        <td style=\"padding:12px;\">\n                          <div style=\"font-size:11px; line-height:15px; color:#475569; font-weight:bold;\">CLASES</div>\n                          <div style=\"font-size:24px; line-height:30px; color:#0f172a; font-weight:bold;\">{{class_count}}</div>\n                        </td>\n                      </tr>\n                    </table>\n                  </td>\n\n                  <td class=\"summary-card\" width=\"20%\" valign=\"top\" style=\"padding:4px;\">\n                    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #fde68a; background-color:#fffbeb;\">\n                      <tr>\n                        <td style=\"padding:12px;\">\n                          <div style=\"font-size:11px; line-height:15px; color:#854d0e; font-weight:bold;\">POR REVISAR</div>\n                          <div style=\"font-size:24px; line-height:30px; color:#854d0e; font-weight:bold;\">{{review_count}}</div>\n                        </td>\n                      </tr>\n                    </table>\n                  </td>\n\n                  <td class=\"summary-card\" width=\"20%\" valign=\"top\" style=\"padding:4px;\">\n                    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #fed7aa; background-color:#fff7ed;\">\n                      <tr>\n                        <td style=\"padding:12px;\">\n                          <div style=\"font-size:11px; line-height:15px; color:#9a3412; font-weight:bold;\">SIN SERIE</div>\n                          <div style=\"font-size:24px; line-height:30px; color:#9a3412; font-weight:bold;\">{{without_serial_count}}</div>\n                        </td>\n                      </tr>\n                    </table>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:0 28px 20px 28px;\" class=\"mobile-padding\">\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #e5e7eb; background-color:#f9fafb;\">\n                <tr>\n                  <td style=\"padding:12px 14px;\">\n                    <div style=\"font-size:13px; line-height:18px; font-weight:bold; color:#111827; margin-bottom:8px;\">\n                      Criterio del reporte\n                    </div>\n\n                    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                      <tr>\n                        <td style=\"padding-right:14px; font-size:12px; line-height:18px;\">\n                          <span style=\"display:inline-block; width:10px; height:10px; background-color:#2563eb;\"></span>\n                          <span style=\"color:#374151;\">En Inventario / stock según estado CMDB</span>\n                        </td>\n                        <td style=\"padding-right:14px; font-size:12px; line-height:18px;\">\n                          <span style=\"display:inline-block; width:10px; height:10px; background-color:#eab308;\"></span>\n                          <span style=\"color:#374151;\">Por revisar: datos mínimos incompletos</span>\n                        </td>\n                        <td style=\"font-size:12px; line-height:18px;\">\n                          <span style=\"display:inline-block; width:10px; height:10px; background-color:#64748b;\"></span>\n                          <span style=\"color:#374151;\">PC y Laptop se informan como bloques separados</span>\n                        </td>\n                      </tr>\n                    </table>\n\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n              <div class=\"section-title\" style=\"font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px;\">\n                Resumen por clase\n              </div>\n\n              <div class=\"section-subtitle\" style=\"font-size:12px; line-height:18px; color:#6b7280; margin-bottom:10px;\">\n                Cantidad de activos en inventario agrupados por clase CMDB normalizada.\n              </div>\n\n              <div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\">\n                <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%; border:1px solid #dbe3ec;\">\n                  <thead>\n                    <tr>\n                      <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Clase</th>\n                      <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:right; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Total</th>\n                      <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Distribución por bodega</th>\n                      <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Observación</th>\n                    </tr>\n                  </thead>\n                  <tbody>\n                    {{class_summary_rows}}\n                  </tbody>\n                </table>\n              </div>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n              <div class=\"section-title\" style=\"font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px;\">\n                Resumen por bodega\n              </div>\n\n              <div class=\"section-subtitle\" style=\"font-size:12px; line-height:18px; color:#6b7280; margin-bottom:10px;\">\n                Vista complementaria para identificar dónde se encuentra físicamente el inventario en inventario.\n              </div>\n\n              <div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\">\n                <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%; border:1px solid #dbe3ec;\">\n                  <thead>\n                    <tr>\n                      <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Bodega / localidad</th>\n                      <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:right; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Total en inventario</th>\n                      <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Clases en inventario</th>\n                      <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Observación</th>\n                    </tr>\n                  </thead>\n                  <tbody>\n                    {{warehouse_summary_rows}}\n                  </tbody>\n                </table>\n              </div>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n              <div class=\"section-title\" style=\"font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px;\">\n                Detalle agrupado por clase\n              </div>\n\n              <div class=\"section-subtitle\" style=\"font-size:12px; line-height:18px; color:#6b7280; margin-bottom:10px;\">\n                El detalle queda organizado por bloques independientes. PC y Laptop se mantienen separados para facilitar revisión de stock computacional.\n              </div>\n\n              {{class_asset_blocks}}\n\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n              <div class=\"section-title\" style=\"font-size:18px; line-height:24px; font-weight:bold; color:#111827; margin-bottom:8px;\">\n                Por revisar ({{review_count}} activos)\n              </div>\n\n              <div style=\"font-size:12px; line-height:18px; color:#854d0e; background-color:#fffbeb; border:1px solid #fde68a; padding:10px 12px; margin-bottom:10px;\">\n                <strong>Criterio:</strong> esta sección se subagrupa por dato pendiente de normalización: número de serie, número de activo, marca, modelo o bodega/localidad. Un mismo activo puede repetirse en más de un bloque cuando presenta múltiples campos incompletos. Estos registros deben validarse antes de asignación, reposición, despacho o generación de actas.\n              </div>\n\n              {{review_asset_blocks}}\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"padding:0 28px 24px 28px;\" class=\"mobile-padding\">\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec; background-color:#f8fafc;\">\n                <tr>\n                  <td style=\"padding:16px 18px;\">\n                    <div style=\"font-size:15px; line-height:21px; color:#111827; font-weight:bold; margin-bottom:8px;\">\n                      Observaciones operacionales\n                    </div>\n\n                    <ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">\n                      <li>Este reporte fue generado automáticamente por &quot;Automatización ITSM / CMDB&quot;.</li>\n                      <li>Se adjunta un archivo CSV único con el volcado consolidado de activos recuperados.</li>\n                      <li>Organización iTop considerada para el reporte: {{itop_organization}}.</li>\n                      <li>El reporte considera únicamente activos &quot;En Inventario&quot; según el estado de la CMDB.</li>\n                      <li>La disponibilidad real debe confirmarse en iTop y, si aplica, físicamente en bodega antes de emitir actas de entrega o reasignación.</li>\n                    </ul>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <tr>\n            <td align=\"center\" style=\"padding:0 28px 26px 28px;\" class=\"mobile-padding\">\n              <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                <tr>\n                  <td align=\"center\" bgcolor=\"#1d4ed8\" style=\"background-color:#1d4ed8; padding:11px 20px;\">\n                    <a href=\"{{itop_url}}\" target=\"_blank\" style=\"font-size:13px; line-height:18px; color:#ffffff; font-weight:bold; text-decoration:none; display:inline-block;\">\n                      Abrir Combodo iTop\n                    </a>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <tr>\n            <td style=\"background-color:#f1f5f9; border-top:1px solid #dbe3ec; padding:18px 28px;\" class=\"mobile-padding\">\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n                <tr>\n                  <td valign=\"top\" style=\"font-size:12px; line-height:18px; color:#64748b;\">\n                    <strong style=\"color:#334155;\">Automatización ITSM / CMDB</strong><br>\n                    {{Company}}<br>\n                    Correo generado automáticamente. No responder a este mensaje.\n                  </td>\n                  <td valign=\"top\" align=\"right\" style=\"font-size:12px; line-height:18px; color:#64748b;\">\n                    Generado:<br>\n                    {{generated_at}}\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n        </table>\n\n      </td>\n    </tr>\n  </table>\n\n</body>\n</html>`;\n\n\n\nlet html = template;\nfor (const [key, value] of Object.entries(data)) {\n  html = html.replaceAll(`{{${key}}}`, String(value ?? ''));\n}\n\nreturn [\n  {\n    json: {\n      ...data,\n      html,\n    },\n    binary,\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        384
+      ],
+      "id": "6a126433-d32b-447a-9df9-44360c4be5e6",
+      "name": "HTML - Template Reporte"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "csv",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2832,
+        384
+      ],
+      "id": "92f2ede1-cebb-4ec9-a1bc-1a5cf8ee3a41",
+      "name": "Send an Email",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "xNtpGsiFHeoJckRp",
+          "name": "SMTP_MailPit"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Activos en inventario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Activos en inventario": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Template Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Template Reporte": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ff6dcf06-5601-4800-b0d8-2d903da5a893",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "SesLpOU8ZuXphSLC",
+  "tags": []
+}
