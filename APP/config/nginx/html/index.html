@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Operacional de Integraciones y Automatizaciones</title>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0b1020;
+      --surface: rgba(15, 23, 42, 0.96);
+      --surface-soft: rgba(30, 41, 59, 0.82);
+      --surface-hover: rgba(30, 41, 59, 0.98);
+      --border: rgba(148, 163, 184, 0.18);
+      --border-hover: rgba(56, 189, 248, 0.55);
+
+      --text: #e5e7eb;
+      --text-strong: #f8fafc;
+      --muted: #94a3b8;
+      --muted-soft: #64748b;
+
+      --primary: #38bdf8;
+      --primary-dark: #0284c7;
+      --success: #22c55e;
+
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Segoe UI", Roboto, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.08), transparent 32%),
+        linear-gradient(135deg, var(--bg), #020617);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 18px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 1040px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.9));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 26px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(2, 6, 23, 0.42);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.04em;
+      box-shadow: 0 12px 34px rgba(56, 189, 248, 0.24);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      color: var(--text-strong);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-subtitle {
+      margin-top: 2px;
+      font-size: 0.76rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hero {
+      padding: 50px 44px 30px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      padding: 7px 14px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 999px;
+      color: #bae6fd;
+      background: rgba(14, 165, 233, 0.09);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4.5vw, 3.45rem);
+      line-height: 1.05;
+      font-weight: 850;
+      letter-spacing: -0.05em;
+      color: var(--text-strong);
+      margin-bottom: 18px;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+
+    .hero strong {
+      color: #e0f2fe;
+      font-weight: 800;
+    }
+
+    .content {
+      padding: 18px 34px 36px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #cbd5e1;
+      font-weight: 850;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      position: relative;
+      min-height: 245px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background:
+        linear-gradient(180deg, rgba(30, 41, 59, 0.74), rgba(15, 23, 42, 0.9));
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: auto -52px -70px auto;
+      width: 170px;
+      height: 170px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.08);
+      pointer-events: none;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+      background: var(--surface-hover);
+    }
+
+    .card:hover::after {
+      transform: scale(1.12);
+      opacity: 0.95;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .service-icon {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      font-size: 1.45rem;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: rgba(15, 23, 42, 0.72);
+    }
+
+    .card-body {
+      position: relative;
+      z-index: 1;
+      margin-top: 24px;
+    }
+
+    .card-title {
+      font-size: 1.22rem;
+      font-weight: 850;
+      color: var(--text-strong);
+      margin-bottom: 10px;
+      letter-spacing: -0.025em;
+    }
+
+    .card-desc {
+      color: var(--muted);
+      font-size: 0.91rem;
+      line-height: 1.6;
+    }
+
+    .card-meta {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: #cbd5e1;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.13);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .card-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 24px;
+      padding-top: 17px;
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+      color: #bae6fd;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .arrow {
+      font-size: 1.15rem;
+      transition: transform 0.18s ease;
+    }
+
+    .card:hover .arrow {
+      transform: translateX(4px);
+    }
+
+    .ops {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .info-box {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: rgba(2, 6, 23, 0.32);
+      padding: 19px 21px;
+    }
+
+    .info-box h3 {
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 850;
+    }
+
+    .info-box p,
+    .info-box li {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.65;
+    }
+
+    .info-box ul {
+      list-style: none;
+      display: grid;
+      gap: 7px;
+    }
+
+    footer {
+      padding: 18px 26px;
+      border-top: 1px solid var(--border);
+      color: var(--muted-soft);
+      font-size: 0.76rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgba(2, 6, 23, 0.42);
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 13px;
+    }
+
+    footer a {
+      color: #7dd3fc;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 820px) {
+      .grid,
+      .ops {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding: 38px 24px 22px;
+      }
+
+      .content {
+        padding: 18px 22px 30px;
+      }
+
+      .topbar,
+      footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .card {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 18px 12px;
+      }
+
+      .topbar {
+        padding: 16px;
+      }
+
+      .hero {
+        padding: 30px 18px 18px;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .section-title {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .brand-subtitle {
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="shell">
+    <section class="panel" aria-label="Portal operacional de integraciones y automatizaciones">
+
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-mark">iT</div>
+          <div>
+            <div class="brand-title">Integration & Automation Portal</div>
+            <div class="brand-subtitle">Operación de automatizaciones, integraciones y procesos ITSM / CMDB</div>
+          </div>
+        </div>
+      </div>
+
+      <header class="hero">
+        
+        <h1>Integraciones y Automatizaciones</h1>
+
+        <p>
+          Plataforma centralizada para la operación de automatizaciones,
+          reportabilidad e integración de servicios asociados a procesos
+          <strong>ITSM / CMDB</strong>.
+        </p>
+      </header>
+
+      <div class="content">
+        <div class="section-title">
+          <h2>Servicios disponibles</h2>
+        </div>
+
+        <nav class="grid" aria-label="Servicios disponibles">
+
+          <a class="card" href="/n8n/" aria-label="Acceder a n8n">
+            <div>
+              <div class="card-head">
+                <div class="service-icon" aria-hidden="true">⚡</div>
+              </div>
+
+              <div class="card-body">
+                <div class="card-title">n8n</div>
+                <div class="card-desc">
+                  Orquestador de flujos para integración, notificaciones,
+                  reportes operacionales y automatización de procesos sobre iTop.
+                </div>
+
+                <div class="card-meta" aria-label="Capacidades principales de n8n">
+                  <span class="pill">Workflows</span>
+                  <span class="pill">Integraciones</span>
+                  <span class="pill">iTop REST API</span>
+                  <span class="pill">Reportes</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <span>Abrir consola de automatización</span>
+              <span class="arrow">→</span>
+            </div>
+          </a>
+
+          <a class="card" href="/nocodb/" aria-label="Acceder a NocoDB">
+            <div>
+              <div class="card-head">
+                <div class="service-icon" aria-hidden="true">🗄️</div>
+              </div>
+
+              <div class="card-body">
+                <div class="card-title">NocoDB</div>
+                <div class="card-desc">
+                  Interfaz controlada para consulta y administración de tablas
+                  auxiliares utilizadas por los procesos de automatización.
+                </div>
+
+                <div class="card-meta" aria-label="Capacidades principales de NocoDB">
+                  <span class="pill">Datos auxiliares</span>
+                  <span class="pill">Catálogos</span>
+                  <span class="pill">Parámetros</span>
+                  <span class="pill">Control operativo</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <span>Abrir gestor de datos</span>
+              <span class="arrow">→</span>
+            </div>
+          </a>
+
+          <a class="card" href="/mailpit/" aria-label="Acceder a Mailpit">
+            <div>
+              <div class="card-head">
+                <div class="service-icon" aria-hidden="true">&#9993;</div>
+              </div>
+
+              <div class="card-body">
+                <div class="card-title">Mailpit</div>
+                <div class="card-desc">
+                  Bandeja de pruebas para validar correos generados por los
+                  workflows, plantillas SMTP y notificaciones operacionales.
+                </div>
+
+                <div class="card-meta" aria-label="Capacidades principales de Mailpit">
+                  <span class="pill">SMTP testing</span>
+                  <span class="pill">Correos capturados</span>
+                  <span class="pill">Plantillas</span>
+                  <span class="pill">QA operacional</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <span>Abrir bandeja de correos</span>
+              <span class="arrow">&rarr;</span>
+            </div>
+          </a>
+
+        </nav>
+
+        <section class="ops" aria-label="Información operacional">
+          <div class="info-box">
+            <h3>Alcance operacional</h3>
+            <p>
+              Este portal concentra los componentes utilizados para ejecutar,
+              mantener y supervisar automatizaciones asociadas a reportes,
+              sincronización, integración y procesos operativos sobre plataformas ITSM / CMDB.
+            </p>
+          </div>
+
+          <div class="info-box">
+            <h3>Consideraciones de uso</h3>
+            <ul>
+              <li>Acceso reservado a usuarios autorizados.</li>
+              <li>Los flujos pueden generar acciones y notificaciones reales.</li>
+              <li>Validar cambios de configuración antes de modificar procesos activos.</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+
+      <footer>
+        <span>Portal interno · Integraciones y Automatizaciones · ITSM / CMDB</span>
+
+        <div class="footer-links">
+          <a href="https://docs.n8n.io" target="_blank" rel="noopener noreferrer">n8n Docs</a>
+          <a href="https://docs.nocodb.com" target="_blank" rel="noopener noreferrer">NocoDB Docs</a>
+          <a href="https://mailpit.axllent.org/docs/" target="_blank" rel="noopener noreferrer">Mailpit Docs</a>
+        </div>
+      </footer>
+
+    </section>
+  </main>
+</body>
+</html>

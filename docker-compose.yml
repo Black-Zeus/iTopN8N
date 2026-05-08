@@ -1,0 +1,319 @@
+# =============================================================================
+# n8n Self-Hosted — PostgreSQL + Redis + NocoDB + Mailpit + Nginx
+# Persistencia mediante Docker Volumes
+# Configuración mediante archivos locales en ./APP/config
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — base de datos compartida
+  # n8n y NocoDB usan bases/schemas separados según init.sql
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16.13-alpine
+    container_name: n8n_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_backups:/backups
+      - ./APP/config/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - n8n_net
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # Redis — cola de trabajos Bull para n8n en modo queue
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7.4.8-alpine
+    container_name: n8n_redis
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory ${REDIS_MAX_MEMORY:-256mb}
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - n8n_net
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # n8n Main — UI, webhooks y coordinación de cola
+  # Acceso vía nginx: http://localhost/n8n/
+  # ---------------------------------------------------------------------------
+  n8n:
+    image: n8nio/n8n:${N8N_VERSION:-2.20.0}
+    container_name: n8n_main
+    restart: unless-stopped
+    environment:
+      # Base de datos
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # Cola / Redis
+      EXECUTIONS_MODE: ${N8N_EXECUTIONS_MODE:-queue}
+      QUEUE_BULL_REDIS_HOST: redis
+      QUEUE_BULL_REDIS_PORT: 6379
+      QUEUE_BULL_REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      # Servidor
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: ${N8N_PORT:-5678}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      N8N_PATH: /n8n/
+      N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:-http://localhost/n8n/}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://localhost/n8n/}
+      N8N_PROXY_HOPS: 1
+
+      # Seguridad
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+
+      # Rutas internas
+      N8N_USER_FOLDER: /home/node/.n8n
+
+      # Zona horaria
+      GENERIC_TIMEZONE: ${TIMEZONE:-America/Santiago}
+      TZ: ${TIMEZONE:-America/Santiago}
+
+      # Logging
+      N8N_LOG_LEVEL: ${N8N_LOG_LEVEL:-info}
+      N8N_LOG_OUTPUT: ${N8N_LOG_OUTPUT:-console}
+      NODE_FUNCTION_ALLOW_BUILTIN: fs,path
+
+      # SMTP para testing con Mailpit
+      # Descomentar si quieres que n8n use Mailpit como SMTP interno
+      # N8N_EMAIL_MODE: smtp
+      # N8N_SMTP_HOST: mailpit
+      # N8N_SMTP_PORT: "1025"
+      # N8N_SMTP_SENDER: n8n@localhost
+      # N8N_SMTP_SSL: "false"
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - n8n_files:/files
+      - n8n_backups:/backups
+      - ./APP/config/n8n:/opt/n8n-config:ro
+    networks:
+      - n8n_net
+    expose:
+      # Acceso directo de respaldo.
+      # Acceso recomendado vía nginx: http://localhost/n8n/
+      - "${N8N_PORT:-5678}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # n8n Worker — ejecución de workflows desde cola
+  # Escalar con:
+  # docker compose up -d --scale n8n_worker=3
+  # ---------------------------------------------------------------------------
+  n8n_worker:
+    image: n8nio/n8n:${N8N_VERSION:-2.20.0}
+    restart: unless-stopped
+    command: worker
+    environment:
+      # Base de datos
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # Cola / Redis
+      EXECUTIONS_MODE: queue
+      QUEUE_BULL_REDIS_HOST: redis
+      QUEUE_BULL_REDIS_PORT: 6379
+      QUEUE_BULL_REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      # Seguridad
+      # Debe ser exactamente igual al servicio n8n principal
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+
+      # Rutas internas
+      N8N_USER_FOLDER: /home/node/.n8n
+
+      # Zona horaria
+      GENERIC_TIMEZONE: ${TIMEZONE:-America/Santiago}
+      TZ: ${TIMEZONE:-America/Santiago}
+
+      # Logging
+      N8N_LOG_LEVEL: ${N8N_LOG_LEVEL:-info}
+      N8N_LOG_OUTPUT: ${N8N_LOG_OUTPUT:-console}
+      NODE_FUNCTION_ALLOW_BUILTIN: fs,path
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - n8n_files:/files
+      - ./APP/config/n8n:/opt/n8n-config:ro
+    networks:
+      - n8n_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # NocoDB — gestor visual de base de datos
+  # Acceso vía nginx: http://localhost/nocodb/
+  # ---------------------------------------------------------------------------
+  nocodb:
+    image: nocodb/nocodb:2026.04.5
+    container_name: n8n_nocodb
+    restart: unless-stopped
+    environment:
+      # Conexión a PostgreSQL
+      # Recomendación: evitar caracteres especiales como @ ? & # en POSTGRES_PASSWORD
+      NC_DB: "pg://postgres:5432?u=${POSTGRES_USER}&p=${POSTGRES_PASSWORD}&d=nocodb_db"
+
+      # JWT secret para sesiones
+      # Generar con: openssl rand -hex 32
+      NC_AUTH_JWT_SECRET: ${NOCODB_JWT_SECRET}
+
+      # URL pública usada por NocoDB para referencias internas e invitaciones
+      NC_PUBLIC_URL: ${NOCODB_PUBLIC_URL:-http://localhost/nocodb}
+
+      # Telemetría
+      NC_DISABLE_TELE: "true"
+
+      # Zona horaria
+      TZ: ${TIMEZONE:-America/Santiago}
+
+    volumes:
+      - nocodb_data:/usr/app/data
+    networks:
+      - n8n_net
+    expose:
+      # Acceso directo de respaldo.
+      # Acceso recomendado vía nginx: http://localhost/nocodb/
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Mailpit — servidor SMTP + Web UI para testing de correo
+  # SMTP interno: mailpit:1025
+  # Web UI vía nginx: http://localhost/mailpit/
+  # ---------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:v1.29
+    container_name: n8n_mailpit
+    restart: unless-stopped
+    environment:
+      # Servir UI desde subpath /mailpit
+      MP_WEBROOT: /mailpit
+      MP_API_CORS: http://localhost:8089,http://localhost
+
+      # Aceptar cualquier credencial SMTP
+      # Solo recomendado para laboratorio/testing
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+
+      # Zona horaria
+      TZ: ${TIMEZONE:-America/Santiago}
+
+    networks:
+      - n8n_net
+    expose:
+      # SMTP para pruebas desde n8n
+      - "1025"
+
+      # Web UI directa de respaldo.
+      # Acceso recomendado vía nginx: http://localhost/mailpit/
+      - "8025"
+
+  # ---------------------------------------------------------------------------
+  # Nginx — reverse proxy y punto de entrada único en :80
+  #
+  # /         -> página de inicio
+  # /n8n/     -> n8n
+  # /nocodb/  -> NocoDB
+  # /mailpit/ -> Mailpit
+  #
+  # Nota:
+  # Nginx mantiene bind mounts porque son archivos de configuración.
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.30.0-alpine
+    container_name: n8n_nginx
+    restart: unless-stopped
+    volumes:
+      - ./APP/config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./APP/config/nginx/html:/usr/share/nginx/html:ro
+    networks:
+      - n8n_net
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+    depends_on:
+      - n8n
+      - nocodb
+      - mailpit
+
+# =============================================================================
+# Red interna
+# =============================================================================
+networks:
+  n8n_net:
+    driver: bridge
+    name: n8n_network
+
+# =============================================================================
+# Docker Volumes
+# Toda la persistencia queda administrada por Docker.
+# No se usan carpetas locales para datos persistentes.
+# =============================================================================
+volumes:
+  postgres_data:
+    name: n8n_postgres_data
+
+  postgres_backups:
+    name: n8n_postgres_backups
+
+  redis_data:
+    name: n8n_redis_data
+
+  n8n_data:
+    name: n8n_data
+
+  n8n_files:
+    name: n8n_files
+
+  n8n_backups:
+    name: n8n_backups
+
+  nocodb_data:
+    name: n8n_nocodb_data
