@@ -1,0 +1,42 @@
+{
+  "template_version": "mail-v1",
+  "partials": {
+    "styles": "partials/styles.html",
+    "layout": "partials/layout.html",
+    "header": "partials/header.html",
+    "summary": "partials/summary.html",
+    "stats": "partials/stats.html",
+    "criteria": "partials/criteria.html",
+    "tables": "partials/tables.html",
+    "notes": "partials/notes.html",
+    "cta": "partials/cta.html",
+    "footer": "partials/footer.html"
+  },
+  "header": {
+    "eyebrow": "Automatización ITSM / CMDB",
+    "subtitle": "Consolidado operativo de activos sincronizados desde Combodo iTop",
+    "source_label": "Producción / iTop CMDB"
+  },
+  "criteria": {
+    "title": "Criterio del reporte",
+    "body": "Se consideran únicamente activos físicos de la CMDB con estado <strong>production</strong> y sin contacto responsable asociado. El objetivo es identificar activos huérfanos para su normalización operativa, administrativa y de trazabilidad."
+  },
+  "tables": {
+    "title": "Detalle operacional",
+    "subtitle": "Detalle de activos sin contacto asignado, agrupados por bodega/localidad."
+  },
+  "cta": {
+    "label": "Abrir Combodo iTop"
+  },
+  "footer": {
+    "brand": "Automatización ITSM / CMDB"
+  },
+  "stats": [
+    { "label": "TOTAL", "value": "total_assets", "border": "#cbd5e1", "background": "#f8fafc", "labelColor": "#475569", "valueColor": "#0f172a" },
+    { "label": "PC/LAPTOP", "value": "pc_laptop_count", "border": "#bfdbfe", "background": "#eff6ff", "labelColor": "#1e3a8a", "valueColor": "#1e3a8a" },
+    { "label": "TABLET", "value": "tablet_count", "border": "#ddd6fe", "background": "#f5f3ff", "labelColor": "#6d28d9", "valueColor": "#6d28d9" },
+    { "label": "TELÉFONO MÓVIL", "value": "mobile_count", "border": "#fde68a", "background": "#fffbeb", "labelColor": "#a16207", "valueColor": "#a16207" },
+    { "label": "IMPRESORAS", "value": "printer_count", "border": "#fed7aa", "background": "#fff7ed", "labelColor": "#9a3412", "valueColor": "#9a3412" },
+    { "label": "PERIFÉRICOS", "value": "peripheral_count", "border": "#e5e7eb", "background": "#f9fafb", "labelColor": "#374151", "valueColor": "#111827" }
+  ]
+}

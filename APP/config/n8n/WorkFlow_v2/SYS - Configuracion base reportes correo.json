@@ -1,0 +1,50 @@
+{
+  "name": "SYS - Configuracion base reportes correo",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c122a59e-9e5e-478c-82cd-b7176b18834e",
+      "name": "Cuando es llamado por otro workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first()?.json || {};\n\nconst setBase = {\n  Company: input.Company || input.company || 'TecnoComp',\n  company: input.company || input.Company || 'TecnoComp',\n  timezone: input.timezone || 'America/Santiago',\n  email_from: input.email_from || 'notificaciones@dominio.cl',\n  email_to: input.email_to || 'destinatario@dominio.cl',\n  email_cc: input.email_cc || '',\n  email_bcc: input.email_bcc || '',\n  itop_url: input.itop_url || 'http://172.16.123.132/itop/',\n  itop_organization: input.itop_organization || 'Minera GoldFields Chile',\n  itop_limit: Number(input.itop_limit || 5000),\n  template_root: input.template_root || '/opt/n8n-config/templates/mail/v1',\n  source_label: input.source_label || 'Producci?n / iTop CMDB',\n  default_detail_level: input.default_detail_level || 'full',\n  flags: {\n    send_email: input.send_email !== false,\n    include_attachment: input.include_attachment !== false,\n    include_summary: input.include_summary !== false,\n    include_detail: input.include_detail !== false,\n    include_operational_notes: input.include_operational_notes !== false,\n  },\n};\n\nreturn [{ json: { ...setBase, set_base_version: 'mail-config-v1' } }];"
+      },
+      "id": "1632662e-c03a-4bc7-9496-68ba4ba96ea7",
+      "name": "SetBase - Reportes correo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Cuando es llamado por otro workflow": {
+      "main": [
+        [
+          {
+            "node": "SetBase - Reportes correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "88121b87-246e-46eb-a3b2-764fa5bf50dd",
+  "triggerCount": 0,
+  "tags": []
+}
