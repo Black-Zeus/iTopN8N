@@ -69,6 +69,19 @@ El flujo piloto usa:
 
 `reports/cmdb-activos-sin-contacto.json`
 
+## Adjuntos SMTP
+
+El nodo `HTML - Renderer parciales` define el campo `attachment_binary_names`.
+
+- Si `flags.include_attachment` es `true` y existe `binary.csv`, retorna `attachment_binary_names = "csv"` y conserva el binario.
+- Si `flags.include_attachment` es `false`, retorna `attachment_binary_names = ""` y remueve binarios del item.
+
+El nodo SMTP debe usar:
+
+`options.attachments = {{ $json.attachment_binary_names }}`
+
+Esto evita depender de logica condicional dentro del nodo de correo y deja el control de adjuntos centralizado en el renderer.
+
 ## Nota de alcance
 
 Esta PoC mantiene salida SMTP. No incorpora todavía retorno JSON para reporteria externa, aunque el contrato deja campos y flags preparados para esa evolución.

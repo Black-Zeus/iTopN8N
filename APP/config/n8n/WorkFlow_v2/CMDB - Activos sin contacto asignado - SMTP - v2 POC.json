@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -64,
-        -128
+        0,
+        0
       ],
-      "id": "ce2ec88d-4dc2-4a80-8b51-6d4c39f3c9ab",
+      "id": "dda1cbad-9616-4dc1-b861-81f9827336fe",
       "name": "Ejecutar manualmente"
     },
     {
@@ -83,10 +83,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        176,
-        -128
+        240,
+        0
       ],
-      "id": "62da5360-ec0a-41b4-a254-96d50acc7d14",
+      "id": "8a686ae7-b5c3-4eb9-b39c-7b2d8df51410",
       "name": "SetTrigger - Flujo"
     },
     {
@@ -101,15 +101,15 @@
       "type": "n8n-nodes-itop.iTop",
       "typeVersion": 1,
       "position": [
-        880,
-        -128
+        944,
+        0
       ],
-      "id": "b74d773b-657b-493b-b03e-3a1a62705c66",
+      "id": "8c7c3cf6-7f01-4494-8b91-5f0eafedd7e2",
       "name": "iTop - Activos CMDB",
       "credentials": {
         "iTopTokenApi": {
-          "id": "9wFstaIYKt1u82UQ",
-          "name": "iTopTokenGF"
+          "id": "9VumYMFu28SDgDyW",
+          "name": "iTopToken account"
         }
       },
       "notes": "PhysicalDevice no acepta type/type_friendlyname como output_fields. En este flujo no se separa PC y Laptop: ambos se consolidan como PC/Laptop."
@@ -121,23 +121,23 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1152,
-        -128
+        1216,
+        0
       ],
-      "id": "0cd2852a-e48e-4e81-abdb-0032dd754ccd",
+      "id": "6a19ed91-bde4-4ed5-8491-df4aab5e42ad",
       "name": "Preparar datos reporte"
     },
     {
       "parameters": {
-        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first();\nconst data = input.json || {};\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, 'utf8');\n}\n\nfunction render(template, values) {\n  return template.replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) => {\n    const parts = key.split('.');\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? '' : String(value);\n  });\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? '')\n    .split(/\\r?\\n|\\. /)\n    .map(v => v.trim().replace(/\\.$/, ''))\n    .filter(Boolean);\n  if (!lines.length) return '<div style=\"font-size:13px; line-height:20px; color:#64748b;\">Sin observaciones adicionales.</div>';\n  return `<ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">${lines.map(line => `<li>${escapeHtml(line)}.</li>`).join('')}</ul>`;\n}\n\nfunction statCard(stat) {\n  const value = data[stat.value] ?? '-';\n  return `<td class=\"summary-card\" width=\"33.33%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid ${stat.border}; background-color:${stat.background};\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:${stat.labelColor}; font-weight:bold;\">${escapeHtml(stat.label)}</div><div style=\"font-size:24px; color:${stat.valueColor}; font-weight:bold;\">${escapeHtml(value)}</div></td></tr></table></td>`;\n}\n\nfunction statRows(stats) {\n  const rows = [];\n  for (let i = 0; i < stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(statCard);\n    while (cells.length < 3) cells.push('<td class=\"summary-card\" width=\"33.33%\" valign=\"top\">&nbsp;</td>');\n    rows.push(`<tr>${cells.join('')}</tr>`);\n  }\n  return rows.join('\\n');\n}\n\nconst root = data.template_root || '/opt/n8n-config/templates/mail/v1';\nconst key = data.report_template_key || 'cmdb-activos-sin-contacto';\nconst contract = JSON.parse(readText(path.join(root, 'reports', `${key}.json`)));\nconst partial = (name) => readText(path.join(root, contract.partials[name]));\n\nconst styles = partial('styles');\nconst header = render(partial('header'), {\n  eyebrow: contract.header.eyebrow,\n  title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n  subtitle: contract.header.subtitle,\n  itop_organization: escapeHtml(data.itop_organization || '-'),\n  generated_at: escapeHtml(data.generated_at || '-'),\n  source_label: escapeHtml(data.source_label || contract.header.source_label || '-'),\n});\nconst summary = render(partial('summary'), {\n  description: escapeHtml(data.report_description || ''),\n});\nconst stats = render(partial('stats'), {\n  stats_rows: statRows(contract.stats || []),\n});\nconst criteria = render(partial('criteria'), contract.criteria || {});\nconst tables = data.flags?.include_detail === false ? '' : render(partial('tables'), {\n  title: contract.tables.title,\n  subtitle: contract.tables.subtitle,\n  content: data.detail_blocks || '',\n});\nconst notes = data.flags?.include_operational_notes === false ? '' : render(partial('notes'), {\n  notes_list: notesList(data.operational_notes),\n});\nconst cta = render(partial('cta'), {\n  href: escapeHtml(data.itop_url || '#'),\n  label: contract.cta.label || 'Abrir',\n});\nconst footer = render(partial('footer'), {\n  brand: contract.footer.brand || 'Automatizaci?n',\n  company: escapeHtml(data.company || data.Company || ''),\n  generated_at: escapeHtml(data.generated_at || '-'),\n});\n\nconst layout = partial('layout');\nconst html = render(layout, {\n  title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n  styles,\n  header,\n  summary: data.flags?.include_summary === false ? '' : summary,\n  stats: data.flags?.include_summary === false ? '' : stats,\n  criteria,\n  tables,\n  notes,\n  cta,\n  footer,\n});\n\nreturn [{ json: { ...data, html, template_version: contract.template_version }, binary: input.binary || {} }];"
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first();\nconst data = input.json || {};\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, 'utf8');\n}\n\nfunction render(template, values) {\n  return template.replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) => {\n    const parts = key.split('.');\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? '' : String(value);\n  });\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? '')\n    .split(/\\r?\\n|\\. /)\n    .map(v => v.trim().replace(/\\.$/, ''))\n    .filter(Boolean);\n  if (!lines.length) return '<div style=\"font-size:13px; line-height:20px; color:#64748b;\">Sin observaciones adicionales.</div>';\n  return `<ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">${lines.map(line => `<li>${escapeHtml(line)}.</li>`).join('')}</ul>`;\n}\n\nfunction statCard(stat) {\n  const value = data[stat.value] ?? '-';\n  return `<td class=\"summary-card\" width=\"33.33%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid ${stat.border}; background-color:${stat.background};\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:${stat.labelColor}; font-weight:bold;\">${escapeHtml(stat.label)}</div><div style=\"font-size:24px; color:${stat.valueColor}; font-weight:bold;\">${escapeHtml(value)}</div></td></tr></table></td>`;\n}\n\nfunction statRows(stats) {\n  const rows = [];\n  for (let i = 0; i < stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(statCard);\n    while (cells.length < 3) cells.push('<td class=\"summary-card\" width=\"33.33%\" valign=\"top\">&nbsp;</td>');\n    rows.push(`<tr>${cells.join('')}</tr>`);\n  }\n  return rows.join('\\n');\n}\n\nconst root = data.template_root || '/opt/n8n-config/templates/mail/v1';\nconst key = data.report_template_key || 'cmdb-activos-sin-contacto';\nconst contract = JSON.parse(readText(path.join(root, 'reports', `${key}.json`)));\nconst partial = (name) => readText(path.join(root, contract.partials[name]));\n\nconst styles = partial('styles');\nconst header = render(partial('header'), {\n  eyebrow: contract.header.eyebrow,\n  title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n  subtitle: contract.header.subtitle,\n  itop_organization: escapeHtml(data.itop_organization || '-'),\n  generated_at: escapeHtml(data.generated_at || '-'),\n  source_label: escapeHtml(data.source_label || contract.header.source_label || '-'),\n});\nconst summary = render(partial('summary'), {\n  description: escapeHtml(data.report_description || ''),\n});\nconst stats = render(partial('stats'), {\n  stats_rows: statRows(contract.stats || []),\n});\nconst criteria = render(partial('criteria'), contract.criteria || {});\nconst tables = data.flags?.include_detail === false ? '' : render(partial('tables'), {\n  title: contract.tables.title,\n  subtitle: contract.tables.subtitle,\n  content: data.detail_blocks || '',\n});\nconst notes = data.flags?.include_operational_notes === false ? '' : render(partial('notes'), {\n  notes_list: notesList(data.operational_notes),\n});\nconst cta = render(partial('cta'), {\n  href: escapeHtml(data.itop_url || '#'),\n  label: contract.cta.label || 'Abrir',\n});\nconst footer = render(partial('footer'), {\n  brand: contract.footer.brand || 'Automatizaci?n',\n  company: escapeHtml(data.company || data.Company || ''),\n  generated_at: escapeHtml(data.generated_at || '-'),\n});\n\nconst layout = partial('layout');\nconst html = render(layout, {\n  title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n  styles,\n  header,\n  summary: data.flags?.include_summary === false ? '' : summary,\n  stats: data.flags?.include_summary === false ? '' : stats,\n  criteria,\n  tables,\n  notes,\n  cta,\n  footer,\n});\n\nconst includeAttachment = data.flags?.include_attachment !== false;\nconst binary = includeAttachment ? (input.binary || {}) : {};\nconst attachmentBinaryNames = includeAttachment && binary.csv ? 'csv' : '';\n\nreturn [{\n  json: {\n    ...data,\n    html,\n    template_version: contract.template_version,\n    include_attachment_effective: includeAttachment,\n    attachment_binary_names: attachmentBinaryNames,\n    has_csv_binary: Boolean(binary.csv),\n  },\n  binary,\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1424,
-        -128
+        1488,
+        0
       ],
-      "id": "f329bfda-7f41-4d20-9115-df2ff2dc4813",
+      "id": "3cdda494-eceb-40a2-a00c-384a6fa79ee3",
       "name": "HTML - Renderer parciales"
     },
     {
@@ -148,7 +148,7 @@
         "html": "={{ $json.html }}",
         "options": {
           "appendAttribution": false,
-          "attachments": "={{ $json.flags.include_attachment ? 'csv' : '' }}",
+          "attachments": "={{ $json.attachment_binary_names }}",
           "ccEmail": "={{ $json.email_cc }}",
           "bccEmail": "={{ $json.email_bcc }}"
         }
@@ -156,48 +156,52 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        1696,
-        -128
+        1760,
+        0
       ],
-      "id": "25c6ad41-5e22-4313-8794-9ea75ce6125f",
+      "id": "c19f5159-69ab-480e-a88a-98da8ee3a195",
       "name": "Enviar correo SMTP",
       "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
       "credentials": {
         "smtp": {
-          "id": "xNtpGsiFHeoJckRp",
-          "name": "SMTP_MailPit"
+          "id": "dRsyPmUu0YyiNEBE",
+          "name": "SMTP account"
         }
       }
     },
     {
       "parameters": {
-        "source": "localFile",
-        "workflowPath": "/opt/n8n-config/WorkFlow_v2/SYS - Configuracion base reportes correo.json",
-        "mode": "once",
+        "workflowId": {
+          "__rl": true,
+          "value": "puR8KZ9UFvq5zRqX",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/puR8KZ9UFvq5zRqX",
+          "cachedResultName": "SYS - Configuracion base reportes correo"
+        },
         "options": {
           "waitForSubWorkflow": true
         }
       },
-      "id": "f6dcb773-60f1-49f5-b47a-7bbaaf8a9bef",
+      "id": "dcf98825-334d-46c3-b631-98bb458c8f8c",
       "name": "SubWorkflow - SetBase reportes correo",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        448,
-        -128
+        512,
+        0
       ]
     },
     {
       "parameters": {
-        "jsCode": "const base = $input.first()?.json || {};\nconst trigger = $('SetTrigger - Flujo').first()?.json || {};\nconst flags = { ...(base.flags || {}) };\n\nfor (const key of ['include_attachment', 'include_detail', 'include_summary', 'include_operational_notes', 'send_email']) {\n  if (trigger[key] !== undefined && trigger[key] !== null && trigger[key] !== '') flags[key] = trigger[key];\n}\n\nconst setMixed = {\n  ...base,\n  ...trigger,\n  flags,\n  config_source: 'SetBase + SetTrigger',\n};\n\nreturn [{ json: setMixed }];"
+        "jsCode": "const base = $input.first()?.json || {};\nconst trigger = $('SetTrigger - Flujo').first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si'].includes(text)) return true;\n  if (['false', '0', 'no', 'n'].includes(text)) return false;\n  return fallback;\n}\n\nconst flags = { ...(base.flags || {}) };\nfor (const key of ['include_attachment', 'include_detail', 'include_summary', 'include_operational_notes', 'send_email']) {\n  if (trigger[key] !== undefined && trigger[key] !== null && trigger[key] !== '') {\n    flags[key] = normalizeBoolean(trigger[key], flags[key]);\n  }\n}\n\nconst setMixed = {\n  ...base,\n  ...trigger,\n  flags,\n  config_source: 'SetBase + SetTrigger',\n};\n\nreturn [{ json: setMixed }];"
       },
-      "id": "51a15f21-8233-407b-a121-70d00108430c",
+      "id": "bec65863-1ae4-4cd4-9312-aa7a569eb456",
       "name": "SetMixed - Configuracion efectiva",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        640,
-        -128
+        704,
+        0
       ]
     }
   ],
@@ -286,10 +290,11 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "3fb80106-5569-41c4-847b-79905db6bd34",
+  "versionId": "a9b4d69d-a3b7-4fb0-acbf-51fd29db6327",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
   },
-  "id": "HgPLQqj2ooCuEd5I",
+  "id": "muv2YQKlqBWs7xHT",
   "tags": []
 }
