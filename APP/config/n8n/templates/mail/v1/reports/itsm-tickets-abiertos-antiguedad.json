@@ -41,20 +41,28 @@
       "valueColor": "#0f172a"
     },
     {
-      "label": "MAYOR 7D",
-      "value": "older_than_7_count",
+      "label": "CRITICOS",
+      "value": "critical_count",
       "border": "#fde68a",
       "background": "#fffbeb",
       "labelColor": "#a16207",
       "valueColor": "#a16207"
     },
     {
-      "label": "MAYOR 14D",
-      "value": "older_than_14_count",
+      "label": "SLA VENCIDO",
+      "value": "sla_breached_count",
       "border": "#fecaca",
       "background": "#fef2f2",
       "labelColor": "#991b1b",
       "valueColor": "#991b1b"
+    },
+    {
+      "label": "SIN ASIGNAR",
+      "value": "unassigned_count",
+      "border": "#ddd6fe",
+      "background": "#f5f3ff",
+      "labelColor": "#6d28d9",
+      "valueColor": "#6d28d9"
     }
   ]
 }

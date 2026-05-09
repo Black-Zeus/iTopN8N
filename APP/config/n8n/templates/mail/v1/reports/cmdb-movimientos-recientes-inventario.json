@@ -41,20 +41,38 @@
       "valueColor": "#0f172a"
     },
     {
-      "label": "ACTIVOS",
-      "value": "affected_asset_count",
+      "label": "ESTADO",
+      "value": "status_movement_count",
+      "fallbackValue": "affected_change_count",
       "border": "#bfdbfe",
       "background": "#eff6ff",
       "labelColor": "#1e3a8a",
       "valueColor": "#1e3a8a"
     },
     {
-      "label": "CAMBIOS",
-      "value": "affected_change_count",
+      "label": "BODEGA",
+      "value": "location_movement_count",
+      "fallbackValue": "affected_asset_count",
       "border": "#ddd6fe",
       "background": "#f5f3ff",
       "labelColor": "#6d28d9",
       "valueColor": "#6d28d9"
+    },
+    {
+      "label": "ASIGNACIONES",
+      "value": "assignment_count",
+      "border": "#bbf7d0",
+      "background": "#f0fdf4",
+      "labelColor": "#166534",
+      "valueColor": "#166534"
+    },
+    {
+      "label": "REMOCIONES",
+      "value": "removal_count",
+      "border": "#fecaca",
+      "background": "#fef2f2",
+      "labelColor": "#991b1b",
+      "valueColor": "#991b1b"
     }
   ]
 }

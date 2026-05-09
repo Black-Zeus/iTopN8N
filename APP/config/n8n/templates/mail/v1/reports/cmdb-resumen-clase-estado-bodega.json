@@ -41,20 +41,45 @@
       "valueColor": "#0f172a"
     },
     {
-      "label": "SIN BODEGA",
-      "value": "without_location_count",
+      "label": "PRODUCTIVOS",
+      "value": "production_count",
+      "border": "#bbf7d0",
+      "background": "#f0fdf4",
+      "labelColor": "#166534",
+      "valueColor": "#166534"
+    },
+    {
+      "label": "CLASES",
+      "value": "class_count",
+      "fallbackValue": "class_type_count",
+      "border": "#bfdbfe",
+      "background": "#eff6ff",
+      "labelColor": "#1e3a8a",
+      "valueColor": "#1e3a8a"
+    },
+    {
+      "label": "INVENTARIO",
+      "value": "stock_count",
       "border": "#fde68a",
       "background": "#fffbeb",
       "labelColor": "#a16207",
       "valueColor": "#a16207"
     },
     {
-      "label": "CLASES",
-      "value": "class_type_count",
-      "border": "#bfdbfe",
-      "background": "#eff6ff",
-      "labelColor": "#1e3a8a",
-      "valueColor": "#1e3a8a"
+      "label": "NO OPERATIVO",
+      "value": "non_operational_count",
+      "border": "#fed7aa",
+      "background": "#fff7ed",
+      "labelColor": "#9a3412",
+      "valueColor": "#9a3412"
+    },
+    {
+      "label": "SIN BODEGA",
+      "value": "without_location_count",
+      "border": "#fecaca",
+      "background": "#fef2f2",
+      "labelColor": "#991b1b",
+      "valueColor": "#991b1b"
     }
   ]
 }

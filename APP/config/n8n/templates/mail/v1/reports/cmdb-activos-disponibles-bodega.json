@@ -34,15 +34,17 @@
   "stats": [
     {
       "label": "TOTAL",
-      "value": "total_assets",
+      "value": "total_available",
+      "fallbackValue": "total_assets",
       "border": "#cbd5e1",
       "background": "#f8fafc",
       "labelColor": "#475569",
       "valueColor": "#0f172a"
     },
     {
-      "label": "SIN BODEGA",
-      "value": "without_location_count",
+      "label": "BODEGAS",
+      "value": "warehouse_count",
+      "fallbackValue": "without_location_count",
       "border": "#fde68a",
       "background": "#fffbeb",
       "labelColor": "#a16207",
@@ -50,7 +52,8 @@
     },
     {
       "label": "CLASES",
-      "value": "class_type_count",
+      "value": "class_count",
+      "fallbackValue": "class_type_count",
       "border": "#bfdbfe",
       "background": "#eff6ff",
       "labelColor": "#1e3a8a",
