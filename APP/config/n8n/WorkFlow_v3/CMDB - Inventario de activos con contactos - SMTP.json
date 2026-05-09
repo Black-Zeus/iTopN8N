@@ -1,0 +1,525 @@
+{
+  "name": "CMDB - Inventario de activos con contactos - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        448
+      ],
+      "id": "5b01fc3a-b487-4e97-bec7-124024b9426a",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d72db1a2-0037-4c39-9cb4-646109566787",
+              "name": "itop_url",
+              "value": "http://172.16.123.132/itop/",
+              "type": "string"
+            },
+            {
+              "id": "5566db1f-61ab-4e95-865b-3c16663fc4ec",
+              "name": "email_from",
+              "value": "notificaciones@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "d55214ed-935c-4ab7-a027-3159769efdd4",
+              "name": "email_to",
+              "value": "={{ $json.body?.email_to ?? \"destinatario@dominio.cl\" }}",
+              "type": "string"
+            },
+            {
+              "id": "0ff8a936-90b0-438f-88fd-1b85a8f54310",
+              "name": "email_cc",
+              "value": "={{ $json.body?.email_cc ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "a48966ad-2c2f-4303-b560-a2e16552f2a1",
+              "name": "email_bcc",
+              "value": "={{ $json.body?.email_bcc ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "22b67074-d29d-4a28-b666-36d7cd31eece",
+              "name": "email_subject",
+              "value": "Reporte CMDB - activos con contacto asignado por estado",
+              "type": "string"
+            },
+            {
+              "id": "35c9f932-ead5-45b6-8090-1dabf16710b9",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "54bb8ff9-9b82-4936-ac47-95f7d5148d77",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "c21cb092-ff82-49f9-af4b-df842fc7ed84",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "f82d0e91-0a39-4b16-9ea5-6dfd4533bc3d",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "ec530af8-d25e-4fa1-8636-ed8b1fe70b81",
+              "name": "include_attachment",
+              "value": "={{ $json.body?.include_attachment ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "2485d62e-80be-4cb7-8b25-cd249d7042db",
+              "name": "include_detail",
+              "value": "={{ $json.body?.include_detail ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "be1cbe0c-0234-49eb-978e-40bd580b6fc6",
+              "name": "include_summary",
+              "value": "={{ $json.body?.include_summary ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "18b95952-1bc2-4c4f-ab87-f5b247e4b7a6",
+              "name": "include_operational_notes",
+              "value": "={{ $json.body?.include_operational_notes ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "0809986c-6973-4140-999b-583cd49dc0fb",
+              "name": "include_itop_button_footer",
+              "value": "={{ $json.body?.include_itop_button_footer ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "77b46cfa-cc0c-46e1-a994-771323d94710",
+              "name": "start_date",
+              "value": "={{ $json.body?.start_date ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "df0bccd3-7597-4327-8cff-0af196c540a3",
+              "name": "end_date",
+              "value": "={{ $json.body?.end_date ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "fe4113ba-5a7a-476f-8e01-6cb4c5b42e3a",
+              "name": "report_template_key",
+              "value": "cmdb-inventario-activos-contactos",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2496,
+        448
+      ],
+      "id": "783dcf70-5aa6-47c3-9c0b-6b4f9a84d882",
+      "name": "SetTrigger - Flujo"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "PhysicalDevice",
+        "key": "SELECT PhysicalDevice",
+        "output_fields": "id,name,friendlyname,finalclass,status,org_id,org_id_friendlyname,location_id,location_id_friendlyname,contacts_list,brand_id,brand_id_friendlyname,model_id,model_id_friendlyname,serialnumber,asset_number,move2production,purchase_date,end_of_warranty,description",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        3168,
+        448
+      ],
+      "id": "87eec408-6ead-4f8e-aefd-a2abe0628620",
+      "name": "iTop - Inventario CMDB",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "FdUX5lCOh0Z3YWW4",
+          "name": "iTopToken_GF_QA"
+        }
+      },
+      "notes": "Consulta PhysicalDevice sin filtro rígido por finalclass. El nodo Code filtra activos con contacto asignado y subclasifica PC/Laptop por campos disponibles como clase, tipo, nombre y modelo."
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseConfig = $('Config Reporte').first().json;\nconst triggerConfig = $('SetTrigger - Flujo').first()?.json || {};\nconst mergedFlags = { ...(baseConfig.flags || {}) };\nfunction mergeFlag(name) {\n  const value = triggerConfig[name];\n  if (value === undefined || value === null || value === '') return;\n  if (typeof value === 'boolean') mergedFlags[name] = value;\n  else if (typeof value === 'number') mergedFlags[name] = value !== 0;\n  else {\n    const text = String(value).trim().toLowerCase();\n    if (['true','1','yes','y','si','s','on','enabled'].includes(text)) mergedFlags[name] = true;\n    else if (['false','0','no','n','off','disabled'].includes(text)) mergedFlags[name] = false;\n  }\n}\nfor (const key of ['include_attachment','include_detail','include_summary','include_operational_notes','include_itop_button_footer','send_email','include_requirements','include_incidents','include_changes','include_problems']) mergeFlag(key);\nconst config = { ...baseConfig, ...triggerConfig, flags: mergedFlags };\nfor (const [key, value] of Object.entries(mergedFlags)) config[key] = value;\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst itopOrganization = String(config.itop_organization || '').trim();\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\"/g, '\"\"');\n  return `\"${text}\"`;\n}\n\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\n\nfunction scalarText(value) {\n  if (value === undefined || value === null) return '';\n  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {\n    const text = String(value).trim();\n    return text === '[object Object]' ? '' : text;\n  }\n  return '';\n}\n\nfunction cleanContactText(value) {\n  let text = scalarText(value);\n  if (!text) return '';\n  // iTop suele exponer la relaci\\u00f3n como \"Contacto / Activo\".\n  // Para el reporte se requiere solamente el contacto.\n  if (text.includes(' / ')) text = text.split(' / ')[0].trim();\n  return text;\n}\n\nfunction normalizeContactEntry(entry) {\n  if (entry === undefined || entry === null) return '';\n\n  const direct = cleanContactText(entry);\n  if (direct) return direct;\n\n  if (Array.isArray(entry)) {\n    return entry.map(normalizeContactEntry).filter(Boolean).join(', ');\n  }\n\n  if (typeof entry === 'object') {\n    if (entry.fields && typeof entry.fields === 'object') {\n      const fromFields = normalizeContactEntry(entry.fields);\n      if (fromFields) return fromFields;\n    }\n\n    if (entry.objects && typeof entry.objects === 'object') {\n      return Object.values(entry.objects).map(normalizeContactEntry).filter(Boolean).join(', ');\n    }\n\n    const preferredFields = [\n      'contact_id_friendlyname',\n      'person_id_friendlyname',\n      'user_id_friendlyname',\n      'contact_name',\n      'person_name',\n      'display_name',\n      'name',\n      'friendlyname',\n      'email',\n      'email_address',\n    ];\n\n    for (const field of preferredFields) {\n      const text = cleanContactText(entry[field]);\n      if (text) return text;\n    }\n\n    const nestedCandidates = ['contact_id', 'person_id', 'user_id', 'contact', 'person', 'user'];\n    for (const field of nestedCandidates) {\n      const text = normalizeContactEntry(entry[field]);\n      if (text) return text;\n    }\n  }\n\n  return '';\n}\n\nfunction normalizeContacts(value) {\n  const text = normalizeContactEntry(value);\n  if (!text) return '';\n\n  const unique = [];\n  const seen = new Set();\n  for (const part of text.split(',').map(v => cleanContactText(v)).filter(Boolean)) {\n    const key = part.toLowerCase();\n    if (!seen.has(key)) {\n      seen.add(key);\n      unique.push(part);\n    }\n  }\n  return unique.join(', ');\n}\n\nfunction isBlankValue(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'n/a' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined' || v.toLowerCase() === 'sin bodega/localidad';\n}\n\nfunction inferWorkstationClass(f) {\n  // iTop est\\u00e1ndar puede mostrar la clase como \"PC/Laptop\" sin separar notebook de desktop.\n  // La separaci\\u00f3n real depende de que exista alg\\u00fan dato \\u00fatil: tipo, categor\\u00eda, modelo, nombre o descripci\\u00f3n.\n  const rawHints = [\n    getField(f, ['finalclass', 'class', 'class_friendlyname'], ''),\n    getField(f, ['type', 'type_friendlyname', 'computer_type', 'computer_type_friendlyname', 'device_type', 'device_type_friendlyname'], ''),\n    getField(f, ['category', 'category_friendlyname', 'subcategory', 'subcategory_friendlyname'], ''),\n    getField(f, ['name', 'friendlyname'], ''),\n    getField(f, ['model_id_friendlyname', 'model'], ''),\n    getField(f, ['brand_id_friendlyname', 'brand'], ''),\n    getField(f, ['description', 'comment', 'comments'], ''),\n  ].map(v => String(v || '').trim()).filter(Boolean);\n\n  const hint = rawHints.join(' ').toLowerCase();\n\n  const laptopPatterns = [\n    'laptop', 'notebook', 'portable', 'portatil', 'port\\u00fatil', 'ultrabook',\n    'latitude', 'elitebook', 'probook', 'thinkpad', 'thinkbook', 'macbook',\n    'vivobook', 'zenbook', 'travelmate', 'tecra', 'xps 13', 'xps 15',\n    // Patrones frecuentes de modelos corporativos notebook. Ajustar seg\\u00fan cat\\u00e1logo real de la CMDB.\n    /\\b(34|35|54|55|72|73|74|75)[0-9]{2}\\b/,\n    /\\bt14\\b/, /\\bt15\\b/, /\\bx1\\b/, /\\be14\\b/, /\\be15\\b/\n  ];\n\n  const desktopPatterns = [\n    'desktop', 'sobremesa', 'escritorio', 'tower', 'torre', 'sff', 'micro',\n    'minitower', 'optiplex', 'prodesk', 'elitedesk', 'thinkcentre',\n    'workstation', 'all-in-one', 'all in one', 'aio'\n  ];\n\n  for (const pattern of desktopPatterns) {\n    if (hint.includes(pattern)) return 'PC';\n  }\n\n  for (const pattern of laptopPatterns) {\n    if (pattern instanceof RegExp ? pattern.test(hint) : hint.includes(pattern)) return 'Laptop';\n  }\n\n  return 'PC/Laptop';\n}\n\nfunction normalizeClass(value, f = {}) {\n  const raw = String(value || '-').trim();\n  const lower = raw.toLowerCase();\n\n  if (lower === 'pc' || lower === 'pc/laptop' || lower.includes('pc/laptop') || lower.includes('desktop') || lower.includes('laptop') || lower.includes('notebook') || lower.includes('portable')) {\n    return inferWorkstationClass({ ...f, finalclass: raw });\n  }\n\n  if (lower === 'mobilephone' || lower.includes('phone') || lower.includes('telefono') || lower.includes('tel\\u00e9fono')) return 'Tel\\u00e9fonos m\\u00f3viles';\n  if (lower === 'tablet') return 'Tablets';\n  if (lower === 'printer' || lower.includes('impresora')) return 'Impresoras';\n  if (lower === 'peripheral' || lower.includes('periferico') || lower.includes('perif\\u00e9rico')) return 'Perif\\u00e9ricos';\n  return raw || 'Otros';\n}\n\nfunction classSortWeight(className) {\n  const order = { 'PC': 10, 'Laptop': 20, 'PC/Laptop': 25, 'Tablets': 30, 'Tel\\u00e9fonos m\\u00f3viles': 40, 'Impresoras': 50, 'Perif\\u00e9ricos': 60, 'Otros': 90 };\n  return order[className] || 80;\n}\n\nfunction normalizeStatus(value) {\n  const raw = String(value || '').trim();\n  const s = raw.toLowerCase();\n\n  if (s === 'stock' || s.includes('stock') || s.includes('inventario') || s.includes('available')) {\n    return { code: 'stock', label: 'En Inventario' };\n  }\n  if (s === 'implementation' || s.includes('implementation') || s.includes('implementacion') || s.includes('implementaci\\u00f3n') || s.includes('no productivo')) {\n    return { code: 'implementation', label: 'No Productivo' };\n  }\n  if (s === 'production' || s.includes('production') || s.includes('produccion') || s.includes('producci\\u00f3n') || s.includes('productivo')) {\n    return { code: 'production', label: 'Productivo' };\n  }\n  if (s === 'obsolete' || s.includes('obsolete') || s.includes('obsoleto') || s.includes('retired')) {\n    return { code: 'obsolete', label: 'Obsoleto' };\n  }\n\n  return { code: raw || 'unknown', label: raw || 'Sin estado' };\n}\n\nfunction statusSortWeight(code) {\n  const order = { stock: 10, implementation: 20, production: 30, obsolete: 40 };\n  return order[code] || 90;\n}\n\nfunction statusBadge(status) {\n  const code = status.code;\n  const label = status.label;\n  if (code === 'stock') return badge(label, 'blue');\n  if (code === 'implementation') return badge(label, 'orange');\n  if (code === 'production') return badge(label, 'green');\n  if (code === 'obsolete') return badge(label, 'gray');\n  return badge(label, 'gray');\n}\n\nfunction parseDate(value) {\n  if (!value || value === '-') return null;\n  const d = new Date(String(value).replace(' ', 'T'));\n  if (Number.isNaN(d.getTime())) return null;\n  return d;\n}\n\nfunction fmtDateOnly(value) {\n  const d = parseDate(value);\n  if (!d) return isBlankValue(value) ? '-' : String(value);\n  return d.toLocaleDateString('es-CL', {\n    timeZone: config.timezone || 'America/Santiago',\n    year: 'numeric', month: '2-digit', day: '2-digit'\n  });\n}\n\nfunction isWarrantyExpired(value) {\n  const d = parseDate(value);\n  if (!d) return false;\n  const today = new Date();\n  today.setHours(0, 0, 0, 0);\n  return d < today;\n}\n\nfunction badge(text, color = 'gray') {\n  return `<span class=\"badge badge-${color}\">${escapeHtml(text)}</span>`;\n}\n\nfunction td(value, align = 'left') {\n  return `<td align=\"${align}\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${value}</td>`;\n}\n\nfunction headerCell(text) {\n  return `<th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap;\">${escapeHtml(text)}</th>`;\n}\n\nfunction reviewReasons(asset) {\n  const reasons = [];\n  if (isBlankValue(asset.serial)) reasons.push('sin serie');\n  if (isBlankValue(asset.brand)) reasons.push('sin marca');\n  if (isBlankValue(asset.model)) reasons.push('sin modelo');\n  if (isBlankValue(asset.location) || asset.location === 'Sin bodega/localidad') reasons.push('sin bodega/localidad');\n  if (isWarrantyExpired(asset.warrantyEnd)) reasons.push('garant\\u00eda vencida');\n  return reasons;\n}\n\nconst rawRows = flattenInput($input.all());\n\nconst allAssets = rawRows.map((row) => {\n  const f = row.fields || row;\n  const contactRaw = getField(f, [\n    'contacts_list_friendlyname',\n    'contacts_list',\n    'contact_id_friendlyname',\n    'contact_name',\n    'person_id_friendlyname',\n    'user_id_friendlyname'\n  ], '');\n  const status = normalizeStatus(getField(f, ['operational_status_friendlyname', 'operational_status', 'status_friendlyname', 'status'], '-'));\n  const finalclassRaw = getField(f, ['finalclass', 'class', 'class_friendlyname'], '-');\n\n  return {\n    name: getField(f, ['name', 'friendlyname'], '-'),\n    finalclass: normalizeClass(finalclassRaw, f),\n    finalclassRaw,\n    status,\n    organization: getField(f, ['org_id_friendlyname', 'organization_name', 'org_name'], '-'),\n    location: getField(f, ['location_id_friendlyname', 'location_name', 'location_id'], 'Sin bodega/localidad'),\n    contacts: normalizeContacts(contactRaw),\n    brand: getField(f, ['brand_id_friendlyname', 'brand'], '-'),\n    model: getField(f, ['model_id_friendlyname', 'model'], '-'),\n    serial: getField(f, ['serialnumber', 'serial_number'], ''),\n    move2production: getField(f, ['move2production', 'production_date'], '-'),\n    purchaseDate: getField(f, ['purchase_date'], '-'),\n    warrantyEnd: getField(f, ['end_of_warranty'], '-'),\n  };\n});\n\n// Requisito del reporte: devolver solamente activos CMDB con contacto asignado.\nconst assets = allAssets\n  .filter(asset => !isBlankValue(asset.contacts))\n  .sort((a, b) =>\n    statusSortWeight(a.status.code) - statusSortWeight(b.status.code) ||\n    String(a.status.label).localeCompare(String(b.status.label), 'es') ||\n    classSortWeight(a.finalclass) - classSortWeight(b.finalclass) ||\n    String(a.finalclass).localeCompare(String(b.finalclass), 'es') ||\n    String(a.location).localeCompare(String(b.location), 'es') ||\n    String(a.name).localeCompare(String(b.name), 'es')\n  );\n\nconst statusGroups = new Map();\nconst classGroups = new Map();\nconst locationGroups = new Map();\nconst reviewAssets = [];\nlet warrantyExpiredCount = 0;\n\nfor (const asset of assets) {\n  if (!statusGroups.has(asset.status.code)) statusGroups.set(asset.status.code, { status: asset.status, list: [] });\n  statusGroups.get(asset.status.code).list.push(asset);\n\n  if (!classGroups.has(asset.finalclass)) classGroups.set(asset.finalclass, []);\n  classGroups.get(asset.finalclass).push(asset);\n\n  if (!locationGroups.has(asset.location)) locationGroups.set(asset.location, []);\n  locationGroups.get(asset.location).push(asset);\n\n  if (isWarrantyExpired(asset.warrantyEnd)) warrantyExpiredCount++;\n  const reasons = reviewReasons(asset);\n  if (reasons.length) reviewAssets.push({ ...asset, reviewReasonText: reasons.join(', ') });\n}\n\nconst statusEntries = Array.from(statusGroups.values()).sort((a, b) => statusSortWeight(a.status.code) - statusSortWeight(b.status.code) || a.status.label.localeCompare(b.status.label, 'es'));\n\nconst statusSummaryRows = statusEntries.map(({ status, list }) => {\n  const byClass = {};\n  for (const asset of list) byClass[asset.finalclass] = (byClass[asset.finalclass] || 0) + 1;\n  const classText = Object.entries(byClass)\n    .sort(([a], [b]) => classSortWeight(a) - classSortWeight(b) || a.localeCompare(b, 'es'))\n    .map(([klass, count]) => `${escapeHtml(klass)}: ${count}`)\n    .join('<br>');\n  const reviewCount = list.filter(a => reviewReasons(a).length > 0).length;\n  const observation = reviewCount > 0 ? `<span class=\"badge badge-yellow\">Por revisar: ${reviewCount}</span>` : `<span class=\"badge badge-green\">Sin observaciones</span>`;\n  return `<tr>${td(statusBadge(status))}${td(`<strong>${list.length}</strong>`, 'right')}${td(classText || '-')}${td(observation)}</tr>`;\n}).join('');\n\nconst locationSummaryRows = Array.from(locationGroups.entries()).sort(([a], [b]) => a.localeCompare(b, 'es')).map(([location, list]) => {\n  const byStatus = {};\n  for (const asset of list) byStatus[asset.status.label] = (byStatus[asset.status.label] || 0) + 1;\n  const statusText = Object.entries(byStatus).sort(([a], [b]) => a.localeCompare(b, 'es')).map(([status, count]) => `${escapeHtml(status)}: ${count}`).join('<br>');\n  const reviewCount = list.filter(a => reviewReasons(a).length > 0).length;\n  const observation = reviewCount > 0 ? `<span class=\"badge badge-yellow\">Por revisar: ${reviewCount}</span>` : `<span class=\"badge badge-green\">Sin observaciones</span>`;\n  return `<tr>${td(escapeHtml(location))}${td(`<strong>${list.length}</strong>`, 'right')}${td(statusText || '-')}${td(observation)}</tr>`;\n}).join('');\n\n\nfunction contactParts(value) {\n  const text = String(value ?? '').trim();\n  if (!text) return [];\n\n  const unique = [];\n  const seen = new Set();\n  for (const part of text.split(',').map(v => cleanContactText(v)).filter(Boolean)) {\n    const key = part.toLowerCase();\n    if (!seen.has(key)) {\n      seen.add(key);\n      unique.push(part);\n    }\n  }\n  return unique;\n}\n\nfunction renderContactsHtml(value) {\n  const parts = contactParts(value);\n  if (!parts.length) return '<span class=\"badge badge-yellow\">Sin responsable</span>';\n  if (parts.length === 1) return escapeHtml(parts[0]);\n\n  // Para m\\u00faltiples responsables se usa salto de l\\u00ednea sin vi\\u00f1etas/iconos,\n  // compatible con clientes de correo como Outlook y Gmail.\n  return parts\n    .map(contact => `<div style=\"margin:0 0 3px 0; padding:0; color:#1f2937; font-size:12px; line-height:16px;\">${escapeHtml(contact)}</div>`)\n    .join('');\n}\n\nfunction assetRows(list, includeReviewColumn = false) {\n  return list.map(asset => {\n    const serialBadge = !isBlankValue(asset.serial) ? escapeHtml(asset.serial) : '<span class=\"badge badge-yellow\">Sin serie</span>';\n    const contactBadge = renderContactsHtml(asset.contacts);\n    const warrantyValue = isWarrantyExpired(asset.warrantyEnd) ? '<span class=\"badge badge-orange\">' + escapeHtml(fmtDateOnly(asset.warrantyEnd)) + '</span>' : escapeHtml(fmtDateOnly(asset.warrantyEnd));\n    const reviewColumn = includeReviewColumn ? td(badge(asset.reviewReasonText || reviewReasons(asset).join(', '), 'yellow')) : '';\n    return `<tr>\n      ${td(`<strong>${escapeHtml(asset.name)}</strong>`)}\n      ${td(statusBadge(asset.status))}\n      ${td(escapeHtml(asset.location))}\n      ${td(contactBadge)}\n      ${td(escapeHtml(asset.brand))}\n      ${td(escapeHtml(asset.model))}\n      ${td(serialBadge)}\n      ${td(escapeHtml(fmtDateOnly(asset.move2production)))}\n      ${td(escapeHtml(fmtDateOnly(asset.purchaseDate)))}\n      ${td(warrantyValue)}\n      ${reviewColumn}\n    </tr>`;\n  }).join('');\n}\n\nfunction assetsTable(list, includeReviewColumn = false) {\n  const reviewHead = includeReviewColumn ? headerCell('Criterio') : '';\n  const colSpan = includeReviewColumn ? 11 : 10;\n  return `<div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\">\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%;\">\n      <thead><tr>\n        ${headerCell('Nombre')}${headerCell('Estado')}${headerCell('Bodega / localidad')}${headerCell('Contactos')}${headerCell('Marca')}${headerCell('Modelo')}${headerCell('N\\u00b0 serie')}${headerCell('Producci\\u00f3n')}${headerCell('Compra')}${headerCell('Garant\\u00eda')}${reviewHead}\n      </tr></thead>\n      <tbody>${list.length ? assetRows(list, includeReviewColumn) : `<tr><td colspan=\"${colSpan}\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin activos para listar.</td></tr>`}</tbody>\n    </table>\n  </div>`;\n}\n\nconst statusAssetBlocks = statusEntries.map(({ status, list }) => {\n  const classMap = new Map();\n\n  for (const asset of list) {\n    if (!classMap.has(asset.finalclass)) classMap.set(asset.finalclass, []);\n    classMap.get(asset.finalclass).push(asset);\n  }\n\n  const classBlocks = Array.from(classMap.entries())\n    .sort(([a], [b]) => classSortWeight(a) - classSortWeight(b) || a.localeCompare(b, 'es'))\n    .map(([className, classList]) => `\n      <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:0 0 14px 0; border:1px solid #e2e8f0;\">\n        <tr>\n          <td style=\"background-color:#f8fafc; padding:9px 12px; border-bottom:1px solid #e2e8f0;\">\n            <div style=\"font-size:13px; line-height:18px; font-weight:bold; color:#0f172a;\">\n              Clase/Tipo: ${escapeHtml(className)}\n              <span style=\"color:#64748b; font-weight:normal;\">(${classList.length} activos)</span>\n            </div>\n          </td>\n        </tr>\n        <tr><td>${assetsTable(classList, false)}</td></tr>\n      </table>\n    `).join('');\n\n  return `\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n      <tr><td style=\"background-color:#f1f5f9; padding:10px 12px;\">\n        <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#0f172a;\">${statusBadge(status)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} activos con contacto)</span></div>\n        <div style=\"font-size:12px; line-height:18px; color:#64748b; margin-top:6px;\">Grupo por estado operativo normalizado desde iTop, subagrupado por clase de activo.</div>\n      </td></tr>\n      <tr><td style=\"padding:12px;\">${classBlocks}</td></tr>\n    </table>\n  `;\n}).join('');\n\nconst reviewCriteria = [\n  { title: 'Sin n\\u00famero de serie', description: 'Activos con contacto asignado, pero sin serial registrado en iTop.', match: (asset) => isBlankValue(asset.serial) },\n  { title: 'Sin marca', description: 'Activos con contacto asignado, pero sin fabricante o marca asociada.', match: (asset) => isBlankValue(asset.brand) },\n  { title: 'Sin modelo', description: 'Activos con contacto asignado, pero sin modelo t\\u00e9cnico registrado.', match: (asset) => isBlankValue(asset.model) },\n  { title: 'Sin bodega/localidad', description: 'Activos con contacto asignado, pero sin ubicaci\\u00f3n f\\u00edsica clara para trazabilidad operacional.', match: (asset) => isBlankValue(asset.location) || asset.location === 'Sin bodega/localidad' },\n  { title: 'Garant\\u00eda vencida', description: 'Activos con fecha de vencimiento de garant\\u00eda anterior a la fecha de generaci\\u00f3n del reporte.', match: (asset) => isWarrantyExpired(asset.warrantyEnd) },\n];\n\nconst reviewAssetBlocks = reviewAssets.length ? reviewCriteria.map((criterion) => {\n  const list = reviewAssets.filter(asset => criterion.match(asset)).sort((a, b) =>\n    statusSortWeight(a.status.code) - statusSortWeight(b.status.code) ||\n    classSortWeight(a.finalclass) - classSortWeight(b.finalclass) ||\n    String(a.location).localeCompare(String(b.location), 'es') ||\n    String(a.name).localeCompare(String(b.name), 'es')\n  );\n  if (!list.length) return '';\n  return `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n    <tr><td style=\"background-color:#fff7ed; padding:10px 12px; border-bottom:1px solid #fed7aa;\">\n      <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#9a3412;\">${escapeHtml(criterion.title)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} activos)</span></div>\n      <div style=\"font-size:12px; line-height:18px; color:#854d0e; margin-top:2px;\">${escapeHtml(criterion.description)} Un mismo activo puede aparecer en m\\u00e1s de un criterio si presenta m\\u00faltiples condiciones de revisi\\u00f3n.</div>\n    </td></tr>\n    <tr><td>${assetsTable(list, true)}</td></tr>\n  </table>`;\n}).join('') : '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#166534;\">No se detectaron activos por revisar seg\\u00fan el criterio del reporte.</td></tr></table>';\n\n\nconst csvHeaders = [\n  'Nombre',\n  'Clase/Tipo',\n  'Estado',\n  'Bodega/Localidad',\n  'Contactos',\n  'Marca',\n  'Modelo',\n  'Serie',\n  'Puesto en Produccion',\n  'Fecha de Compra',\n  'Vencimiento de Garantia'\n];\n\nconst csvRows = assets.map(asset => [\n  asset.name,\n  asset.finalclass,\n  asset.status.label,\n  asset.location,\n  asset.contacts,\n  asset.brand,\n  asset.model,\n  asset.serial,\n  fmtDateOnly(asset.move2production),\n  fmtDateOnly(asset.purchaseDate),\n  fmtDateOnly(asset.warrantyEnd)\n]);\n\nconst csvContent = '\\uFEFF' + [\n  csvHeaders.map(csvEscape).join(';'),\n  ...csvRows.map(row => row.map(csvEscape).join(';')),\n].join('\\r\\n');\n\nconst generatedAt = new Date().toLocaleString('es-CL', {\n  timeZone: config.timezone || 'America/Santiago',\n  year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'\n});\n\n\nconst countByStatus = (code) => statusGroups.get(code)?.list.length || 0;\n\nconst subjectBase = String(config.email_subject || 'Reporte CMDB - activos con contacto asignado por estado').trim();\nconst emailSubject = itopOrganization\n  ? `${subjectBase} - ${itopOrganization}`\n  : subjectBase;\n\nconst generatedAtFile = new Date()\n  .toISOString()\n  .replace(/[:.]/g, '-')\n  .replace('T', '_')\n  .slice(0, 19);\n\nreturn [{\n  json: {\n    flags: config.flags || {},\n    report_template_key: config.report_template_key,\n    template_root: config.template_root,\n    include_attachment: config.flags?.include_attachment ?? config.include_attachment,\n    include_detail: config.flags?.include_detail ?? config.include_detail,\n    include_summary: config.flags?.include_summary ?? config.include_summary,\n    include_operational_notes: config.flags?.include_operational_notes ?? config.include_operational_notes,\n    include_itop_button_footer: config.flags?.include_itop_button_footer ?? config.include_itop_button_footer,\n    email_from: config.email_from,\n    email_to: config.email_to,\n    email_cc: config.email_cc || '',\n    email_bcc: config.email_bcc || '',\n    email_subject: emailSubject,\n    company,\n    Company: company,\n    itop_organization: itopOrganization || '-',\n    generated_at: generatedAt,\n    total_assets: String(assets.length),\n    stock_count: String(countByStatus('stock')),\n    implementation_count: String(countByStatus('implementation')),\n    production_count: String(countByStatus('production')),\n    obsolete_count: String(countByStatus('obsolete')),\n    review_count: String(reviewAssets.length),\n    status_summary_rows: statusSummaryRows || '<tr><td colspan=\"4\" style=\"padding:12px; font-size:12px; color:#64748b;\">No se encontraron activos con contacto asignado.</td></tr>',\n    location_summary_rows: locationSummaryRows || '<tr><td colspan=\"4\" style=\"padding:12px; font-size:12px; color:#64748b;\">No se encontraron activos con contacto asignado.</td></tr>',\n    status_asset_blocks: statusAssetBlocks || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">No se encontraron activos con contacto asignado.</td></tr></table>',\n    review_asset_blocks: reviewAssetBlocks,\n    itop_url: config.itop_url || '#',\n    csv_filename: `cmdb_activos_contacto_${generatedAtFile}.csv`,\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csvContent, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `cmdb_activos_contacto_${generatedAtFile}.csv`,\n    },\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3392,
+        448
+      ],
+      "id": "d9607dcc-59be-41e3-b763-db59a1e41573",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, 'utf8');\n}\n\nfunction render(template, values) {\n  return String(template || '').replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) => {\n    const parts = key.split('.');\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? '' : String(value);\n  });\n}\n\nfunction normalizeText(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['Automatizaci??n','Automatizaci&oacute;n'], ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'], ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['antig??edad','antig&uuml;edad'], ['actualizaci??n','actualizaci&oacute;n'], ['configuraci??n','configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['tel??fono','tel&eacute;fono'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['par??metros','par&aacute;metros'], ['env??a','env&iacute;a'], ['envi??','envi&oacute;'],\n    ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'], ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'],\n    ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'],\n    ['creaci??n','creaci&oacute;n'], ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'],\n    ['clasificaci??n','clasificaci&oacute;n'], ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'],\n    ['l??nea','l&iacute;nea'], ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  const trigger = getNodeJson('SetTrigger - Flujo');\n  const mixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const value = trigger[name] ?? trigger.flags?.[name] ?? data[name] ?? data.flags?.[name] ?? mixed[name] ?? mixed.flags?.[name];\n  return normalizeBoolean(value, fallback);\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? '')\n    .split(/\\r?\\n|\\. /)\n    .map(v => v.trim().replace(/\\.$/, ''))\n    .filter(Boolean);\n  if (!lines.length) return '<div style=\"font-size:13px; line-height:20px; color:#64748b;\">Sin observaciones adicionales.</div>';\n  return '<ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">' +\n    lines.map(line => '<li>' + escapeHtml(line) + '.</li>').join('') +\n    '</ul>';\n}\n\nfunction statCard(data, stat) {\n  const value = data[stat.value] ?? data[stat.fallbackValue] ?? '-';\n  return '<td class=\"summary-card\" width=\"33.33%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid ' + stat.border + '; background-color:' + stat.background + ';\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:' + stat.labelColor + '; font-weight:bold;\">' + escapeHtml(stat.label) + '</div><div style=\"font-size:24px; color:' + stat.valueColor + '; font-weight:bold;\">' + escapeHtml(value) + '</div></td></tr></table></td>';\n}\n\nfunction statRows(data, stats) {\n  const rows = [];\n  for (let i = 0; i < stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(stat => statCard(data, stat));\n    while (cells.length < 3) cells.push('<td class=\"summary-card\" width=\"33.33%\" valign=\"top\">&nbsp;</td>');\n    rows.push('<tr>' + cells.join('') + '</tr>');\n  }\n  return rows.join('\\n');\n}\n\nfunction simpleTable(title, rows, headers, emptyText) {\n  if (!rows) return '';\n  const headerHtml = headers.map(h => '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">' + escapeHtml(h) + '</th>').join('');\n  const body = rows || '<tr><td colspan=\"' + headers.length + '\" style=\"padding:14px; font-size:12px; color:#64748b;\">' + escapeHtml(emptyText || 'Sin registros.') + '</td></tr>';\n  return '<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">' + escapeHtml(title) + '</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + headerHtml + '</tr></thead><tbody>' + body + '</tbody></table>';\n}\n\nfunction tableContent(data) {\n  const blocks = [];\n  if (data.detail_blocks) blocks.push(data.detail_blocks);\n  if (data.class_asset_blocks) blocks.push(data.class_asset_blocks);\n  if (data.status_asset_blocks) blocks.push(data.status_asset_blocks);\n  if (data.review_asset_blocks) blocks.push(data.review_asset_blocks);\n  if (data.ticket_sections) blocks.push(data.ticket_sections);\n  if (data.older_section) blocks.push(data.older_section);\n  if (data.recent_section) blocks.push(data.recent_section);\n  if (data.ticket_rows_html) blocks.push(simpleTable('Tickets abiertos', data.ticket_rows_html, ['Criticidad','Referencia','Tipo','Titulo','Solicitante','Estado','Creacion','Ultimo update','Antiguedad','SLA'], 'Sin tickets.'));\n  if (data.movement_rows) blocks.push(simpleTable('Movimientos recientes', data.movement_rows, ['Fecha','Movimiento','Activo','Clase','Origen','Destino'], 'Sin movimientos.'));\n  if (data.class_summary_rows) blocks.push(simpleTable('Resumen por clase', data.class_summary_rows, ['Clase','Total','Dato 1','Observacion'], 'Sin resumen por clase.'));\n  if (data.warehouse_summary_rows) blocks.push(simpleTable('Resumen por bodega/localidad', data.warehouse_summary_rows, ['Bodega/localidad','Total','Clases','Observacion'], 'Sin resumen por bodega.'));\n  if (data.status_summary_rows) blocks.push(simpleTable('Resumen por estado', data.status_summary_rows, ['Estado','Total','Dato 1','Observacion'], 'Sin resumen por estado.'));\n  if (data.location_summary_rows) blocks.push(simpleTable('Resumen por localidad', data.location_summary_rows, ['Localidad','Total','Dato 1','Observacion'], 'Sin resumen por localidad.'));\n  if (data.class_status_rows) blocks.push(simpleTable('Clase por estado', data.class_status_rows, ['Clase','Productivo','Inventario','No operativo'], 'Sin matriz de estados.'));\n  if (data.location_matrix_rows) {\n    const header = data.location_matrix_header_cells || '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Bodega/localidad</th>';\n    blocks.push('<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">Matriz por bodega/localidad</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + header + '</tr></thead><tbody>' + data.location_matrix_rows + '</tbody></table>');\n  }\n  if (data.top_location_rows) blocks.push(simpleTable('Top bodega/localidad', data.top_location_rows, ['Bodega/localidad','Total','Dato 1','Observacion'], 'Sin top de localidades.'));\n  return blocks.filter(Boolean).join('\\n');\n}\n\nfunction buildHtml(item) {\n  const data = item.json || {};\n  const triggerConfig = getNodeJson('SetTrigger - Flujo');\n  const mixedConfig = getNodeJson('SetMixed - Configuracion efectiva');\n  const root = data.template_root || mixedConfig.template_root || triggerConfig.template_root || '/opt/n8n-config/templates/mail/v1';\n  const key = data.report_template_key || mixedConfig.report_template_key || triggerConfig.report_template_key || 'cmdb-activos-sin-contacto';\n  const contract = JSON.parse(readText(path.join(root, 'reports', key + '.json')));\n  const partial = (name) => readText(path.join(root, contract.partials[name]));\n\n  const styles = partial('styles');\n  const header = render(partial('header'), {\n    eyebrow: escapeHtml(contract.header?.eyebrow || 'Automatizacion ITSM / CMDB'),\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    subtitle: escapeHtml(contract.header?.subtitle || ''),\n    itop_organization: escapeHtml(data.itop_organization || '-'),\n    generated_at: escapeHtml(data.generated_at || '-'),\n    source_label: escapeHtml(data.source_label || data.report_source_label || contract.header?.source_label || '-'),\n  });\n  const summary = render(partial('summary'), { description: escapeHtml(data.report_description || contract.summary?.description || '') });\n  const stats = render(partial('stats'), { stats_rows: statRows(data, contract.stats || []) });\n  const criteria = render(partial('criteria'), contract.criteria || {});\n  const tables = flagEnabled(data, 'include_detail', true) ? render(partial('tables'), {\n    title: contract.tables?.title || 'Detalle operacional',\n    subtitle: contract.tables?.subtitle || '',\n    content: tableContent(data) || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin registros para el criterio del reporte.</td></tr></table>',\n  }) : '';\n  const notes = flagEnabled(data, 'include_operational_notes', true) ? render(partial('notes'), { notes_list: notesList(data.operational_notes) }) : '';\n  const cta = flagEnabled(data, 'include_itop_button_footer', true) ? render(partial('cta'), {\n    href: escapeHtml(data.itop_url || '#'),\n    label: contract.cta?.label || 'Abrir',\n  }) : '';\n  const footer = render(partial('footer'), {\n    brand: contract.footer?.brand || 'Automatizacion ITSM / CMDB',\n    company: escapeHtml(data.company || data.Company || ''),\n    generated_at: escapeHtml(data.generated_at || '-'),\n  });\n\n  let html = render(partial('layout'), {\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    styles,\n    header,\n    summary: flagEnabled(data, 'include_summary', true) ? summary : '',\n    stats: flagEnabled(data, 'include_summary', true) ? stats : '',\n    criteria,\n    tables,\n    notes,\n    cta,\n    footer,\n  });\n  html = normalizeText(html, false);\n  data.email_subject = normalizeText(data.email_subject, true);\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  return {\n    json: {\n      ...data,\n      html,\n      template_version: contract.template_version || 'mail-v1',\n      template_contract: key,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n}\n\nreturn $input.all().map(buildHtml);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        448
+      ],
+      "id": "8dc47f72-fdd6-43e1-ba40-ad4932fccf76",
+      "name": "HTML - Renderer parciales"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "={{ $json.attachment_binary_names }}",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        4064,
+        448
+      ],
+      "id": "9bf7c264-3183-4104-9e86-3dd4c4ea452b",
+      "name": "Enviar correo SMTP",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "3SyjzuvErhGGEZZq",
+          "name": "SMTP_MailPit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cmdb-inventario-activos-contactos",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1600,
+        256
+      ],
+      "id": "48fa5a43-e51e-491e-b31e-e203e9184c72",
+      "name": "Webhook - ejecucion externa",
+      "webhookId": "75933520-ec34-4dd4-acd2-188cc9853505",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5ueiVRP6pKurE71t",
+          "name": "HeaderAuth_GF_QA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        2272,
+        640
+      ],
+      "id": "d77abd5e-62ac-4496-b751-65654fe02c20",
+      "name": "Cron - lunes 07:00"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "puR8KZ9UFvq5zRqX",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/puR8KZ9UFvq5zRqX",
+          "cachedResultName": "SYS - Configuracion base reportes correo"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "a8ddc5f9-c91e-47ee-a4c3-cbad5387903c",
+      "name": "SubWorkflow - SetBase reportes correo",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2720,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $input.first()?.json || {};\nconst trigger = $('SetTrigger - Flujo').first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si'].includes(text)) return true;\n  if (['false', '0', 'no', 'n'].includes(text)) return false;\n  return fallback;\n}\n\nconst flags = { ...(base.flags || {}) };\nfor (const key of ['include_attachment', 'include_detail', 'include_summary', 'include_operational_notes', 'include_itop_button_footer', 'send_email', 'include_requirements', 'include_incidents', 'include_changes', 'include_problems']) {\n  if (trigger[key] !== undefined && trigger[key] !== null && trigger[key] !== '') {\n    flags[key] = normalizeBoolean(trigger[key], flags[key]);\n  }\n}\n\nconst setMixed = {\n  ...base,\n  ...trigger,\n  flags,\n  config_source: 'SetBase + SetTrigger',\n};\n\nfor (const [key, value] of Object.entries(flags)) {\n  if (setMixed[key] === undefined || setMixed[key] === null || setMixed[key] === '') setMixed[key] = value;\n}\n\nreturn [{ json: setMixed }];"
+      },
+      "id": "7493622b-8d70-48b1-84e3-1026d6951398",
+      "name": "Config Reporte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2944,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction mergeFlags(...sources) {\n  const flags = {};\n  for (const source of sources) {\n    if (!source) continue;\n    Object.assign(flags, source.flags || {});\n    for (const key of ['include_attachment','include_detail','include_summary','include_operational_notes','include_itop_button_footer','send_email','include_requirements','include_incidents','include_changes','include_problems']) {\n      if (source[key] !== undefined && source[key] !== null && source[key] !== '') flags[key] = normalizeBoolean(source[key], flags[key]);\n    }\n  }\n  return flags;\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  return normalizeBoolean(data[name] ?? data.flags?.[name], fallback);\n}\n\nfunction removeOuterRowByMarker(html, marker) {\n  const index = html.indexOf(marker);\n  if (index === -1) return html;\n  const starts = ['\\n      <tr><td', '\\n                        <tr><td', '<tr><td', '<tr>'];\n  let start = -1;\n  for (const needle of starts) {\n    const pos = html.lastIndexOf(needle, index);\n    if (pos !== -1 && pos > start) start = pos;\n  }\n  if (start === -1) start = Math.max(0, index - 200);\n  const ends = ['\\n      <tr><td', '\\n                        <tr><td', '\\n      <tr><td style=\"background-color', '\\n                        <tr><td style=\"background-color'];\n  let end = -1;\n  for (const needle of ends) {\n    const pos = html.indexOf(needle, index + marker.length);\n    if (pos !== -1 && (end === -1 || pos < end)) end = pos;\n  }\n  if (end === -1) {\n    const close = html.indexOf('</td></tr>', index);\n    end = close === -1 ? index + marker.length : close + '</td></tr>'.length;\n  }\n  return html.slice(0, start) + html.slice(end);\n}\n\nfunction removeAllRowsByMarker(html, marker) {\n  let previous;\n  do {\n    previous = html;\n    html = removeOuterRowByMarker(html, marker);\n  } while (html !== previous);\n  return html;\n}\n\nfunction removeTablesByClass(html) {\n  return html\n    .replace(/<table\\b[^>]*class=[\"'][^\"']*(?:data-table|ticket-table)[^\"']*[\"'][\\s\\S]*?<\\/table>/gi, '')\n    .replace(/<table\\b[^>]*(?:data-table|ticket-table)[^>]*>[\\s\\S]*?<\\/table>/gi, '');\n}\n\n\nfunction repairMailEncoding(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['Automatizaci??n','Automatizaci&oacute;n'], ['automatizaci??n','automatizaci&oacute;n'],\n    ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['producci??n','producci&oacute;n'],\n    ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'],\n    ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['t??tulo','t&iacute;tulo'],\n    ['antig??edad','antig&uuml;edad'], ['Antig??edad','Antig&uuml;edad'],\n    ['actualizaci??n','actualizaci&oacute;n'], ['Actualizaci??n','Actualizaci&oacute;n'],\n    ['configuraci??n','configuraci&oacute;n'], ['Configuraci??n','Configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['f??sicamente','f&iacute;sicamente'],\n    ['tel??fono','tel&eacute;fono'], ['Tel??fonos','Tel&eacute;fonos'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['Perif??ricos','Perif&eacute;ricos'],\n    ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'], ['??ltima','&uacute;ltima'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['Cr??tico','Cr&iacute;tico'], ['CR??TICOS','CR&Iacute;TICOS'],\n    ['par??metros','par&aacute;metros'], ['inv??lida','inv&aacute;lida'], ['v??lida','v&aacute;lida'], ['v??lidas','v&aacute;lidas'],\n    ['env??a','env&iacute;a'], ['envi??','envi&oacute;'], ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'],\n    ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'], ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['Hist??rico','Hist&oacute;rico'],\n    ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'], ['creaci??n','creaci&oacute;n'],\n    ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'], ['clasificaci??n','clasificaci&oacute;n'],\n    ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'], ['l??nea','l&iacute;nea'],\n    ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction applyVisualFlags(html, data) {\n  if (!html) return html;\n  if (!flagEnabled(data, 'include_summary', true)) {\n    for (const marker of ['Resumen ejecutivo', 'TOTAL ACTIVOS', 'TOTAL CON CONTACTO', 'TOTAL TICKETS', 'TOTAL CAMBIOS', 'TOTAL MOVIMIENTOS']) html = removeAllRowsByMarker(html, marker);\n  }\n  if (!flagEnabled(data, 'include_detail', true)) {\n    for (const marker of [\n      'Detalle operacional',\n      'Detalle de activos',\n      'Detalle de tickets',\n      'Detalle por agente',\n      'Detalle por antig?edad',\n      'Resumen por estado',\n      'Resumen por bodega/localidad',\n      'Resumen por clase',\n      'Activos por clase',\n      'Por revisar',\n      'Tickets abiertos',\n      'Tickets abiertos pendientes',\n      'Tickets abiertos por agente',\n      'Tickets con m?s de 14 d?as abiertos',\n      'Tickets abiertos hasta 14 d?as',\n      'Movimientos recientes',\n      'data-table',\n      'ticket-table'\n    ]) html = removeAllRowsByMarker(html, marker);\n    html = removeTablesByClass(html);\n    html = html.replace(/\\.data-table[\\s\\S]*?\\}/g, '').replace(/\\.ticket-table[\\s\\S]*?\\}/g, '');\n  }\n  if (!flagEnabled(data, 'include_operational_notes', true)) html = removeAllRowsByMarker(html, 'Observaciones operacionales');\n  if (!flagEnabled(data, 'include_itop_button_footer', true)) html = removeAllRowsByMarker(html, 'Abrir Combodo iTop');\n  return html;\n}\n\nreturn $input.all().map((item) => {\n  const configReporte = getNodeJson('Config Reporte');\n  const setMixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const setTrigger = getNodeJson('SetTrigger - Flujo');\n  const itemJson = item.json || {};\n  const flags = mergeFlags(configReporte, setMixed, itemJson, setTrigger);\n  const data = { ...configReporte, ...setMixed, ...itemJson, ...setTrigger, flags };\n  for (const [key, value] of Object.entries(flags)) data[key] = value;\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  const html = repairMailEncoding(applyVisualFlags(data.html, data), false);\n  data.email_subject = repairMailEncoding(data.email_subject, true);\n\n  return {\n    json: {\n      ...data,\n      html,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n});"
+      },
+      "id": "ccd44610-5149-478c-af20-727a2f5516cb",
+      "name": "Aplicar flags envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst body = item?.json?.body || {};\nconst errors = [];\n\nfunction text(name) {\n  return String(body[name] ?? '').trim();\n}\n\nfunction positiveNumber(name) {\n  const raw = body[name];\n  if (raw === undefined || raw === null || raw === '') return false;\n  const n = Number(raw);\n  return Number.isFinite(n) && n > 0;\n}\n\nfunction validDateText(name) {\n  const value = text(name);\n  if (!value) return false;\n  const parsed = new Date(value.replace(' ', 'T'));\n  return !Number.isNaN(parsed.getTime());\n}\n\nfunction dateWindowState() {\n  const hasStart = text('start_date').length > 0;\n  const hasEnd = text('end_date').length > 0;\n  if (!hasStart && !hasEnd) return { provided: false, valid: false };\n  if (!hasStart || !hasEnd) return { provided: true, valid: false, error: 'start_date y end_date deben enviarse juntos.' };\n  if (!validDateText('start_date') || !validDateText('end_date')) return { provided: true, valid: false, error: 'start_date y end_date deben ser fechas v\\u00e1lidas.' };\n  const start = new Date(text('start_date').replace(' ', 'T'));\n  const end = new Date(text('end_date').replace(' ', 'T'));\n  if (start > end) return { provided: true, valid: false, error: 'start_date no puede ser mayor que end_date.' };\n  return { provided: true, valid: true };\n}\n\nif (!text('email_to')) {\n  errors.push('email_to es obligatorio para llamadas webhook.');\n}\n\nconst webhookPath = 'cmdb-inventario-activos-contactos';\nconst window = dateWindowState();\n\nif (webhookPath === 'cmdb-movimientos-recientes-inventario') {\n  const hasMovementDays = positiveNumber('movement_days');\n  if (!hasMovementDays && !window.valid) {\n    errors.push(window.error || 'Debe enviar movement_days positivo o la ventana start_date + end_date.');\n  }\n}\n\nif (webhookPath === 'cmdb-activos-proximos-vencer-garantia') {\n  if (!positiveNumber('warranty_warning_months')) {\n    errors.push('warranty_warning_months es obligatorio y debe ser un numero mayor a 0.');\n  }\n}\n\nif (webhookPath === 'itsm-tickets-sin-actualizacion-24h') {\n  if (!positiveNumber('stale_threshold_hours')) {\n    errors.push('stale_threshold_hours es obligatorio y debe ser un numero mayor a 0.');\n  }\n}\n\nif (window.provided && !window.valid && webhookPath !== 'cmdb-movimientos-recientes-inventario') {\n  errors.push(window.error || 'Ventana de fechas inv\\u00e1lida.');\n}\n\nconst valid = errors.length === 0;\n\nreturn [{\n  json: {\n    ...(item.json || {}),\n    webhook_contract: {\n      valid,\n      status_code: valid ? 202 : 400,\n      message: valid ? 'Workflow accepted' : errors.join(' '),\n      errors,\n    },\n  },\n  binary: item.binary,\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        256
+      ],
+      "id": "7ff2f19f-26a6-4144-bee3-66d356d6ae37",
+      "name": "Validar webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"message\": $json.webhook_contract.message, \"accepted\": $json.webhook_contract.valid } }}",
+        "options": {
+          "responseCode": "={{ $json.webhook_contract.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2048,
+        256
+      ],
+      "id": "f7d99c6a-999b-46fe-9a4f-8e7b4acd5dbc",
+      "name": "Responder webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst json = item?.json || {};\n\nif (!json.webhook_contract?.valid) {\n  return [];\n}\n\nconst { webhook_contract, ...cleanJson } = json;\nreturn [{ json: cleanJson, binary: item.binary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        256
+      ],
+      "id": "9da2c424-ae80-408d-8bb3-daf87f2de2b2",
+      "name": "Continuar webhook valido"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Inventario CMDB": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Renderer parciales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Renderer parciales": {
+      "main": [
+        [
+          {
+            "node": "Aplicar flags envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetTrigger - Flujo": {
+      "main": [
+        [
+          {
+            "node": "SubWorkflow - SetBase reportes correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubWorkflow - SetBase reportes correo": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Inventario CMDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - ejecucion externa": {
+      "main": [
+        [
+          {
+            "node": "Validar webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron - lunes 07:00": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar flags envio": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar webhook": {
+      "main": [
+        [
+          {
+            "node": "Responder webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder webhook": {
+      "main": [
+        [
+          {
+            "node": "Continuar webhook valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continuar webhook valido": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e36ada1d-cfda-4f04-ad24-644802d6af08",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "96P8cqgVH5Ulax",
+  "tags": []
+}

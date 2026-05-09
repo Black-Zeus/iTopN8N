@@ -1,0 +1,560 @@
+{
+  "name": "ITSM - Tickets sin actualización mayor a 24h - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "dcd680d7-36c6-4243-a1cc-dbfe42b69fa7",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5ea8e106-1f71-4759-92ba-d0e504f5564c",
+              "name": "itop_url",
+              "value": "http://172.16.123.132/itop/",
+              "type": "string"
+            },
+            {
+              "id": "92322c16-fa36-4396-98a2-5e7ed1211472",
+              "name": "email_from",
+              "value": "notificaciones@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "d187862d-cac1-4743-9641-2d1688db9737",
+              "name": "email_to",
+              "value": "={{ $json.body?.email_to ?? \"destinatario@dominio.cl\" }}",
+              "type": "string"
+            },
+            {
+              "id": "59920b72-0508-4e10-9488-e5df5896051a",
+              "name": "email_cc",
+              "value": "={{ $json.body?.email_cc ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "2f2146fc-b935-418d-b8b7-1d2c9077a0ba",
+              "name": "email_bcc",
+              "value": "={{ $json.body?.email_bcc ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f40ad4d0-d65c-451c-97de-6e0327c48b7e",
+              "name": "email_subject",
+              "value": "Reporte ITSM - tickets sin update mayor a 24 horas",
+              "type": "string"
+            },
+            {
+              "id": "fe21db6a-d148-4cb2-88db-7356e70cbf78",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "14a03b64-a21e-43ac-9129-44b6b9462ac8",
+              "name": "closed_status_values",
+              "value": "closed,resolved,rejected,cancelled,cerrado,resuelto,rechazado",
+              "type": "string"
+            },
+            {
+              "id": "43db9f5f-19cc-4aa8-ab07-57ca24455104",
+              "name": "stale_threshold_hours",
+              "value": "={{ $json.body?.stale_threshold_hours ?? \"24\" }}",
+              "type": "string"
+            },
+            {
+              "id": "e3fb0c6e-a2f1-4caa-acbb-09ccb01f6db9",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "2f8534d4-a6f2-4ad6-b0ec-a635ac949955",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "c8be9ba1-d9f5-45f2-9db2-497481d60848",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "22280841-6995-4586-81b1-7142b0c08fd3",
+              "name": "include_requirements",
+              "value": "={{ $json.body?.include_requirements ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "492b481a-1d3c-44dd-b6d5-2ee0cfcb36db",
+              "name": "include_incidents",
+              "value": "={{ $json.body?.include_incidents ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "b90a795a-c7e5-45fe-92f7-9cfab4546719",
+              "name": "include_changes",
+              "value": "={{ $json.body?.include_changes ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "970cf6b6-aab9-4377-870d-81b2589ab7c4",
+              "name": "include_problems",
+              "value": "={{ $json.body?.include_problems ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "b7f9cb39-cdf5-42c1-845b-bd7d8d5cb91d",
+              "name": "include_attachment",
+              "value": "={{ $json.body?.include_attachment ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "feb165e2-f23b-40e6-b15b-d6709bf47908",
+              "name": "include_detail",
+              "value": "={{ $json.body?.include_detail ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "71a6995d-104b-4f19-94f1-5d05cae005ef",
+              "name": "include_summary",
+              "value": "={{ $json.body?.include_summary ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "8baa653a-420d-4b34-bede-4c3700d76d80",
+              "name": "include_operational_notes",
+              "value": "={{ $json.body?.include_operational_notes ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "5caf153b-a0ee-4bf8-8f76-01db0c553f81",
+              "name": "include_itop_button_footer",
+              "value": "={{ $json.body?.include_itop_button_footer ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "784d968d-cd6d-482c-b077-1e34a4408b12",
+              "name": "start_date",
+              "value": "={{ $json.body?.start_date ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f65218ca-d565-4d74-bf5d-129efbfacaa2",
+              "name": "end_date",
+              "value": "={{ $json.body?.end_date ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "b5e7da2f-7cd9-446c-b8cc-529e19b13a02",
+              "name": "report_template_key",
+              "value": "itsm-tickets-sin-actualizacion-24h",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        0
+      ],
+      "id": "8a1c1428-8b48-4f4b-a1fe-8aea05e1ea74",
+      "name": "SetTrigger - Flujo"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "Ticket",
+        "key": "SELECT Ticket WHERE operational_status NOT IN ('closed', 'resolved', 'rejected', 'cancelled')",
+        "output_fields": "ref,operational_status,org_id,org_name,caller_id,caller_name,team_id,team_name,team_email,agent_id,agent_name,title,description,start_date,end_date,last_update,close_date,private_log,contacts_list,functionalcis_list,workorders_list,finalclass,friendlyname,org_id_friendlyname,caller_id_friendlyname,team_id_friendlyname,agent_id_friendlyname",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "de060713-1b9c-4d21-84f4-60a7e0fe3d1e",
+      "name": "iTop - Tickets para análisis de actividad",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "FdUX5lCOh0Z3YWW4",
+          "name": "iTopToken_GF_QA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseConfig = $('Config Reporte').first().json;\nconst triggerConfig = $('SetTrigger - Flujo').first()?.json || {};\nconst mergedFlags = { ...(baseConfig.flags || {}) };\nfunction mergeFlag(name) {\n  const value = triggerConfig[name];\n  if (value === undefined || value === null || value === '') return;\n  if (typeof value === 'boolean') mergedFlags[name] = value;\n  else if (typeof value === 'number') mergedFlags[name] = value !== 0;\n  else {\n    const text = String(value).trim().toLowerCase();\n    if (['true','1','yes','y','si','s','on','enabled'].includes(text)) mergedFlags[name] = true;\n    else if (['false','0','no','n','off','disabled'].includes(text)) mergedFlags[name] = false;\n  }\n}\nfor (const key of ['include_attachment','include_detail','include_summary','include_operational_notes','include_itop_button_footer','send_email','include_requirements','include_incidents','include_changes','include_problems']) mergeFlag(key);\nconst config = { ...baseConfig, ...triggerConfig, flags: mergedFlags };\nfor (const [key, value] of Object.entries(mergedFlags)) config[key] = value;\nconst thresholdHours = Number(config.stale_threshold_hours || 24);\nconst timezone = config.timezone || 'America/Santiago';\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst itopOrganization = String(config.itop_organization || '').trim();\nconst now = new Date();\n\nfunction isEnabledFlag(value, defaultValue = true) {\n  if (value === undefined || value === null || value === '') return defaultValue;\n  if (typeof value === 'boolean') return value;\n  const normalized = String(value).trim().toLowerCase();\n  return ['true', '1', 'yes', 'si', 's', 'y', 'on', 'enabled'].includes(normalized);\n}\n\nconst includeRequirements = isEnabledFlag(config.include_requirements, true);\nconst includeIncidents = isEnabledFlag(config.include_incidents, true);\nconst includeChanges = isEnabledFlag(config.include_changes, true);\nconst includeProblems = isEnabledFlag(config.include_problems, true);\n\nconst enabledTicketTypes = new Set();\nif (includeRequirements) enabledTicketTypes.add('requirement');\nif (includeIncidents) enabledTicketTypes.add('incident');\nif (includeChanges) enabledTicketTypes.add('change');\nif (includeProblems) enabledTicketTypes.add('problem');\n\nfunction normalizeTicketKind(value, fields = {}) {\n  const rawValues = [\n    value,\n    getField(fields, ['finalclass', 'class', 'class_friendlyname', 'ticket_class', 'ticket_type', 'type', 'request_type', 'request_type_friendlyname'], ''),\n    getField(fields, ['ref', 'reference', 'friendlyname'], '')\n  ].map(v => String(v || '').trim()).filter(Boolean);\n\n  const raw = rawValues.join(' ').toLowerCase();\n\n  if (raw.includes('userrequest') || raw.includes('user request') || raw.includes('request') || raw.includes('requerimiento') || raw.includes('requisito') || raw.includes('solicitud')) {\n    return { key: 'requirement', label: 'Requerimiento' };\n  }\n  if (raw.includes('incident') || raw.includes('incidente') || raw.includes('incidencia')) {\n    return { key: 'incident', label: 'Incidente' };\n  }\n  if (raw.includes('change') || raw.includes('cambio')) {\n    return { key: 'change', label: 'Cambio' };\n  }\n  if (raw.includes('problem') || raw.includes('problema')) {\n    return { key: 'problem', label: 'Problema' };\n  }\n\n  return { key: 'unknown', label: rawValues[0] || 'No identificado' };\n}\n\nfunction enabledTicketTypeText() {\n  const labels = [];\n  if (includeRequirements) labels.push('Requerimientos');\n  if (includeIncidents) labels.push('Incidentes');\n  if (includeChanges) labels.push('Cambios');\n  if (includeProblems) labels.push('Problemas');\n  return labels.length ? labels.join(', ') : 'Sin tipos habilitados';\n}\n\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\\\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\"/g, '\"\"');\n  return `\"${text}\"`;\n}\n\nfunction stripHtml(value) {\n  return String(value ?? '')\n    .replace(/<br\\s*\\/?>/gi, '\\n')\n    .replace(/<\\/p>/gi, '\\n')\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\\\"')\n    .replace(/&#039;/g, \"'\")\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction rawField(obj, names) {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return undefined;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\n\nfunction parseDate(value) {\n  if (!value || value === '-') return null;\n  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;\n  const raw = String(value).trim();\n  if (!raw) return null;\n  const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T');\n  const d = new Date(normalized);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\n\nfunction fmtDateTime(value) {\n  const d = parseDate(value);\n  if (!d) return '-';\n  return d.toLocaleString('es-CL', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });\n}\n\nfunction diffHours(from, to = now) {\n  const d = parseDate(from);\n  if (!d) return 0;\n  return Math.max(0, Math.floor((to.getTime() - d.getTime()) / 36e5));\n}\n\nfunction formatDurationFromHours(hours) {\n  const h = Math.max(0, Math.floor(Number(hours || 0)));\n  const days = Math.floor(h / 24);\n  const rem = h % 24;\n  if (days <= 0) return `${rem}h`;\n  if (rem === 0) return `${days}d`;\n  return `${days}d ${rem}h`;\n}\n\nfunction isBlank(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined' || v.toLowerCase() === 'n/a';\n}\n\nfunction closedSet() {\n  return new Set(String(config.closed_status_values || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean));\n}\nfunction isClosed(status) { return closedSet().has(String(status || '').trim().toLowerCase()); }\n\nfunction translateStatus(value) {\n  const raw = String(value || '').trim();\n  const s = raw.toLowerCase();\n  const map = {\n    new: 'Nuevo', assigned: 'Asignado', ongoing: 'En curso', pending: 'Pendiente', waiting: 'En espera', resolved: 'Resuelto', closed: 'Cerrado', rejected: 'Rechazado', cancelled: 'Cancelado'\n  };\n  return map[s] || raw || '-';\n}\n\nfunction collectLogEntries(value, collector = []) {\n  if (value === undefined || value === null || value === '') return collector;\n  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {\n    const text = stripHtml(value);\n    if (text && text !== '[object Object]') collector.push({ date: '', author: '', text });\n    return collector;\n  }\n  if (Array.isArray(value)) { value.forEach(v => collectLogEntries(v, collector)); return collector; }\n  if (typeof value === 'object') {\n    const date = value.date || value.created || value.created_at || value.creation_date || value.timestamp || value.time || value.modification_date || '';\n    const author = value.user_id_friendlyname || value.user_friendlyname || value.user_name || value.user_login || value.author || value.author_friendlyname || '';\n    const direct = rawField(value, ['message', 'html', 'text', 'body', 'content', 'comment', 'note', 'entry', 'value', 'description']);\n    if (direct !== undefined && direct !== value) {\n      const text = stripHtml(direct);\n      if (text && text !== '[object Object]') collector.push({ date, author, text });\n    }\n    const collection = value.entries || value.items || value.log || value.logs || value.records || value.data;\n    if (collection && collection !== value) collectLogEntries(collection, collector);\n  }\n  return collector;\n}\n\nfunction getLastLog(fields) {\n  const candidates = [\n    rawField(fields, ['last_comment', 'last_note', 'last_public_log', 'last_private_log', 'last_update_reason', 'last_change']),\n    rawField(fields, ['public_log', 'private_log', 'user_satisfaction', 'caselog', 'work_log', 'history'])\n  ];\n  const entries = [];\n  for (const candidate of candidates) collectLogEntries(candidate, entries);\n  const valid = entries.filter(e => e.text);\n  if (!valid.length) return { text: '-', date: null };\n  valid.sort((a, b) => (parseDate(a.date)?.getTime() || 0) - (parseDate(b.date)?.getTime() || 0));\n  const last = valid[valid.length - 1];\n  const prefix = [last.date ? fmtDateTime(last.date) : '', stripHtml(last.author)].filter(Boolean).join(' - ');\n  return { text: prefix ? `${prefix}: ${last.text}` : last.text, date: parseDate(last.date) };\n}\n\nfunction detectLastUpdate(fields, createdAt) {\n  const explicitUpdate = getField(fields, ['last_update','last_update_date','last_modification_date','last_modified','modification_date','date_mod','updated_at','last_activity','last_activity_date'], '');\n  const explicitUpdateDate = parseDate(explicitUpdate);\n  const lastLog = getLastLog(fields);\n  const candidates = [explicitUpdateDate, lastLog.date].filter(Boolean).sort((a, b) => b.getTime() - a.getTime());\n  return { date: candidates[0] || createdAt || null, source: candidates[0] ? 'update' : 'creation_fallback', note: lastLog.text || '-' };\n}\n\nfunction getSlaInfo(fields) {\n  const raw = [getField(fields, ['tto_escalation_deadline', 'ttr_escalation_deadline', 'resolution_deadline'], ''), getField(fields, ['tto_escalation_flag', 'ttr_escalation_flag', 'sla_status', 'sla', 'slas'], '')].filter(Boolean).join(' ');\n  const s = raw.toLowerCase();\n  const breached = ['breach', 'breached', 'vencido', 'expired', 'late', 'rojo', 'red'].some(v => s.includes(v));\n  return { text: raw || '-', breached };\n}\n\nfunction severityBadge(ticket) {\n  if (ticket.slaBreached || ticket.hoursSinceUpdate >= 72 || ticket.ageDays > 14) return '<span class=\"badge badge-red\">Cr\\u00edtico</span>';\n  if (ticket.hoursSinceUpdate >= 48) return '<span class=\"badge badge-orange\">Alto</span>';\n  return '<span class=\"badge badge-yellow\">Seguimiento</span>';\n}\n\nfunction td(value, align = 'left') {\n  return `<td align=\"${align}\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${value}</td>`;\n}\nfunction th(text, align = 'left') {\n  return `<th align=\"${align}\" style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:${align}; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap;\">${escapeHtml(text)}</th>`;\n}\n\nfunction ticketRow(ticket) {\n  const note = ticket.lastNote && ticket.lastNote !== '-' ? ticket.lastNote : 'Sin anotaci\\u00f3n legible desde la respuesta de iTop';\n  return `<tr>\n    ${td(severityBadge(ticket))}\n    ${td(`<strong>${escapeHtml(ticket.ref)}</strong>`)}\n    ${td(`<strong>${escapeHtml(ticket.title)}</strong>`)}\n    ${td(escapeHtml(ticket.caller))}\n    ${td(escapeHtml(ticket.agent || 'Sin agente asignado'))}\n    ${td(escapeHtml(fmtDateTime(ticket.createdAt)))}\n    ${td(escapeHtml(fmtDateTime(ticket.lastUpdateAt)))}\n    ${td(`<span class=\"badge ${ticket.hoursSinceUpdate >= 72 ? 'badge-red' : ticket.hoursSinceUpdate >= 48 ? 'badge-orange' : 'badge-yellow'}\">${escapeHtml(formatDurationFromHours(ticket.hoursSinceUpdate))}</span>`)}\n    ${td(escapeHtml(formatDurationFromHours(ticket.ageHours)))}\n    ${td(ticket.slaBreached ? '<span class=\"badge badge-red\">Vencido</span>' : escapeHtml(ticket.slaText || '-'))}\n    ${td(`<span class=\"wrap\">${escapeHtml(note).slice(0, 500)}</span>`)}\n  </tr>`;\n}\n\nfunction renderAgentBlock(agent, tickets) {\n  const sorted = [...tickets].sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));\n  const oldest = sorted[0];\n  const criticalCount = sorted.filter(t => t.slaBreached || t.hoursSinceUpdate >= 72 || t.ageDays > 14).length;\n  const slaBreachedCount = sorted.filter(t => t.slaBreached).length;\n  return `<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n    <tr><td style=\"background-color:#f1f5f9; padding:10px 12px; border-bottom:1px solid #dbe3ec;\">\n      <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#0f172a;\">${escapeHtml(agent)} <span style=\"color:#64748b; font-weight:normal;\">(${sorted.length} tickets)</span></div>\n      <div style=\"font-size:12px; line-height:18px; color:#64748b; margin-top:4px;\">M\\u00e1s antiguo: <strong>${escapeHtml(oldest?.ref || '-')}</strong> ?? abierto hace <strong>${escapeHtml(formatDurationFromHours(oldest?.ageHours || 0))}</strong> ?? cr\\u00edticos: <strong>${criticalCount}</strong> ?? SLA vencido: <strong>${slaBreachedCount}</strong></div>\n    </td></tr>\n    <tr><td><div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%;\">\n      <thead><tr>${th('Crit.')}${th('Referencia')}${th('T\\u00edtulo / asunto')}${th('Solicitante')}${th('Agente')}${th('Creaci\\u00f3n')}${th('\\u00faltimo update')}${th('Sin update')}${th('Tiempo abierto')}${th('SLA')}${th('\\u00faltima anotaci\\u00f3n / cambio registrado')}</tr></thead>\n      <tbody>${sorted.map(ticketRow).join('')}</tbody>\n    </table></div></td></tr>\n  </table>`;\n}\n\nfunction renderSection(title, subtitle, tickets) {\n  if (!tickets.length) return `<div class=\"section-title\">${escapeHtml(title)}</div><div class=\"section-subtitle\">${escapeHtml(subtitle)}</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec; margin-bottom:20px;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin tickets para este bloque.</td></tr></table>`;\n  const groups = new Map();\n  for (const ticket of tickets) {\n    const agent = ticket.agent || 'Sin agente asignado';\n    if (!groups.has(agent)) groups.set(agent, []);\n    groups.get(agent).push(ticket);\n  }\n  const ordered = Array.from(groups.entries()).sort(([, aList], [, bList]) => {\n    const aOldest = Math.min(...aList.map(t => t.createdAt?.getTime() || Number.MAX_SAFE_INTEGER));\n    const bOldest = Math.min(...bList.map(t => t.createdAt?.getTime() || Number.MAX_SAFE_INTEGER));\n    return aOldest - bOldest;\n  });\n  return `<div class=\"section-title\">${escapeHtml(title)}</div><div class=\"section-subtitle\">${escapeHtml(subtitle)}</div>${ordered.map(([agent, list]) => renderAgentBlock(agent, list)).join('')}`;\n}\n\nconst rows = flattenInput($input.all());\nconst tickets = rows.map((row) => {\n  const f = row.fields || row;\n  const status = getField(f, ['operational_status', 'operational_status_friendlyname', 'status', 'status_friendlyname'], '');\n  const createdRaw = getField(f, ['start_date', 'creation_date', 'created_at', 'date', 'opened_at'], '');\n  const createdAt = parseDate(createdRaw);\n  const lastUpdate = detectLastUpdate(f, createdAt);\n  const hoursSinceUpdate = diffHours(lastUpdate.date, now);\n  const ageHours = diffHours(createdAt, now);\n  const sla = getSlaInfo(f);\n  const ticketKind = normalizeTicketKind(getField(f, ['finalclass', 'class', 'class_friendlyname', 'ticket_class', 'ticket_type', 'type'], ''), f);\n  return {\n    ref: getField(f, ['ref', 'reference', 'ticket_ref', 'friendlyname'], row.key || '-'),\n    title: stripHtml(getField(f, ['title', 'description', 'name', 'friendlyname'], '-')),\n    ticketType: ticketKind.key,\n    ticketTypeLabel: ticketKind.label,\n    status,\n    statusLabel: translateStatus(status),\n    caller: getField(f, ['caller_id_friendlyname', 'customer_id_friendlyname', 'requestor_id_friendlyname', 'person_id_friendlyname'], '-'),\n    agent: getField(f, ['agent_id_friendlyname', 'agent_name', 'assignee_id_friendlyname', 'team_id_friendlyname', 'owner_id_friendlyname'], 'Sin agente asignado'),\n    createdAt,\n    lastUpdateAt: lastUpdate.date,\n    lastUpdateSource: lastUpdate.source,\n    lastNote: lastUpdate.note,\n    hoursSinceUpdate,\n    ageHours,\n    ageDays: Math.floor(ageHours / 24),\n    slaText: sla.text,\n    slaBreached: sla.breached,\n  };\n})\n.filter(t => !isClosed(t.status))\n.filter(t => enabledTicketTypes.has(t.ticketType))\n.filter(t => t.hoursSinceUpdate >= thresholdHours)\n.sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));\n\nconst olderThan14 = tickets.filter(t => t.ageDays > 14);\nconst upTo14 = tickets.filter(t => t.ageDays <= 14);\nconst unassignedCount = tickets.filter(t => isBlank(t.agent) || t.agent === 'Sin agente asignado').length;\nconst stale72Count = tickets.filter(t => t.hoursSinceUpdate >= 72).length;\nconst stale48Count = tickets.filter(t => t.hoursSinceUpdate >= 48 && t.hoursSinceUpdate < 72).length;\nconst stale24Count = tickets.filter(t => t.hoursSinceUpdate >= 24 && t.hoursSinceUpdate < 48).length;\nconst slaBreachedCount = tickets.filter(t => t.slaBreached).length;\nconst oldestTicket = tickets[0] ? `${tickets[0].ref} ?? ${formatDurationFromHours(tickets[0].ageHours)}` : '-';\nconst agentCount = new Set(tickets.map(t => t.agent || 'Sin agente asignado')).size;\n\nconst generatedAt = now.toLocaleString('es-CL', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });\n\nconst older_section = renderSection('Tickets con m\\u00e1s de 14 d\\u00edas abiertos', 'Agrupados por agente. Dentro de cada agente, ordenados desde el ticket m\\u00e1s viejo al m\\u00e1s nuevo. El filtro se aplica por \\u00faltimo update mayor al umbral configurado.', olderThan14);\nconst recent_section = renderSection('Tickets abiertos hasta 14 d\\u00edas', 'Agrupados por agente. Dentro de cada agente, ordenados desde el ticket m\\u00e1s viejo al m\\u00e1s nuevo. El filtro se aplica por \\u00faltimo update mayor al umbral configurado.', upTo14);\n\nconst csvHeaders = ['Criticidad','Referencia','Tipo','Titulo/Asunto','Estado','Solicitante','Agente','Creacion','Ultimo update','Horas sin update','Tiempo abierto horas','SLA','Ultima anotacion/cambio'];\nconst csvRows = tickets.map(t => [\n  (t.slaBreached || t.hoursSinceUpdate >= 72 || t.ageDays > 14) ? 'Critico' : t.hoursSinceUpdate >= 48 ? 'Alto' : 'Seguimiento',\n  t.ref, t.ticketTypeLabel, t.title, t.statusLabel, t.caller, t.agent, fmtDateTime(t.createdAt), fmtDateTime(t.lastUpdateAt), t.hoursSinceUpdate, t.ageHours, t.slaBreached ? 'Vencido' : t.slaText, t.lastNote\n]);\nconst csvContent = '\\uFEFF' + [csvHeaders.map(csvEscape).join(';'), ...csvRows.map(row => row.map(csvEscape).join(';'))].join('\\r\\n');\nconst generatedAtFile = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);\n\nconst subjectBase = String(config.email_subject || `Reporte ITSM - tickets sin update mayor a ${thresholdHours}h`).trim();\nconst emailSubject = itopOrganization ? `${subjectBase} - ${itopOrganization}` : subjectBase;\n\nreturn [{\n  json: {\n    flags: config.flags || {},\n    report_template_key: config.report_template_key,\n    template_root: config.template_root,\n    include_attachment: config.flags?.include_attachment ?? config.include_attachment,\n    include_detail: config.flags?.include_detail ?? config.include_detail,\n    include_summary: config.flags?.include_summary ?? config.include_summary,\n    include_operational_notes: config.flags?.include_operational_notes ?? config.include_operational_notes,\n    include_itop_button_footer: config.flags?.include_itop_button_footer ?? config.include_itop_button_footer,\n    email_from: config.email_from,\n    email_to: config.email_to,\n    email_cc: config.email_cc || '',\n    email_bcc: config.email_bcc || '',\n    email_subject: emailSubject,\n    company,\n    Company: company,\n    itop_organization: itopOrganization || '-',\n    generated_at: generatedAt,\n    threshold_hours: String(thresholdHours),\n    enabled_ticket_types: enabledTicketTypeText(),\n    include_requirements: String(includeRequirements),\n    include_incidents: String(includeIncidents),\n    include_changes: String(includeChanges),\n    include_problems: String(includeProblems),\n    total_stale: String(tickets.length),\n    older_than_14_count: String(olderThan14.length),\n    up_to_14_count: String(upTo14.length),\n    stale_72h_count: String(stale72Count),\n    stale_48h_count: String(stale48Count),\n    stale_24h_count: String(stale24Count),\n    unassigned_count: String(unassignedCount),\n    sla_breached_count: String(slaBreachedCount),\n    oldest_ticket: oldestTicket,\n    agent_count: String(agentCount),\n    older_section,\n    recent_section,\n    itop_url: config.itop_url || '#',\n    csv_filename: `tickets_sin_update_${generatedAtFile}.csv`,\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csvContent, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `tickets_sin_update_${generatedAtFile}.csv`,\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        0
+      ],
+      "id": "eb0cd9ff-66da-41a2-b722-e2320c4790e9",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, 'utf8');\n}\n\nfunction render(template, values) {\n  return String(template || '').replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) => {\n    const parts = key.split('.');\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? '' : String(value);\n  });\n}\n\nfunction normalizeText(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['Automatizaci??n','Automatizaci&oacute;n'], ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'], ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['antig??edad','antig&uuml;edad'], ['actualizaci??n','actualizaci&oacute;n'], ['configuraci??n','configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['tel??fono','tel&eacute;fono'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['par??metros','par&aacute;metros'], ['env??a','env&iacute;a'], ['envi??','envi&oacute;'],\n    ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'], ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'],\n    ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'],\n    ['creaci??n','creaci&oacute;n'], ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'],\n    ['clasificaci??n','clasificaci&oacute;n'], ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'],\n    ['l??nea','l&iacute;nea'], ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  const trigger = getNodeJson('SetTrigger - Flujo');\n  const mixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const value = trigger[name] ?? trigger.flags?.[name] ?? data[name] ?? data.flags?.[name] ?? mixed[name] ?? mixed.flags?.[name];\n  return normalizeBoolean(value, fallback);\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? '')\n    .split(/\\r?\\n|\\. /)\n    .map(v => v.trim().replace(/\\.$/, ''))\n    .filter(Boolean);\n  if (!lines.length) return '<div style=\"font-size:13px; line-height:20px; color:#64748b;\">Sin observaciones adicionales.</div>';\n  return '<ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">' +\n    lines.map(line => '<li>' + escapeHtml(line) + '.</li>').join('') +\n    '</ul>';\n}\n\nfunction statCard(data, stat) {\n  const value = data[stat.value] ?? data[stat.fallbackValue] ?? '-';\n  return '<td class=\"summary-card\" width=\"33.33%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid ' + stat.border + '; background-color:' + stat.background + ';\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:' + stat.labelColor + '; font-weight:bold;\">' + escapeHtml(stat.label) + '</div><div style=\"font-size:24px; color:' + stat.valueColor + '; font-weight:bold;\">' + escapeHtml(value) + '</div></td></tr></table></td>';\n}\n\nfunction statRows(data, stats) {\n  const rows = [];\n  for (let i = 0; i < stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(stat => statCard(data, stat));\n    while (cells.length < 3) cells.push('<td class=\"summary-card\" width=\"33.33%\" valign=\"top\">&nbsp;</td>');\n    rows.push('<tr>' + cells.join('') + '</tr>');\n  }\n  return rows.join('\\n');\n}\n\nfunction simpleTable(title, rows, headers, emptyText) {\n  if (!rows) return '';\n  const headerHtml = headers.map(h => '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">' + escapeHtml(h) + '</th>').join('');\n  const body = rows || '<tr><td colspan=\"' + headers.length + '\" style=\"padding:14px; font-size:12px; color:#64748b;\">' + escapeHtml(emptyText || 'Sin registros.') + '</td></tr>';\n  return '<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">' + escapeHtml(title) + '</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + headerHtml + '</tr></thead><tbody>' + body + '</tbody></table>';\n}\n\nfunction tableContent(data) {\n  const blocks = [];\n  if (data.detail_blocks) blocks.push(data.detail_blocks);\n  if (data.class_asset_blocks) blocks.push(data.class_asset_blocks);\n  if (data.status_asset_blocks) blocks.push(data.status_asset_blocks);\n  if (data.review_asset_blocks) blocks.push(data.review_asset_blocks);\n  if (data.ticket_sections) blocks.push(data.ticket_sections);\n  if (data.older_section) blocks.push(data.older_section);\n  if (data.recent_section) blocks.push(data.recent_section);\n  if (data.ticket_rows_html) blocks.push(simpleTable('Tickets abiertos', data.ticket_rows_html, ['Criticidad','Referencia','Tipo','Titulo','Solicitante','Estado','Creacion','Ultimo update','Antiguedad','SLA'], 'Sin tickets.'));\n  if (data.movement_rows) blocks.push(simpleTable('Movimientos recientes', data.movement_rows, ['Fecha','Movimiento','Activo','Clase','Origen','Destino'], 'Sin movimientos.'));\n  if (data.class_summary_rows) blocks.push(simpleTable('Resumen por clase', data.class_summary_rows, ['Clase','Total','Dato 1','Observacion'], 'Sin resumen por clase.'));\n  if (data.warehouse_summary_rows) blocks.push(simpleTable('Resumen por bodega/localidad', data.warehouse_summary_rows, ['Bodega/localidad','Total','Clases','Observacion'], 'Sin resumen por bodega.'));\n  if (data.status_summary_rows) blocks.push(simpleTable('Resumen por estado', data.status_summary_rows, ['Estado','Total','Dato 1','Observacion'], 'Sin resumen por estado.'));\n  if (data.location_summary_rows) blocks.push(simpleTable('Resumen por localidad', data.location_summary_rows, ['Localidad','Total','Dato 1','Observacion'], 'Sin resumen por localidad.'));\n  if (data.class_status_rows) blocks.push(simpleTable('Clase por estado', data.class_status_rows, ['Clase','Productivo','Inventario','No operativo'], 'Sin matriz de estados.'));\n  if (data.location_matrix_rows) {\n    const header = data.location_matrix_header_cells || '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Bodega/localidad</th>';\n    blocks.push('<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">Matriz por bodega/localidad</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + header + '</tr></thead><tbody>' + data.location_matrix_rows + '</tbody></table>');\n  }\n  if (data.top_location_rows) blocks.push(simpleTable('Top bodega/localidad', data.top_location_rows, ['Bodega/localidad','Total','Dato 1','Observacion'], 'Sin top de localidades.'));\n  return blocks.filter(Boolean).join('\\n');\n}\n\nfunction buildHtml(item) {\n  const data = item.json || {};\n  const triggerConfig = getNodeJson('SetTrigger - Flujo');\n  const mixedConfig = getNodeJson('SetMixed - Configuracion efectiva');\n  const root = data.template_root || mixedConfig.template_root || triggerConfig.template_root || '/opt/n8n-config/templates/mail/v1';\n  const key = data.report_template_key || mixedConfig.report_template_key || triggerConfig.report_template_key || 'cmdb-activos-sin-contacto';\n  const contract = JSON.parse(readText(path.join(root, 'reports', key + '.json')));\n  const partial = (name) => readText(path.join(root, contract.partials[name]));\n\n  const styles = partial('styles');\n  const header = render(partial('header'), {\n    eyebrow: escapeHtml(contract.header?.eyebrow || 'Automatizacion ITSM / CMDB'),\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    subtitle: escapeHtml(contract.header?.subtitle || ''),\n    itop_organization: escapeHtml(data.itop_organization || '-'),\n    generated_at: escapeHtml(data.generated_at || '-'),\n    source_label: escapeHtml(data.source_label || data.report_source_label || contract.header?.source_label || '-'),\n  });\n  const summary = render(partial('summary'), { description: escapeHtml(data.report_description || contract.summary?.description || '') });\n  const stats = render(partial('stats'), { stats_rows: statRows(data, contract.stats || []) });\n  const criteria = render(partial('criteria'), contract.criteria || {});\n  const tables = flagEnabled(data, 'include_detail', true) ? render(partial('tables'), {\n    title: contract.tables?.title || 'Detalle operacional',\n    subtitle: contract.tables?.subtitle || '',\n    content: tableContent(data) || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin registros para el criterio del reporte.</td></tr></table>',\n  }) : '';\n  const notes = flagEnabled(data, 'include_operational_notes', true) ? render(partial('notes'), { notes_list: notesList(data.operational_notes) }) : '';\n  const cta = flagEnabled(data, 'include_itop_button_footer', true) ? render(partial('cta'), {\n    href: escapeHtml(data.itop_url || '#'),\n    label: contract.cta?.label || 'Abrir',\n  }) : '';\n  const footer = render(partial('footer'), {\n    brand: contract.footer?.brand || 'Automatizacion ITSM / CMDB',\n    company: escapeHtml(data.company || data.Company || ''),\n    generated_at: escapeHtml(data.generated_at || '-'),\n  });\n\n  let html = render(partial('layout'), {\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    styles,\n    header,\n    summary: flagEnabled(data, 'include_summary', true) ? summary : '',\n    stats: flagEnabled(data, 'include_summary', true) ? stats : '',\n    criteria,\n    tables,\n    notes,\n    cta,\n    footer,\n  });\n  html = normalizeText(html, false);\n  data.email_subject = normalizeText(data.email_subject, true);\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  return {\n    json: {\n      ...data,\n      html,\n      template_version: contract.template_version || 'mail-v1',\n      template_contract: key,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n}\n\nreturn $input.all().map(buildHtml);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        0
+      ],
+      "id": "047fa893-e51f-462f-856d-c9153fd2d65a",
+      "name": "HTML - Renderer parciales"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "={{ $json.attachment_binary_names }}",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2464,
+        0
+      ],
+      "id": "943430ff-c66b-44d3-b2fa-f8195846c3f7",
+      "name": "Enviar correo SMTP",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "3SyjzuvErhGGEZZq",
+          "name": "SMTP_MailPit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "itsm-tickets-sin-actualizacion-24h",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -192
+      ],
+      "id": "2ceec277-4cec-4a5f-98b6-8e45642ae867",
+      "name": "Webhook - ejecucion externa",
+      "webhookId": "dfb30f09-0dee-47c5-b293-31cdf0229e66",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5ueiVRP6pKurE71t",
+          "name": "HeaderAuth_GF_QA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        192
+      ],
+      "id": "24ac9be8-82d6-402f-b2c1-94f03853f2f1",
+      "name": "Cron - lunes 07:00"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "puR8KZ9UFvq5zRqX",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/puR8KZ9UFvq5zRqX",
+          "cachedResultName": "SYS - Configuracion base reportes correo"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "911d03aa-074c-40b7-9381-fc88c2017457",
+      "name": "SubWorkflow - SetBase reportes correo",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $input.first()?.json || {};\nconst trigger = $('SetTrigger - Flujo').first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si'].includes(text)) return true;\n  if (['false', '0', 'no', 'n'].includes(text)) return false;\n  return fallback;\n}\n\nconst flags = { ...(base.flags || {}) };\nfor (const key of ['include_attachment', 'include_detail', 'include_summary', 'include_operational_notes', 'include_itop_button_footer', 'send_email', 'include_requirements', 'include_incidents', 'include_changes', 'include_problems']) {\n  if (trigger[key] !== undefined && trigger[key] !== null && trigger[key] !== '') {\n    flags[key] = normalizeBoolean(trigger[key], flags[key]);\n  }\n}\n\nconst setMixed = {\n  ...base,\n  ...trigger,\n  flags,\n  config_source: 'SetBase + SetTrigger',\n};\n\nfor (const [key, value] of Object.entries(flags)) {\n  if (setMixed[key] === undefined || setMixed[key] === null || setMixed[key] === '') setMixed[key] = value;\n}\n\nreturn [{ json: setMixed }];"
+      },
+      "id": "6c5133fa-a8fd-46c7-a9ae-72c3870cbc14",
+      "name": "Config Reporte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction mergeFlags(...sources) {\n  const flags = {};\n  for (const source of sources) {\n    if (!source) continue;\n    Object.assign(flags, source.flags || {});\n    for (const key of ['include_attachment','include_detail','include_summary','include_operational_notes','include_itop_button_footer','send_email','include_requirements','include_incidents','include_changes','include_problems']) {\n      if (source[key] !== undefined && source[key] !== null && source[key] !== '') flags[key] = normalizeBoolean(source[key], flags[key]);\n    }\n  }\n  return flags;\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  return normalizeBoolean(data[name] ?? data.flags?.[name], fallback);\n}\n\nfunction removeOuterRowByMarker(html, marker) {\n  const index = html.indexOf(marker);\n  if (index === -1) return html;\n  const starts = ['\\n      <tr><td', '\\n                        <tr><td', '<tr><td', '<tr>'];\n  let start = -1;\n  for (const needle of starts) {\n    const pos = html.lastIndexOf(needle, index);\n    if (pos !== -1 && pos > start) start = pos;\n  }\n  if (start === -1) start = Math.max(0, index - 200);\n  const ends = ['\\n      <tr><td', '\\n                        <tr><td', '\\n      <tr><td style=\"background-color', '\\n                        <tr><td style=\"background-color'];\n  let end = -1;\n  for (const needle of ends) {\n    const pos = html.indexOf(needle, index + marker.length);\n    if (pos !== -1 && (end === -1 || pos < end)) end = pos;\n  }\n  if (end === -1) {\n    const close = html.indexOf('</td></tr>', index);\n    end = close === -1 ? index + marker.length : close + '</td></tr>'.length;\n  }\n  return html.slice(0, start) + html.slice(end);\n}\n\nfunction removeAllRowsByMarker(html, marker) {\n  let previous;\n  do {\n    previous = html;\n    html = removeOuterRowByMarker(html, marker);\n  } while (html !== previous);\n  return html;\n}\n\nfunction removeTablesByClass(html) {\n  return html\n    .replace(/<table\\b[^>]*class=[\"'][^\"']*(?:data-table|ticket-table)[^\"']*[\"'][\\s\\S]*?<\\/table>/gi, '')\n    .replace(/<table\\b[^>]*(?:data-table|ticket-table)[^>]*>[\\s\\S]*?<\\/table>/gi, '');\n}\n\n\nfunction repairMailEncoding(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['Automatizaci??n','Automatizaci&oacute;n'], ['automatizaci??n','automatizaci&oacute;n'],\n    ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['producci??n','producci&oacute;n'],\n    ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'],\n    ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['t??tulo','t&iacute;tulo'],\n    ['antig??edad','antig&uuml;edad'], ['Antig??edad','Antig&uuml;edad'],\n    ['actualizaci??n','actualizaci&oacute;n'], ['Actualizaci??n','Actualizaci&oacute;n'],\n    ['configuraci??n','configuraci&oacute;n'], ['Configuraci??n','Configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['f??sicamente','f&iacute;sicamente'],\n    ['tel??fono','tel&eacute;fono'], ['Tel??fonos','Tel&eacute;fonos'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['Perif??ricos','Perif&eacute;ricos'],\n    ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'], ['??ltima','&uacute;ltima'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['Cr??tico','Cr&iacute;tico'], ['CR??TICOS','CR&Iacute;TICOS'],\n    ['par??metros','par&aacute;metros'], ['inv??lida','inv&aacute;lida'], ['v??lida','v&aacute;lida'], ['v??lidas','v&aacute;lidas'],\n    ['env??a','env&iacute;a'], ['envi??','envi&oacute;'], ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'],\n    ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'], ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['Hist??rico','Hist&oacute;rico'],\n    ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'], ['creaci??n','creaci&oacute;n'],\n    ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'], ['clasificaci??n','clasificaci&oacute;n'],\n    ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'], ['l??nea','l&iacute;nea'],\n    ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction applyVisualFlags(html, data) {\n  if (!html) return html;\n  if (!flagEnabled(data, 'include_summary', true)) {\n    for (const marker of ['Resumen ejecutivo', 'TOTAL ACTIVOS', 'TOTAL CON CONTACTO', 'TOTAL TICKETS', 'TOTAL CAMBIOS', 'TOTAL MOVIMIENTOS']) html = removeAllRowsByMarker(html, marker);\n  }\n  if (!flagEnabled(data, 'include_detail', true)) {\n    for (const marker of [\n      'Detalle operacional',\n      'Detalle de activos',\n      'Detalle de tickets',\n      'Detalle por agente',\n      'Detalle por antig?edad',\n      'Resumen por estado',\n      'Resumen por bodega/localidad',\n      'Resumen por clase',\n      'Activos por clase',\n      'Por revisar',\n      'Tickets abiertos',\n      'Tickets abiertos pendientes',\n      'Tickets abiertos por agente',\n      'Tickets con m?s de 14 d?as abiertos',\n      'Tickets abiertos hasta 14 d?as',\n      'Movimientos recientes',\n      'data-table',\n      'ticket-table'\n    ]) html = removeAllRowsByMarker(html, marker);\n    html = removeTablesByClass(html);\n    html = html.replace(/\\.data-table[\\s\\S]*?\\}/g, '').replace(/\\.ticket-table[\\s\\S]*?\\}/g, '');\n  }\n  if (!flagEnabled(data, 'include_operational_notes', true)) html = removeAllRowsByMarker(html, 'Observaciones operacionales');\n  if (!flagEnabled(data, 'include_itop_button_footer', true)) html = removeAllRowsByMarker(html, 'Abrir Combodo iTop');\n  return html;\n}\n\nreturn $input.all().map((item) => {\n  const configReporte = getNodeJson('Config Reporte');\n  const setMixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const setTrigger = getNodeJson('SetTrigger - Flujo');\n  const itemJson = item.json || {};\n  const flags = mergeFlags(configReporte, setMixed, itemJson, setTrigger);\n  const data = { ...configReporte, ...setMixed, ...itemJson, ...setTrigger, flags };\n  for (const [key, value] of Object.entries(flags)) data[key] = value;\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  const html = repairMailEncoding(applyVisualFlags(data.html, data), false);\n  data.email_subject = repairMailEncoding(data.email_subject, true);\n\n  return {\n    json: {\n      ...data,\n      html,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n});"
+      },
+      "id": "8953b917-6175-49fe-b936-1ec7b3be206c",
+      "name": "Aplicar flags envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst body = item?.json?.body || {};\nconst errors = [];\n\nfunction text(name) {\n  return String(body[name] ?? '').trim();\n}\n\nfunction positiveNumber(name) {\n  const raw = body[name];\n  if (raw === undefined || raw === null || raw === '') return false;\n  const n = Number(raw);\n  return Number.isFinite(n) && n > 0;\n}\n\nfunction validDateText(name) {\n  const value = text(name);\n  if (!value) return false;\n  const parsed = new Date(value.replace(' ', 'T'));\n  return !Number.isNaN(parsed.getTime());\n}\n\nfunction dateWindowState() {\n  const hasStart = text('start_date').length > 0;\n  const hasEnd = text('end_date').length > 0;\n  if (!hasStart && !hasEnd) return { provided: false, valid: false };\n  if (!hasStart || !hasEnd) return { provided: true, valid: false, error: 'start_date y end_date deben enviarse juntos.' };\n  if (!validDateText('start_date') || !validDateText('end_date')) return { provided: true, valid: false, error: 'start_date y end_date deben ser fechas v\\u00e1lidas.' };\n  const start = new Date(text('start_date').replace(' ', 'T'));\n  const end = new Date(text('end_date').replace(' ', 'T'));\n  if (start > end) return { provided: true, valid: false, error: 'start_date no puede ser mayor que end_date.' };\n  return { provided: true, valid: true };\n}\n\nif (!text('email_to')) {\n  errors.push('email_to es obligatorio para llamadas webhook.');\n}\n\nconst webhookPath = 'itsm-tickets-sin-actualizacion-24h';\nconst window = dateWindowState();\n\nif (webhookPath === 'cmdb-movimientos-recientes-inventario') {\n  const hasMovementDays = positiveNumber('movement_days');\n  if (!hasMovementDays && !window.valid) {\n    errors.push(window.error || 'Debe enviar movement_days positivo o la ventana start_date + end_date.');\n  }\n}\n\nif (webhookPath === 'cmdb-activos-proximos-vencer-garantia') {\n  if (!positiveNumber('warranty_warning_months')) {\n    errors.push('warranty_warning_months es obligatorio y debe ser un numero mayor a 0.');\n  }\n}\n\nif (webhookPath === 'itsm-tickets-sin-actualizacion-24h') {\n  if (!positiveNumber('stale_threshold_hours')) {\n    errors.push('stale_threshold_hours es obligatorio y debe ser un numero mayor a 0.');\n  }\n}\n\nif (window.provided && !window.valid && webhookPath !== 'cmdb-movimientos-recientes-inventario') {\n  errors.push(window.error || 'Ventana de fechas inv\\u00e1lida.');\n}\n\nconst valid = errors.length === 0;\n\nreturn [{\n  json: {\n    ...(item.json || {}),\n    webhook_contract: {\n      valid,\n      status_code: valid ? 202 : 400,\n      message: valid ? 'Workflow accepted' : errors.join(' '),\n      errors,\n    },\n  },\n  binary: item.binary,\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -192
+      ],
+      "id": "a4037ec9-8316-43a8-92f9-01336849a678",
+      "name": "Validar webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"message\": $json.webhook_contract.message, \"accepted\": $json.webhook_contract.valid } }}",
+        "options": {
+          "responseCode": "={{ $json.webhook_contract.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        -192
+      ],
+      "id": "7722fbea-ee55-44a2-a217-f3dc70d445aa",
+      "name": "Responder webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst json = item?.json || {};\n\nif (!json.webhook_contract?.valid) {\n  return [];\n}\n\nconst { webhook_contract, ...cleanJson } = json;\nreturn [{ json: cleanJson, binary: item.binary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -192
+      ],
+      "id": "0e70f1be-66b0-43f8-aff3-fe201e6d0c8d",
+      "name": "Continuar webhook valido"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Tickets para análisis de actividad": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Renderer parciales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Renderer parciales": {
+      "main": [
+        [
+          {
+            "node": "Aplicar flags envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetTrigger - Flujo": {
+      "main": [
+        [
+          {
+            "node": "SubWorkflow - SetBase reportes correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubWorkflow - SetBase reportes correo": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Tickets para análisis de actividad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - ejecucion externa": {
+      "main": [
+        [
+          {
+            "node": "Validar webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron - lunes 07:00": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar flags envio": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar webhook": {
+      "main": [
+        [
+          {
+            "node": "Responder webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder webhook": {
+      "main": [
+        [
+          {
+            "node": "Continuar webhook valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continuar webhook valido": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e76c3a0d-337e-4c2e-b3b0-e3ffafd99d05",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "NRO5XOrIH7KYm12h",
+  "tags": []
+}

@@ -1,0 +1,77 @@
+# Git Bash curl tests - ITSM - Tickets sin actualización mayor a 24h - SMTP
+# WorkFlow_v3. Ejecutar desde Git Bash.
+# Positivos HTTP 202; validaciones HTTP 400; seguridad HTTP 403.
+
+export N8N_BASE="http://192.168.3.138:8089/n8n"
+export WEBHOOK_TOKEN="120cce89d60ecb6e13dbee08bbde8d3db193c29edb17e4cf08fc6f4eb7eba0a7"
+
+call_ok() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    -H "X-Webhook-Token: $WEBHOOK_TOKEN" \
+    --data-raw "$body"
+}
+
+call_no_token() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    --data-raw "$body"
+}
+
+call_bad_token() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    -H "X-Webhook-Token: token_incorrecto" \
+    --data-raw "$body"
+}
+
+export PROD_WEBHOOK="$N8N_BASE/webhook/itsm-tickets-sin-actualizacion-24h"
+export TEST_WEBHOOK="$N8N_BASE/webhook-test/itsm-tickets-sin-actualizacion-24h"
+
+# Seguridad
+call_no_token "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":24}'
+call_bad_token "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":24}'
+
+# Exito minimo valido
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":24}'
+
+# Exito con adjunto
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"adjunto@company.com","include_attachment":true,"stale_threshold_hours":24}'
+
+# Exito sin adjunto
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"sinadjunto@company.com","include_attachment":false,"stale_threshold_hours":24}'
+
+# Solo resumen, sin detalle y sin adjunto
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":24,"include_summary":true,"include_detail":false,"include_attachment":false}'
+
+# Sin notas operacionales y sin boton iTop
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":24,"include_operational_notes":false,"include_itop_button_footer":false}'
+
+# Destinatarios explicitos
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":24,"email_cc":"supervisor@company.com","email_bcc":"auditoria@company.com"}'
+
+# Ventana de fechas
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":24,"start_date":"2026-05-01 00:00:00","end_date":"2026-05-08 23:59:59"}'
+
+# Filtro ITSM
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":24,"include_requirements":true,"include_incidents":true,"include_changes":false,"include_problems":false}'
+
+# Error funcional: falta stale_threshold_hours
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com"}'
+# Error funcional: stale_threshold_hours invalido
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com","stale_threshold_hours":0}'
+
+# Error funcional: falta email_to
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"stale_threshold_hours":24}'
+
+# Webhook test. Antes presiona "Listen for test event" en n8n.
+curl -i -X POST "$TEST_WEBHOOK" \
+  -H "Content-Type: application/json" \
+  -H "X-Webhook-Token: $WEBHOOK_TOKEN" \
+  --data-raw '{"email_to":"test@company.com","include_attachment":false,"stale_threshold_hours":24}'

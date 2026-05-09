@@ -1,0 +1,89 @@
+# Git Bash curl tests - bateria completa WorkFlow_v3
+# WorkFlow_v3. Ejecutar desde Git Bash.
+# Positivos HTTP 202; validaciones HTTP 400; seguridad HTTP 403.
+
+export N8N_BASE="http://192.168.3.138:8089/n8n"
+export WEBHOOK_TOKEN="120cce89d60ecb6e13dbee08bbde8d3db193c29edb17e4cf08fc6f4eb7eba0a7"
+
+call_ok() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    -H "X-Webhook-Token: $WEBHOOK_TOKEN" \
+    --data-raw "$body"
+}
+
+call_no_token() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    --data-raw "$body"
+}
+
+call_bad_token() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    -H "X-Webhook-Token: token_incorrecto" \
+    --data-raw "$body"
+}
+
+echo "## Seguridad global"
+call_no_token "cmdb-activos-disponibles-bodega" '{"email_to":"usuario1@company.com"}'
+call_bad_token "cmdb-activos-disponibles-bodega" '{"email_to":"usuario1@company.com"}'
+
+echo "## Pasada 1: todos con adjunto"
+echo "## 01 cmdb-activos-disponibles-bodega include_attachment=true"
+call_ok "cmdb-activos-disponibles-bodega" '{"email_to":"prueba_01@sistema.com","include_attachment":true}'
+echo "## 02 cmdb-activos-garantia-vencida include_attachment=true"
+call_ok "cmdb-activos-garantia-vencida" '{"email_to":"prueba_02@sistema.com","include_attachment":true}'
+echo "## 03 cmdb-activos-garantia-vigente include_attachment=true"
+call_ok "cmdb-activos-garantia-vigente" '{"email_to":"prueba_03@sistema.com","include_attachment":true}'
+echo "## 04 cmdb-activos-proximos-vencer-garantia include_attachment=true"
+call_ok "cmdb-activos-proximos-vencer-garantia" '{"email_to":"prueba_04@sistema.com","include_attachment":true,"warranty_warning_months":12}'
+echo "## 05 cmdb-activos-sin-contacto include_attachment=true"
+call_ok "cmdb-activos-sin-contacto" '{"email_to":"prueba_05@sistema.com","include_attachment":true}'
+echo "## 06 cmdb-inventario-activos-contactos include_attachment=true"
+call_ok "cmdb-inventario-activos-contactos" '{"email_to":"prueba_06@sistema.com","include_attachment":true}'
+echo "## 07 cmdb-movimientos-recientes-inventario include_attachment=true"
+call_ok "cmdb-movimientos-recientes-inventario" '{"email_to":"prueba_07@sistema.com","include_attachment":true,"movement_days":7}'
+echo "## 08 cmdb-resumen-clase-estado-bodega include_attachment=true"
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"prueba_08@sistema.com","include_attachment":true}'
+echo "## 09 itsm-tickets-abiertos-agente include_attachment=true"
+call_ok "itsm-tickets-abiertos-agente" '{"email_to":"prueba_09@sistema.com","include_attachment":true}'
+echo "## 10 itsm-tickets-abiertos-antiguedad include_attachment=true"
+call_ok "itsm-tickets-abiertos-antiguedad" '{"email_to":"prueba_10@sistema.com","include_attachment":true}'
+echo "## 11 itsm-tickets-sin-actualizacion-24h include_attachment=true"
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"prueba_11@sistema.com","include_attachment":true,"stale_threshold_hours":24}'
+
+echo "## Pasada 2: todos sin adjunto"
+echo "## 12 cmdb-activos-disponibles-bodega include_attachment=false"
+call_ok "cmdb-activos-disponibles-bodega" '{"email_to":"prueba_12@sistema.com","include_attachment":false}'
+echo "## 13 cmdb-activos-garantia-vencida include_attachment=false"
+call_ok "cmdb-activos-garantia-vencida" '{"email_to":"prueba_13@sistema.com","include_attachment":false}'
+echo "## 14 cmdb-activos-garantia-vigente include_attachment=false"
+call_ok "cmdb-activos-garantia-vigente" '{"email_to":"prueba_14@sistema.com","include_attachment":false}'
+echo "## 15 cmdb-activos-proximos-vencer-garantia include_attachment=false"
+call_ok "cmdb-activos-proximos-vencer-garantia" '{"email_to":"prueba_15@sistema.com","include_attachment":false,"warranty_warning_months":12}'
+echo "## 16 cmdb-activos-sin-contacto include_attachment=false"
+call_ok "cmdb-activos-sin-contacto" '{"email_to":"prueba_16@sistema.com","include_attachment":false}'
+echo "## 17 cmdb-inventario-activos-contactos include_attachment=false"
+call_ok "cmdb-inventario-activos-contactos" '{"email_to":"prueba_17@sistema.com","include_attachment":false}'
+echo "## 18 cmdb-movimientos-recientes-inventario include_attachment=false"
+call_ok "cmdb-movimientos-recientes-inventario" '{"email_to":"prueba_18@sistema.com","include_attachment":false,"movement_days":7}'
+echo "## 19 cmdb-resumen-clase-estado-bodega include_attachment=false"
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"prueba_19@sistema.com","include_attachment":false}'
+echo "## 20 itsm-tickets-abiertos-agente include_attachment=false"
+call_ok "itsm-tickets-abiertos-agente" '{"email_to":"prueba_20@sistema.com","include_attachment":false}'
+echo "## 21 itsm-tickets-abiertos-antiguedad include_attachment=false"
+call_ok "itsm-tickets-abiertos-antiguedad" '{"email_to":"prueba_21@sistema.com","include_attachment":false}'
+echo "## 22 itsm-tickets-sin-actualizacion-24h include_attachment=false"
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"prueba_22@sistema.com","include_attachment":false,"stale_threshold_hours":24}'
+
+echo "## Validaciones negativas especificas"
+call_ok "cmdb-activos-proximos-vencer-garantia" '{"email_to":"usuario1@company.com"}'
+call_ok "cmdb-movimientos-recientes-inventario" '{"email_to":"usuario1@company.com"}'
+call_ok "itsm-tickets-sin-actualizacion-24h" '{"email_to":"usuario1@company.com"}'

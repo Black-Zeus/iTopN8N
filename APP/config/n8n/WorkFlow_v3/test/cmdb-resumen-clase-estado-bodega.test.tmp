@@ -1,0 +1,69 @@
+# Git Bash curl tests - CMDB - Resumen por clase, estado y bodega - SMTP
+# WorkFlow_v3. Ejecutar desde Git Bash.
+# Positivos HTTP 202; validaciones HTTP 400; seguridad HTTP 403.
+
+export N8N_BASE="http://192.168.3.138:8089/n8n"
+export WEBHOOK_TOKEN="120cce89d60ecb6e13dbee08bbde8d3db193c29edb17e4cf08fc6f4eb7eba0a7"
+
+call_ok() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    -H "X-Webhook-Token: $WEBHOOK_TOKEN" \
+    --data-raw "$body"
+}
+
+call_no_token() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    --data-raw "$body"
+}
+
+call_bad_token() {
+  local path="$1"
+  local body="$2"
+  curl -i -X POST "$N8N_BASE/webhook/$path" \
+    -H "Content-Type: application/json" \
+    -H "X-Webhook-Token: token_incorrecto" \
+    --data-raw "$body"
+}
+
+export PROD_WEBHOOK="$N8N_BASE/webhook/cmdb-resumen-clase-estado-bodega"
+export TEST_WEBHOOK="$N8N_BASE/webhook-test/cmdb-resumen-clase-estado-bodega"
+
+# Seguridad
+call_no_token "cmdb-resumen-clase-estado-bodega" '{"email_to":"usuario1@company.com"}'
+call_bad_token "cmdb-resumen-clase-estado-bodega" '{"email_to":"usuario1@company.com"}'
+
+# Exito minimo valido
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"usuario1@company.com"}'
+
+# Exito con adjunto
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"adjunto@company.com","include_attachment":true}'
+
+# Exito sin adjunto
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"sinadjunto@company.com","include_attachment":false}'
+
+# Solo resumen, sin detalle y sin adjunto
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"usuario1@company.com","include_summary":true,"include_detail":false,"include_attachment":false}'
+
+# Sin notas operacionales y sin boton iTop
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"usuario1@company.com","include_operational_notes":false,"include_itop_button_footer":false}'
+
+# Destinatarios explicitos
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"usuario1@company.com","email_cc":"supervisor@company.com","email_bcc":"auditoria@company.com"}'
+
+# Ventana de fechas
+call_ok "cmdb-resumen-clase-estado-bodega" '{"email_to":"usuario1@company.com","start_date":"2026-05-01 00:00:00","end_date":"2026-05-08 23:59:59"}'
+
+# Error funcional: falta email_to
+call_ok "cmdb-resumen-clase-estado-bodega" '{}'
+
+# Webhook test. Antes presiona "Listen for test event" en n8n.
+curl -i -X POST "$TEST_WEBHOOK" \
+  -H "Content-Type: application/json" \
+  -H "X-Webhook-Token: $WEBHOOK_TOKEN" \
+  --data-raw '{"email_to":"test@company.com","include_attachment":false}'
