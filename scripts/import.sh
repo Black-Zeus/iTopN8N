@@ -211,7 +211,19 @@ import_workflow_file() {
 }
 
 validate_workflow_files() {
-  node - "$@" <<'NODE'
+  local -a node_args=("$@")
+  local node_runner=(node)
+
+  if ! command -v node >/dev/null 2>&1; then
+    node_runner=(docker_exec n8n node)
+    node_args=()
+    local file
+    for file in "$@"; do
+      node_args+=("$(to_container_path "$file")")
+    done
+  fi
+
+  "${node_runner[@]}" - "${node_args[@]}" <<'NODE'
 const fs = require('fs');
 let bad = [];
 
