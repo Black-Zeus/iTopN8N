@@ -26,16 +26,24 @@ done
 
 BUILD_FLAG=""
 [[ "${1:-}" == "--build" ]] && BUILD_FLAG="--build"
+COMPOSE_ENV="${COMPOSE_ENV:-dev}"
+COMPOSE_FILES=(-f docker-compose.yml)
 
-echo "==> Iniciando servicios n8n..."
-docker compose up -d $BUILD_FLAG
+if [[ -f "docker-compose.${COMPOSE_ENV}.yml" ]]; then
+  COMPOSE_FILES+=(-f "docker-compose.${COMPOSE_ENV}.yml")
+fi
+
+echo "==> Iniciando servicios n8n (${COMPOSE_ENV})..."
+docker compose "${COMPOSE_FILES[@]}" up -d $BUILD_FLAG
 
 echo ""
 echo "==> Estado del stack:"
-docker compose ps
+docker compose "${COMPOSE_FILES[@]}" ps
 
 N8N_PORT=$(grep -E '^N8N_EXTERNAL_PORT=' .env | cut -d= -f2 | tr -d '"' || echo "5678")
+NGINX_PORT=$(grep -E '^NGINX_HTTP_PORT=' .env | cut -d= -f2 | tr -d '"' || echo "8083")
 echo ""
-echo "==> n8n disponible en: http://localhost:${N8N_PORT:-5678}"
+echo "==> Proxy n8n disponible en: http://localhost:${NGINX_PORT:-8083}/n8n/"
+echo "==> Acceso directo n8n (${COMPOSE_ENV}): http://localhost:${N8N_PORT:-5678}/n8n/"
 echo "    Logs: ./scripts/logs.sh"
 echo "    Health: ./scripts/health.sh"

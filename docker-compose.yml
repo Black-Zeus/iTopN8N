@@ -238,7 +238,7 @@ services:
     environment:
       # Servir UI desde subpath /mailpit
       MP_WEBROOT: /mailpit
-      MP_API_CORS: http://localhost:8089,http://localhost
+      MP_API_CORS: http://192.168.3.138,http://localhost:8083,http://localhost
 
       # Aceptar cualquier credencial SMTP
       # Solo recomendado para laboratorio/testing
@@ -290,7 +290,7 @@ services:
 # =============================================================================
 networks:
   n8n_net:
-    driver: bridge
+    external: true
     name: n8n_network
 
 # =============================================================================

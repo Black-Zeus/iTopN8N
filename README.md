@@ -4,11 +4,12 @@ Stack Docker Compose para automatizaciones y reportes operacionales sobre Combod
 
 ## Estado Actual
 
-- Entrada unica desde el host via nginx: `http://localhost:8089/`
-- n8n publicado bajo subpath: `http://localhost:8089/n8n/`
-- NocoDB publicado bajo subpath: `http://localhost:8089/nocodb/`
-- Mailpit publicado bajo subpath: `http://localhost:8089/mailpit/`
-- PostgreSQL, Redis, n8n, NocoDB y Mailpit quedan solo en la red interna Docker.
+- Entrada unica desde el host via nginx: `http://localhost:8083/`
+- n8n publicado bajo subpath: `http://localhost:8083/n8n/`
+- NocoDB publicado bajo subpath: `http://localhost:8083/nocodb/`
+- Mailpit publicado bajo subpath: `http://localhost:8083/mailpit/`
+- En `dev` y `qa`, PostgreSQL, n8n, NocoDB y Mailpit tambien pueden publicarse directo mediante `docker-compose.dev.yml` / `docker-compose.qa.yml`.
+- En `prd`, esos servicios quedan solo en la red interna Docker.
 - Los workflows productivos viven en `APP/config/n8n/WorkFlows`.
 - Los workflows v2 viven en `APP/config/n8n/WorkFlow_v2`.
 - Los templates HTML desacoplados viven en `APP/config/n8n/templates/mail/v1`.
@@ -18,7 +19,7 @@ Stack Docker Compose para automatizaciones y reportes operacionales sobre Combod
 ```text
 Host
   |
-  | http://localhost:8089
+  | http://localhost:8083
   v
 nginx
   |-- /n8n/     -> n8n_main:5678
@@ -38,7 +39,7 @@ Red Docker interna
 
 | Servicio | Rol | Exposicion |
 |---|---|---|
-| `nginx` | Reverse proxy y portal operacional | Host `8089` |
+| `nginx` | Reverse proxy y portal operacional | Host `8083` |
 | `n8n` | UI, webhooks, triggers y coordinacion | Interno `5678` |
 | `n8n_worker` | Ejecucion de workflows en modo queue | Interno |
 | `postgres` | Persistencia de n8n y NocoDB | Interno `5432` |
@@ -49,13 +50,13 @@ Red Docker interna
 ## URLs
 
 ```text
-Portal:  http://localhost:8089/
-n8n:     http://localhost:8089/n8n/
-NocoDB:  http://localhost:8089/nocodb/
-Mailpit: http://localhost:8089/mailpit/
+Portal:  http://localhost:8083/
+n8n:     http://localhost:8083/n8n/
+NocoDB:  http://localhost:8083/nocodb/
+Mailpit: http://localhost:8083/mailpit/
 ```
 
-No usar accesos directos como `localhost:5678`, `localhost:8025` o `localhost:8080`; esos puertos ya no se publican al host.
+En `prd`, no usar accesos directos como `localhost:5678`, `localhost:8025` o `localhost:8080`; deben quedar detras del proxy.
 
 ## Estructura Relevante
 
@@ -172,7 +173,7 @@ Esto permite que el workflow lea templates externos sin mantener HTML embebido e
 
 | Variable | Descripcion |
 |---|---|
-| `NGINX_HTTP_PORT` | Puerto publicado por nginx al host. Actualmente `8089`. |
+| `NGINX_HTTP_PORT` | Puerto publicado por nginx al host. Actualmente `8083`. |
 | `N8N_EDITOR_BASE_URL` | URL publica del editor n8n. |
 | `N8N_WEBHOOK_URL` | URL publica base de webhooks n8n. |
 | `N8N_HOST` | Host esperado por n8n. Para local: `localhost`. |
@@ -182,7 +183,7 @@ Esto permite que el workflow lea templates externos sin mantener HTML embebido e
 | `REDIS_PASSWORD` | Password de Redis. |
 | `N8N_ENCRYPTION_KEY` | Clave de cifrado de credenciales n8n. No cambiar tras primer arranque. |
 | `NOCODB_PUBLIC_URL` | URL publica de NocoDB tras nginx. |
-| `MAILPIT_*` | Puertos internos de Mailpit. No se publican al host. |
+| `MAILPIT_*` | Puertos internos/directos de Mailpit segun override de ambiente. |
 
 ## Operacion Basica
 
@@ -215,8 +216,8 @@ docker compose logs --tail=100 mailpit
 Healthchecks rapidos:
 
 ```powershell
-curl.exe -s -o NUL -w "n8n=%{http_code}`n" http://localhost:8089/n8n/healthz
-curl.exe -s -o NUL -w "mailpit=%{http_code}`n" http://localhost:8089/mailpit/
+curl.exe -s -o NUL -w "n8n=%{http_code}`n" http://localhost:8083/n8n/healthz
+curl.exe -s -o NUL -w "mailpit=%{http_code}`n" http://localhost:8083/mailpit/
 ```
 
 Validar que solo nginx este expuesto al host:
@@ -225,7 +226,7 @@ Validar que solo nginx este expuesto al host:
 docker compose ps
 ```
 
-Debe aparecer únicamente nginx con `0.0.0.0:8089->80/tcp`.
+En `prd` debe aparecer unicamente nginx con `0.0.0.0:8083->80/tcp`.
 
 ## Importar Workflows v2
 

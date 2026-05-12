@@ -1,0 +1,17 @@
+services:
+  postgres:
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT:-5433}:5432"
+
+  n8n:
+    ports:
+      - "${N8N_EXTERNAL_PORT:-5678}:5678"
+
+  nocodb:
+    ports:
+      - "${NOCODB_EXTERNAL_PORT:-8080}:8080"
+
+  mailpit:
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
