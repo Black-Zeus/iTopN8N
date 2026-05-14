@@ -1,0 +1,63 @@
+{
+  "template_version": "mail-v1",
+  "partials": {
+    "styles": "partials/styles.html",
+    "layout": "partials/layout.html",
+    "header": "partials/header.html",
+    "summary": "partials/summary.html",
+    "stats": "partials/stats.html",
+    "criteria": "partials/criteria.html",
+    "tables": "partials/tables.html",
+    "notes": "partials/notes.html",
+    "cta": "partials/cta.html",
+    "footer": "partials/footer.html"
+  },
+  "header": {
+    "eyebrow": "Automatización ITSM / CMDB",
+    "subtitle": "Consolidado operativo sincronizado desde Combodo iTop",
+    "source_label": "Producción / iTop"
+  },
+  "summary": {
+    "description": "Reporte semanal de conciliación entre usuarios vigentes de Active Directory y personas registradas en iTop. Fase informativa, sin cambios automáticos."
+  },
+  "criteria": {
+    "title": "Criterio del reporte",
+    "body": "El cruce principal se realiza por correo electrónico y clasifica candidatos a crear, inactivar, revisar por diferencias de datos o mantener sin acción."
+  },
+  "tables": {
+    "title": "Resultado de conciliación",
+    "subtitle": "Detalle de candidatos y excepciones detectadas en la fase informativa."
+  },
+  "cta": {
+    "label": "Abrir Combodo iTop"
+  },
+  "footer": {
+    "brand": "Automatización ITSM / CMDB"
+  },
+  "stats": [
+    {
+      "label": "AD VIGENTES",
+      "value": "total_ad_vigentes",
+      "border": "#bfdbfe",
+      "background": "#eff6ff",
+      "labelColor": "#1e3a8a",
+      "valueColor": "#1e3a8a"
+    },
+    {
+      "label": "PERSONAS ITOP",
+      "value": "total_itop",
+      "border": "#cbd5e1",
+      "background": "#f8fafc",
+      "labelColor": "#475569",
+      "valueColor": "#0f172a"
+    },
+    {
+      "label": "CAMBIOS",
+      "value": "total_cambios",
+      "border": "#fed7aa",
+      "background": "#fff7ed",
+      "labelColor": "#9a3412",
+      "valueColor": "#9a3412"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "template_version": "mail-v1",
+  "partials": {
+    "styles": "partials/styles.html",
+    "layout": "partials/layout.html",
+    "header": "partials/header.html",
+    "summary": "partials/summary.html",
+    "stats": "partials/stats.html",
+    "criteria": "partials/criteria.html",
+    "tables": "partials/tables.html",
+    "notes": "partials/notes.html",
+    "cta": "partials/cta.html",
+    "footer": "partials/footer.html"
+  },
+  "header": {
+    "eyebrow": "Automatización ITSM / CMDB",
+    "subtitle": "Consolidado operativo sincronizado desde Combodo iTop",
+    "source_label": "Producción / iTop"
+  },
+  "summary": {
+    "description": "Consolidado de equipos y servidores recuperados desde Active Directory, clasificados por alcance, estado y tipo operacional."
+  },
+  "criteria": {
+    "title": "Criterio del reporte",
+    "body": "Se procesan objetos computer de Active Directory dentro de las OU configuradas para GF Chile, separando endpoints, servidores y registros que requieren revisión."
+  },
+  "tables": {
+    "title": "Detalle de equipos y servidores",
+    "subtitle": "Resumen y detalle operacional para control de inventario AD."
+  },
+  "cta": {
+    "label": "Abrir Combodo iTop"
+  },
+  "footer": {
+    "brand": "Automatización ITSM / CMDB"
+  },
+  "stats": [
+    {
+      "label": "TOTAL EQUIPOS",
+      "value": "total_equipos",
+      "fallbackValue": "total_records",
+      "border": "#bfdbfe",
+      "background": "#eff6ff",
+      "labelColor": "#1e3a8a",
+      "valueColor": "#1e3a8a"
+    },
+    {
+      "label": "SERVIDORES",
+      "value": "total_servidores",
+      "border": "#cbd5e1",
+      "background": "#f8fafc",
+      "labelColor": "#475569",
+      "valueColor": "#0f172a"
+    },
+    {
+      "label": "ENDPOINTS",
+      "value": "total_endpoint",
+      "border": "#bbf7d0",
+      "background": "#f0fdf4",
+      "labelColor": "#166534",
+      "valueColor": "#166534"
+    }
+  ]
+}

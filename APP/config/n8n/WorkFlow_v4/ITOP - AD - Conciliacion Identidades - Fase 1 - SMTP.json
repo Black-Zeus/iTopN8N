@@ -1,0 +1,774 @@
+﻿{
+    "name":  "ITOP - AD - Conciliacion Identidades - Fase 1 - SMTP",
+    "nodes":  [
+                  {
+                      "parameters":  {
+
+                                     },
+                      "type":  "n8n-nodes-base.manualTrigger",
+                      "typeVersion":  1,
+                      "position":  [
+                                       57280,
+                                       15792
+                                   ],
+                      "id":  "f6b3a7e3-ef34-463a-9cc4-6341e09ddb1c",
+                      "name":  "Ejecutar manualmente"
+                  },
+                  {
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "itop-ad-conciliacion-identidades-fase1",
+                                         "authentication":  "headerAuth",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       56608,
+                                       15600
+                                   ],
+                      "id":  "6f551845-23a8-4d3c-9b3b-f75886bba238",
+                      "name":  "Webhook - ejecucion externa",
+                      "webhookId":  "itop-ad-conciliacion-identidades-fase1",
+                      "credentials":  {
+                                          "httpHeaderAuth":  {
+                                                                 "id":  "5ueiVRP6pKurE71t",
+                                                                 "name":  "HeaderAuth_GF_QA"
+                                                             }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const item = $input.first();\nconst body = item?.json?.body || {};\nconst errors = [];\n\nfunction text(name) {\n  return String(body[name] ?? \u0027\u0027).trim();\n}\nfunction optionalBoolean(name) {\n  const raw = body[name];\n  if (raw === undefined || raw === null || raw === \u0027\u0027) return true;\n  const v = String(raw).trim().toLowerCase();\n  return [\u0027true\u0027,\u0027false\u0027,\u00271\u0027,\u00270\u0027,\u0027yes\u0027,\u0027no\u0027,\u0027si\u0027,\u0027no\u0027,\u0027s\u0027,\u0027n\u0027,\u0027on\u0027,\u0027off\u0027].includes(v);\n}\n\nif (!text(\u0027email_to\u0027)) {\n  errors.push(\u0027email_to es obligatorio para llamadas webhook.\u0027);\n}\n\nfor (const name of [\n  \u0027include_attachment\u0027,\n  \u0027include_detail\u0027,\n  \u0027include_summary\u0027,\n  \u0027include_operational_notes\u0027,\n  \u0027include_itop_button_footer\u0027,\n  \u0027send_email\u0027,\n  \u0027send_when_no_changes\u0027,\n  \u0027comparar_cargo\u0027,\n  \u0027comparar_departamento\u0027,\n  \u0027comparar_organizacion\u0027\n]) {\n  if (!optionalBoolean(name)) errors.push(`${name} debe ser booleano compatible: true/false, 1/0, si/no.`);\n}\n\nconst allowedModes = [\u0027AUDITORIA\u0027];\nconst mode = text(\u0027mode\u0027) || \u0027AUDITORIA\u0027;\nif (!allowedModes.includes(mode.toUpperCase())) {\n  errors.push(`mode no permitido: ${mode}. Valores permitidos: ${allowedModes.join(\u0027, \u0027)}`);\n}\n\nconst valid = errors.length === 0;\n\nreturn [{\n  json: {\n    ...(item.json || {}),\n    webhook_contract: {\n      valid,\n      status_code: valid ? 202 : 400,\n      message: valid ? \u0027Workflow accepted\u0027 : errors.join(\u0027 \u0027),\n      errors,\n    },\n  },\n  binary: item.binary,\n}];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       56832,
+                                       15600
+                                   ],
+                      "id":  "bd1f6252-b513-4bce-9e4f-2a344393c9e5",
+                      "name":  "Validar webhook"
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ { \"message\": $json.webhook_contract.message, \"accepted\": $json.webhook_contract.valid } }}",
+                                         "options":  {
+                                                         "responseCode":  "={{ $json.webhook_contract.status_code }}",
+                                                         "responseHeaders":  {
+                                                                                 "entries":  [
+                                                                                                 {
+                                                                                                     "name":  "Content-Type",
+                                                                                                     "value":  "application/json; charset=utf-8"
+                                                                                                 }
+                                                                                             ]
+                                                                             }
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.5,
+                      "position":  [
+                                       57056,
+                                       15600
+                                   ],
+                      "id":  "3e6b9c74-425f-47c3-bb24-edfc04920e2d",
+                      "name":  "Responder webhook"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const item = $input.first();\nconst json = item?.json || {};\n\nif (!json.webhook_contract?.valid) {\n  return [];\n}\n\nconst { webhook_contract, ...cleanJson } = json;\nreturn [{ json: cleanJson, binary: item.binary }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       57280,
+                                       15600
+                                   ],
+                      "id":  "9d7dddf4-1bce-443a-b4ab-804e70162b69",
+                      "name":  "Continuar webhook valido"
+                  },
+                  {
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "field":  "weeks",
+                                                                           "triggerAtDay":  [
+                                                                                                1
+                                                                                            ],
+                                                                           "triggerAtHour":  7,
+                                                                           "triggerAtMinute":  30
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       57280,
+                                       15984
+                                   ],
+                      "id":  "49360955-c99e-4110-9aa1-8dc867317920",
+                      "name":  "Cron - Semanal"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "76006e8e-c2ab-4a48-956e-bdf722bf4be6",
+                                                                                     "name":  "itop_url",
+                                                                                     "value":  "={{ $json.body?.itop_url ?? \"https://itop.midominio.cl/\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "5c89c594-2202-4645-9bff-cc477b34a940",
+                                                                                     "name":  "email_from",
+                                                                                     "value":  "={{ $json.body?.email_from ?? \"notificaciones@dominio.cl\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "2f0aa4b7-5c93-485a-a294-7d9696d4caf6",
+                                                                                     "name":  "email_to",
+                                                                                     "value":  "={{ $json.body?.email_to ?? \"mesa.ayuda@dominio.cl\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "01a70308-5633-46f9-a324-3538d6517430",
+                                                                                     "name":  "email_cc",
+                                                                                     "value":  "={{ $json.body?.email_cc ?? \"\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "29290c7b-f5fd-4379-b70c-1cec79c0acaa",
+                                                                                     "name":  "email_bcc",
+                                                                                     "value":  "={{ $json.body?.email_bcc ?? \"\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "dc62f703-2421-4896-8b02-a1a111943005",
+                                                                                     "name":  "email_subject",
+                                                                                     "value":  "Conciliacion semanal AD vs iTop - Fase 1 informativa",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "883406ea-4ee4-45e3-a0da-336d17693060",
+                                                                                     "name":  "timezone",
+                                                                                     "value":  "America/Santiago",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "a43e738b-1aae-499b-b9ac-5acf2d671426",
+                                                                                     "name":  "itop_organization",
+                                                                                     "value":  "Minera GoldFields Chile",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "4ec361d2-1cc3-4312-bd7a-20a52964b9b6",
+                                                                                     "name":  "Company",
+                                                                                     "value":  "TecnoComp",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "1e13dbe7-2915-4a85-802f-c76c412d0758",
+                                                                                     "name":  "report_template_key",
+                                                                                     "value":  "itop-ad-conciliacion-identidades-fase1",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "7e5c7514-4e0a-4d1a-9817-914027046ab8",
+                                                                                     "name":  "ldap_base_dn",
+                                                                                     "value":  "={{ $json.body?.ldap_base_dn ?? \"OU=GFCHL,OU=Users,OU=SITES_CHILE,DC=GFPE,DC=GFIROOT,DC=Local\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "71d357a3-e0c3-40b3-a75b-c66b945059e4",
+                                                                                     "name":  "ldap_filter",
+                                                                                     "value":  "={{ $json.body?.ldap_filter ?? \"(\u0026(objectClass=user)(objectCategory=person)(mail=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "e4dfc769-8abe-456f-bdbd-7990af1fbd6c",
+                                                                                     "name":  "ldap_attributes",
+                                                                                     "value":  "mail,sAMAccountName,userPrincipalName,displayName,employeeNumber,department,physicalDeliveryOfficeName,office,title,distinguishedName,userAccountControl,whenChanged,employeeID,objectClass,objectCategory,givenName,sn,company",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "3d126e20-54f9-4ca1-848d-28c8ed3113c4",
+                                                                                     "name":  "itop_person_class",
+                                                                                     "value":  "Person",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "306056f1-9c67-48c4-8141-24a84059973f",
+                                                                                     "name":  "itop_oql_personas",
+                                                                                     "value":  "SELECT Person WHERE email != \u0027\u0027",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "e077ec42-5a91-4548-9bfd-57a138db042b",
+                                                                                     "name":  "itop_output_fields",
+                                                                                     "value":  "friendlyname,first_name,name,email,status,function,org_id,org_id_friendlyname",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "49d095bd-3564-4bbc-aa61-91a42cb216d6",
+                                                                                     "name":  "itop_limit",
+                                                                                     "value":  5000,
+                                                                                     "type":  "number"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "1e0e4de9-3d9e-4a22-ac51-df4aadc8bbd4",
+                                                                                     "name":  "mode",
+                                                                                     "value":  "={{ $json.body?.mode ?? \"AUDITORIA\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "e18c044b-ae17-4590-993a-42086b153408",
+                                                                                     "name":  "llave_cruce",
+                                                                                     "value":  "email",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "01d17585-cd83-4772-a867-5d29b9ace46b",
+                                                                                     "name":  "aplicar_cambios_itop",
+                                                                                     "value":  false,
+                                                                                     "type":  "boolean"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "8d0a4acc-7650-443f-82e3-79ca05c7fe56",
+                                                                                     "name":  "comparar_cargo",
+                                                                                     "value":  "={{ $json.body?.comparar_cargo ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "1bb068c9-8751-4831-940d-1a27ef8e502e",
+                                                                                     "name":  "comparar_departamento",
+                                                                                     "value":  "={{ $json.body?.comparar_departamento ?? false }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "cf3feab0-df73-47da-a436-17f60e3a6f3c",
+                                                                                     "name":  "comparar_organizacion",
+                                                                                     "value":  "={{ $json.body?.comparar_organizacion ?? false }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "ce892ff6-8d02-4b71-bec7-e35f780bd389",
+                                                                                     "name":  "include_attachment",
+                                                                                     "value":  "={{ $json.body?.include_attachment ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "966765c9-f7b0-482d-8629-a0f72152ed04",
+                                                                                     "name":  "include_detail",
+                                                                                     "value":  "={{ $json.body?.include_detail ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "fd296a34-a280-4d31-9efc-5313f8a469f9",
+                                                                                     "name":  "include_summary",
+                                                                                     "value":  "={{ $json.body?.include_summary ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "5e9f0d66-4071-46b5-89ac-1d0b9b5ed5de",
+                                                                                     "name":  "include_operational_notes",
+                                                                                     "value":  "={{ $json.body?.include_operational_notes ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "02c19b6c-c4ea-49c5-8b95-422ee9a5d937",
+                                                                                     "name":  "include_itop_button_footer",
+                                                                                     "value":  "={{ $json.body?.include_itop_button_footer ?? false }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "44873404-02d6-4e19-8aed-cb1051aadc49",
+                                                                                     "name":  "send_email",
+                                                                                     "value":  "={{ $json.body?.send_email ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c25fbec5-184b-4d4a-99cc-99fd158b4611",
+                                                                                     "name":  "send_when_no_changes",
+                                                                                     "value":  "={{ $json.body?.send_when_no_changes ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       57504,
+                                       15792
+                                   ],
+                      "id":  "4795899f-2c71-43e6-a16c-1528352900d7",
+                      "name":  "SetTrigger - Flujo"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "puR8KZ9UFvq5zRqX",
+                                                            "mode":  "list",
+                                                            "cachedResultUrl":  "/n8n/workflow/puR8KZ9UFvq5zRqX",
+                                                            "cachedResultName":  "SYS - Configuracion base reportes correo"
+                                                        },
+                                         "options":  {
+                                                         "waitForSubWorkflow":  true
+                                                     }
+                                     },
+                      "id":  "d4509efc-d466-4d9f-950f-7fb5f2a59242",
+                      "name":  "SubWorkflow - SetBase reportes correo",
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       57728,
+                                       15792
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const base = $input.first()?.json || {};\nconst trigger = $(\u0027SetTrigger - Flujo\u0027).first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027y\u0027, \u0027si\u0027, \u0027s\u0027, \u0027on\u0027, \u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027, \u00270\u0027, \u0027no\u0027, \u0027n\u0027, \u0027off\u0027, \u0027disabled\u0027].includes(text)) return false;\n  return fallback;\n}\n\nconst flags = { ...(base.flags || {}) };\nfor (const key of [\n  \u0027include_attachment\u0027,\n  \u0027include_detail\u0027,\n  \u0027include_summary\u0027,\n  \u0027include_operational_notes\u0027,\n  \u0027include_itop_button_footer\u0027,\n  \u0027send_email\u0027,\n  \u0027send_when_no_changes\u0027\n]) {\n  flags[key] = normalizeBoolean(trigger[key] ?? base[key], flags[key] ?? true);\n}\n\n\n// Para este reporte no aplica boton de acceso a iTop en el correo.\nflags.include_itop_button_footer = false;\n\nconst config = {\n  modo: String(trigger.mode || \u0027AUDITORIA\u0027).toUpperCase(),\n  aplicarCambiosItop: false,\n  llaveCruce: trigger.llave_cruce || \u0027email\u0027,\n  nombreReporte: \u0027conciliacion_ad_itop\u0027,\n  zonaHoraria: trigger.timezone || base.timezone || \u0027America/Santiago\u0027,\n  criticidad: {\n    crearEnItop: \u0027Media\u0027,\n    inactivarEnItop: \u0027Alta\u0027,\n    actualizarCargoRol: \u0027Media\u0027,\n    excepciones: \u0027Alta\u0027\n  },\n  ldap: {\n    baseDn: trigger.ldap_base_dn,\n    filter: trigger.ldap_filter,\n    attributes: trigger.ldap_attributes,\n    excludedEmailPatterns: [\u0027svc_\u0027, \u0027adm_\u0027, \u0027test_\u0027, \u0027admin\u0027, \u0027notificaciones\u0027],\n    excludedOuContains: [\u0027OU=Service Accounts\u0027, \u0027OU=Administradores\u0027, \u0027OU=Robots\u0027, \u0027OU=Aplicaciones\u0027]\n  },\n  itop: {\n    url: String(trigger.itop_url || \u0027\u0027).replace(/\\/$/, \u0027\u0027) + \u0027/webservices/rest.php?version=1.3\u0027,\n    baseUrl: trigger.itop_url,\n    personClass: trigger.itop_person_class || \u0027Person\u0027,\n    oqlPersonas: trigger.itop_oql_personas || \"SELECT Person WHERE email != \u0027\u0027\",\n    fields: trigger.itop_output_fields || \u0027friendlyname,first_name,name,email,status,function,org_id,org_id_friendlyname\u0027\n  },\n  comparacion: {\n    compararCargo: normalizeBoolean(trigger.comparar_cargo, true),\n    compararDepartamento: false,\n    compararOrganizacion: false,\n    normalizarTildes: true,\n    ignorarMayusculas: true,\n    crearHojaSinAccion: false\n  },\n  mail: {\n    from: trigger.email_from,\n    to: trigger.email_to,\n    cc: trigger.email_cc || \u0027\u0027,\n    bcc: trigger.email_bcc || \u0027\u0027,\n    subjectPrefix: trigger.email_subject || \u0027Conciliacion semanal AD vs iTop\u0027,\n    enviarSiempre: true,\n    enviarAdjuntoSiNoHayCambios: true\n  }\n};\n\nconst errors = [];\nfunction required(path, value) {\n  if (value === undefined || value === null || String(value).trim() === \u0027\u0027) errors.push(`Parametro obligatorio no informado: ${path}`);\n}\nrequired(\u0027ldap_base_dn\u0027, config.ldap.baseDn);\nrequired(\u0027ldap_filter\u0027, config.ldap.filter);\nrequired(\u0027ldap_attributes\u0027, config.ldap.attributes);\nrequired(\u0027itop_url\u0027, trigger.itop_url);\nrequired(\u0027email_from\u0027, config.mail.from);\nrequired(\u0027email_to\u0027, config.mail.to);\n\nif (config.aplicarCambiosItop !== false) {\n  errors.push(\u0027Control de seguridad: aplicarCambiosItop debe permanecer en false para Fase 1.\u0027);\n}\n\nconst setMixed = {\n  ...base,\n  ...trigger,\n  flags,\n  config,\n  config_source: \u0027SetBase + SetTrigger + Config Reporte\u0027,\n  config_validated: errors.length === 0,\n  config_message: errors.length === 0 ? \u0027Parametros de configuracion validados\u0027 : errors.join(\u0027 | \u0027),\n};\n\nfor (const [key, value] of Object.entries(flags)) {\n  setMixed[key] = value;\n}\n\nif (!setMixed.config_validated) {\n  throw new Error(setMixed.config_message);\n}\n\nreturn [{ json: setMixed }];"
+                                     },
+                      "id":  "1896dd64-ce1a-4d62-a5de-98865c7253ab",
+                      "name":  "Config Reporte",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       57952,
+                                       15792
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "baseDN":  "={{ $json.config.ldap.baseDn }}",
+                                         "searchFor":  "custom",
+                                         "customFilter":  "={{ $json.config.ldap.filter }}",
+                                         "returnAll":  true,
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "f1a40266-d86a-413b-8a57-0532de979cfd",
+                      "name":  "LDAP - Usuarios vigentes AD",
+                      "type":  "n8n-nodes-base.ldap",
+                      "typeVersion":  1,
+                      "position":  [
+                                       58176,
+                                       15696
+                                   ],
+                      "credentials":  {
+                                          "ldap":  {
+                                                       "id":  "TcJKQ6y3VWBzndLe",
+                                                       "name":  "LDAP_GF"
+                                                   }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "\nconst cfg = $(\u0027Config Reporte\u0027).first().json.config;\n\nfunction clean(v) {\n  if (v === undefined || v === null) return \u0027\u0027;\n  if (Array.isArray(v)) v = v[0] ?? \u0027\u0027;\n  return String(v).trim();\n}\nfunction emailNorm(v) { return clean(v).toLowerCase(); }\nfunction containsAny(value, list) {\n  const v = clean(value).toLowerCase();\n  return (list || []).some(x =\u003e v.includes(String(x).toLowerCase()));\n}\n\nconst users = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  const email = emailNorm(j.mail || j.email);\n  const dn = clean(j.distinguishedName || j.dn);\n  const login = clean(j.sAMAccountName || j.samaccountname);\n  const excludedByPattern = containsAny(email, cfg.ldap.excludedEmailPatterns) || containsAny(login, cfg.ldap.excludedEmailPatterns);\n  const excludedByOu = containsAny(dn, cfg.ldap.excludedOuContains);\n\n  // Evita objetos hijos que pueden aparecer bajo usuarios, por ejemplo ExchangeActiveSyncDevices.\n  // Esos registros no son cuentas de usuario y no deben generar excepciones ni filas con DN/OU.\n  const dnLower = dn.toLowerCase();\n  const objectClassText = clean(j.objectClass || j.objectclass).toLowerCase();\n  const isExchangeMobileDevice = dnLower.includes(\u0027cn=exchangeactivesyncdevices\u0027) || dnLower.includes(\u0027cn=ipadÂ§\u0027) || dnLower.includes(\u0027cn=iphoneÂ§\u0027) || dnLower.includes(\u0027cn=androidÂ§\u0027);\n  const isComputerLike = objectClassText.includes(\u0027computer\u0027) || objectClassText.includes(\u0027msExchActiveSyncDevice\u0027.toLowerCase());\n\n  if (isExchangeMobileDevice || isComputerLike) {\n    continue;\n  }\n\n  users.push({\n    source: \u0027AD\u0027,\n    email,\n    login,\n    upn: clean(j.userPrincipalName),\n    display_name: clean(j.displayName),\n    employee_number: clean(j.employeeNumber || j.EmployeeNumber || j.employeeID),\n    department: clean(j.department),\n    office: clean(j.physicalDeliveryOfficeName || j.office || j.Office),\n    title: clean(j.title || j.Title),\n    first_name: clean(j.givenName),\n    last_name: clean(j.sn),\n    company: clean(j.company),\n    dn,\n    user_account_control: clean(j.userAccountControl),\n    when_changed: clean(j.whenChanged),\n    enabled: true,\n    excluded: excludedByPattern || excludedByOu,\n    exclusion_reason: excludedByPattern ? \u0027Cuenta excluida por patron tecnico\u0027 : (excludedByOu ? \u0027Cuenta excluida por OU tecnica\u0027 : \u0027\u0027)\n  });\n}\nreturn [{ json: { adUsers: users } }];\n"
+                                     },
+                      "id":  "f47f896d-f7b8-4b65-96fd-11f2d66f9ecf",
+                      "name":  "Normalizar AD",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       58400,
+                                       15696
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "authentication":  "token",
+                                         "class":  "=Person",
+                                         "key":  "=SELECT Person WHERE email != \u0027\u0027 AND status = \u0027active\u0027",
+                                         "output_fields":  "={{ $json.config.itop.fields }}",
+                                         "limit":  "={{ $json.itop_limit ?? 5000 }}",
+                                         "additionalOptions":  {
+
+                                                               }
+                                     },
+                      "id":  "c2cb49c7-45bf-42aa-b798-98fc4ba7d110",
+                      "name":  "iTop - Personas para conciliacion",
+                      "type":  "n8n-nodes-itop.iTop",
+                      "typeVersion":  1,
+                      "position":  [
+                                       58176,
+                                       15888
+                                   ],
+                      "credentials":  {
+                                          "iTopTokenApi":  {
+                                                               "id":  "FdUX5lCOh0Z3YWW4",
+                                                               "name":  "iTopToken_GF_QA"
+                                                           }
+                                      },
+                      "notes":  "Consulta personas desde iTop usando nodo nativo n8n-nodes-itop.iTop, alineado al reporte ITSM. Ajustar credencial iTopTokenApi segÃºn ambiente."
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "function clean(v) {\n  if (v === undefined || v === null) return \u0027\u0027;\n  return String(v).trim();\n}\nfunction emailNorm(v) { return clean(v).toLowerCase(); }\n\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n\n    // Respuesta clÃ¡sica REST core/get: { objects: { Person::1: { fields: ... } } }\n    if (j.objects \u0026\u0026 typeof j.objects === \u0027object\u0027) {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n\n    // Algunos nodos devuelven data.objects\n    if (j.data?.objects \u0026\u0026 typeof j.data.objects === \u0027object\u0027) {\n      for (const [key, value] of Object.entries(j.data.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n\n    // Nodo nativo iTop: normalmente entrega un item por objeto, con campos planos o fields.\n    if (Array.isArray(j)) {\n      for (const row of j) rows.push(row);\n      continue;\n    }\n\n    rows.push(j);\n  }\n  return rows;\n}\n\nfunction getField(obj, names, fallback = \u0027\u0027) {\n  for (const name of names) {\n    if (obj \u0026\u0026 obj[name] !== undefined \u0026\u0026 obj[name] !== null \u0026\u0026 obj[name] !== \u0027\u0027) return obj[name];\n    if (obj?.fields \u0026\u0026 obj.fields[name] !== undefined \u0026\u0026 obj.fields[name] !== null \u0026\u0026 obj.fields[name] !== \u0027\u0027) return obj.fields[name];\n  }\n  return fallback;\n}\n\nconst rows = flattenInput($input.all());\nconst users = [];\n\nfor (const row of rows) {\n  const fields = row.fields || row;\n  users.push({\n    source: \u0027iTop\u0027,\n    key: clean(row.key || row.id || getField(fields, [\u0027id\u0027, \u0027_key\u0027, \u0027key\u0027], \u0027\u0027)),\n    class: clean(row.class || row.finalclass || getField(fields, [\u0027finalclass\u0027, \u0027class\u0027], \u0027Person\u0027)) || \u0027Person\u0027,\n    email: emailNorm(getField(fields, [\u0027email\u0027], \u0027\u0027)),\n    friendlyname: clean(getField(fields, [\u0027friendlyname\u0027, \u0027friendly_name\u0027], \u0027\u0027)),\n    first_name: clean(getField(fields, [\u0027first_name\u0027, \u0027firstname\u0027], \u0027\u0027)),\n    last_name: clean(getField(fields, [\u0027name\u0027, \u0027last_name\u0027, \u0027lastname\u0027], \u0027\u0027)),\n    status: clean(getField(fields, [\u0027status\u0027, \u0027status_friendlyname\u0027], \u0027\u0027)),\n    title: clean(getField(fields, [\u0027function\u0027, \u0027function_friendlyname\u0027, \u0027title\u0027], \u0027\u0027)),\n    department: clean(getField(fields, [\u0027department\u0027, \u0027department_name\u0027, \u0027department_friendlyname\u0027], \u0027\u0027)),\n    org_id: clean(getField(fields, [\u0027org_id\u0027], \u0027\u0027)),\n    org_name: clean(getField(fields, [\u0027org_id_friendlyname\u0027, \u0027org_name\u0027, \u0027org_friendlyname\u0027], \u0027\u0027))\n  });\n}\n\nreturn [{ json: { itopUsers: users } }];"
+                                     },
+                      "id":  "f9749b78-304f-4a2d-a95e-065b1e120c67",
+                      "name":  "Normalizar iTop",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       58400,
+                                       15888
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "combine",
+                                         "combineBy":  "combineByPosition",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "48c116b9-1f3e-416e-abbf-d1f4e280ece3",
+                      "name":  "Merge AD e iTop",
+                      "type":  "n8n-nodes-base.merge",
+                      "typeVersion":  3,
+                      "position":  [
+                                       58624,
+                                       15792
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "\nconst cfg = $(\u0027Config Reporte\u0027).first().json.config;\nconst sys = { trigger_source: $(\u0027SetTrigger - Flujo\u0027).first()?.json?.body ? \u0027webhook\u0027 : \u0027manual/cron\u0027 };\nconst input = $input.first().json;\nconst adUsersRaw = input.adUsers || [];\nconst itopUsersRaw = input.itopUsers || [];\n\nfunction clean(v) {\n  if (v === undefined || v === null) return \u0027\u0027;\n  return String(v).trim();\n}\nfunction stripAccents(s) {\n  return clean(s).normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027);\n}\nfunction normText(v) {\n  let s = clean(v);\n  if (cfg.comparacion?.normalizarTildes) s = stripAccents(s);\n  if (cfg.comparacion?.ignorarMayusculas) s = s.toLowerCase();\n  return s.replace(/\\s+/g, \u0027 \u0027).trim();\n}\nfunction emailNorm(v) { return clean(v).toLowerCase(); }\nfunction add(map, key, value) {\n  if (!map.has(key)) map.set(key, []);\n  map.get(key).push(value);\n}\n\nconst adUsers = adUsersRaw.filter(u =\u003e !u.excluded);\nconst adExcluded = adUsersRaw.filter(u =\u003e u.excluded);\nconst itopUsers = itopUsersRaw;\n\nconst adByEmail = new Map();\nconst itopByEmail = new Map();\nfor (const u of adUsers) add(adByEmail, emailNorm(u.email), u);\nfor (const u of itopUsers) add(itopByEmail, emailNorm(u.email), u);\n\nconst resumen = {\n  fecha_ejecucion: new Date().toISOString(),\n  origen_ejecucion: sys.trigger_source || \u0027desconocido\u0027,\n  modo: cfg.modo,\n  aplica_cambios_itop: cfg.aplicarCambiosItop,\n  total_ad_vigentes: adUsers.length,\n  total_ad_excluidos: adExcluded.length,\n  total_itop: itopUsers.length,\n  coincidencias_email: 0,\n  crear_en_itop: 0,\n  inactivar_en_itop: 0,\n  diferencias_datos: 0,\n  excepciones: 0,\n  sin_accion: 0\n};\n\nconst crear = [];\nconst inactivar = [];\nconst diferencias = [];\nconst excepciones = [];\nconst sinAccion = [];\n\nfunction pushException(origen, email, nombre, problema, impacto, accion, prioridad=\u0027Alta\u0027, source = {}) {\n  const sourceObj = source || {};\n  const fallbackEmail = clean(email)\n    || clean(sourceObj.email)\n    || clean(sourceObj.upn)\n    || clean(sourceObj.userPrincipalName)\n    || clean(sourceObj.UserPrincipalName)\n    || clean(sourceObj.login)\n    || clean(sourceObj.key)\n    || `${origen}_SIN_CORREO`;\n  const fallbackNombre = clean(nombre)\n    || clean(sourceObj.display_name)\n    || clean(sourceObj.displayName)\n    || clean(sourceObj.friendlyname)\n    || clean(sourceObj.first_name || sourceObj.last_name ? `${sourceObj.first_name || \u0027\u0027} ${sourceObj.last_name || \u0027\u0027}` : \u0027\u0027)\n    || clean(sourceObj.login)\n    || clean(sourceObj.key)\n    || `${origen} sin nombre informado`;\n\n  excepciones.push({\n    categoria: \u0027EXCEPCION\u0027,\n    origen,\n    email: fallbackEmail,\n    email_ad: origen === \u0027AD\u0027 ? clean(sourceObj.email || email) : \u0027\u0027,\n    email_itop: origen === \u0027iTop\u0027 ? clean(sourceObj.email || email) : \u0027\u0027,\n    nombre: fallbackNombre,\n    display_name_ad: clean(sourceObj.display_name || sourceObj.displayName),\n    upn_ad: clean(sourceObj.upn || sourceObj.userPrincipalName || sourceObj.UserPrincipalName),\n    login_ad: clean(sourceObj.login),\n    dn_ad: clean(sourceObj.dn),\n    friendlyname_itop: clean(sourceObj.friendlyname),\n    key_itop: clean(sourceObj.key),\n    departamento_ad: clean(sourceObj.department),\n    oficina_area_ad: clean(sourceObj.office),\n    cargo_puesto_ad: clean(sourceObj.title),\n    cargo_itop: clean(sourceObj.title),\n    problema,\n    impacto,\n    accion_recomendada: accion,\n    prioridad\n  });\n}\n\nfor (const u of adExcluded) {\n  pushException(\u0027AD\u0027, u.email, u.display_name, u.exclusion_reason || \u0027Cuenta excluida\u0027, \u0027No se considera en conciliacion operacional\u0027, \u0027Validar si corresponde excluir definitivamente\u0027, \u0027Baja\u0027, u);\n}\nfor (const u of adUsers) {\n  if (!u.email) pushException(\u0027AD\u0027, \u0027\u0027, u.display_name, \u0027Usuario AD sin correo\u0027, \u0027No puede cruzarse por mail\u0027, \u0027Completar atributo mail en AD\u0027, \u0027Alta\u0027, u);\n}\nfor (const u of itopUsers) {\n  if (!u.email) pushException(\u0027iTop\u0027, \u0027\u0027, u.friendlyname, \u0027Persona iTop sin correo\u0027, \u0027No puede cruzarse por mail\u0027, \u0027Completar correo en iTop\u0027, \u0027Alta\u0027, u);\n}\nfor (const [email, arr] of adByEmail.entries()) {\n  if (email \u0026\u0026 arr.length \u003e 1) pushException(\u0027AD\u0027, email, arr.map(x =\u003e x.display_name || x.login || x.upn).filter(Boolean).join(\u0027 | \u0027), \u0027Correo duplicado en AD\u0027, \u0027Llave de cruce no unica\u0027, \u0027Corregir duplicidad antes de accionar\u0027, \u0027Alta\u0027, { ...arr[0], email, display_name: arr.map(x =\u003e x.display_name || x.login || x.upn).filter(Boolean).join(\u0027 | \u0027) });\n}\nfor (const [email, arr] of itopByEmail.entries()) {\n  if (email \u0026\u0026 arr.length \u003e 1) pushException(\u0027iTop\u0027, email, arr.map(x =\u003e x.friendlyname || x.key).filter(Boolean).join(\u0027 | \u0027), \u0027Correo duplicado en iTop\u0027, \u0027Llave de cruce no unica\u0027, \u0027Corregir duplicidad antes de accionar\u0027, \u0027Alta\u0027, { ...arr[0], email, friendlyname: arr.map(x =\u003e x.friendlyname || x.key).filter(Boolean).join(\u0027 | \u0027) });\n}\n\nconst allEmails = new Set([...adByEmail.keys(), ...itopByEmail.keys()].filter(Boolean));\n\nfor (const email of allEmails) {\n  const adList = adByEmail.get(email) || [];\n  const itopList = itopByEmail.get(email) || [];\n\n  if (adList.length !== 1 || itopList.length \u003e 1) continue;\n\n  if (itopList.length === 0) {\n    const ad = adList[0];\n    crear.push({\n      categoria: \u0027CREAR_EN_ITOP\u0027,\n      accion_propuesta: \u0027Crear persona en iTop\u0027,\n      criticidad: cfg.criticidad.crearEnItop,\n      email,\n      email_ad: ad.email || ad.upn || email,\n      email_itop: \u0027\u0027,\n      nombre_ad: ad.first_name,\n      apellido_ad: ad.last_name,\n      display_name_ad: ad.display_name,\n      login_ad: ad.login,\n      upn_ad: ad.upn,\n      numero_empleado_ad: ad.employee_number,\n      cargo_puesto_ad: ad.title,\n      cargo_ad: ad.title,\n      departamento_ad: ad.department,\n      oficina_area_ad: ad.office,\n      empresa_ad: ad.company,\n      ou_ad: ad.dn,\n      motivo: \u0027Existe vigente en AD y no existe en iTop\u0027,\n      requiere_revision: \u0027Si\u0027\n    });\n    continue;\n  }\n\n  const ad = adList[0];\n  const itop = itopList[0];\n  resumen.coincidencias_email++;\n\n  const changed = [];\n  if (cfg.comparacion.compararCargo \u0026\u0026 normText(ad.title) !== normText(itop.title)) changed.push(\u0027cargo/rol\u0027);\n  // Fase actual: solo se evalua diferencia de cargo/rol. Departamento y organizacion quedan fuera del analisis.\n\n\n  if (changed.length \u003e 0) {\n    diferencias.push({\n      categoria: \u0027DIFERENCIA_DATOS\u0027,\n      accion_propuesta: \u0027Actualizar datos en iTop\u0027,\n      criticidad: cfg.criticidad.actualizarCargoRol,\n      email,\n      email_ad: ad.email || ad.upn || email,\n      email_itop: itop.email || email,\n      upn_ad: ad.upn,\n      login_ad: ad.login,\n      nombre_ad: ad.display_name,\n      nombre_itop: itop.friendlyname,\n      numero_empleado_ad: ad.employee_number,\n      cargo_puesto_ad: ad.title,\n      cargo_ad: ad.title,\n      cargo_itop: itop.title,\n      departamento_ad: ad.department,\n      oficina_area_ad: ad.office,\n      departamento_itop: itop.department,\n      empresa_ad: ad.company,\n      organizacion_itop: itop.org_name,\n      campos_con_diferencia: changed.join(\u0027, \u0027),\n      motivo: \u0027Datos distintos entre AD e iTop\u0027,\n      requiere_revision: \u0027Si\u0027\n    });\n  } else {\n    sinAccion.push({\n      categoria: \u0027SINCRONIZADO\u0027,\n      email,\n      email_ad: ad.email || ad.upn || email,\n      email_itop: itop.email || email,\n      upn_ad: ad.upn,\n      login_ad: ad.login,\n      nombre: ad.display_name || itop.friendlyname,\n      nombre_ad: ad.display_name,\n      nombre_itop: itop.friendlyname,\n      numero_empleado_ad: ad.employee_number,\n      cargo_puesto_ad: ad.title,\n      cargo: ad.title || itop.title,\n      cargo_ad: ad.title,\n      cargo_itop: itop.title,\n      departamento: ad.department || itop.department,\n      departamento_ad: ad.department,\n      oficina_area_ad: ad.office,\n      departamento_itop: itop.department,\n      estado: \u0027OK\u0027,\n      motivo: \u0027Registro sincronizado: correo y cargo/rol coinciden segun reglas configuradas\u0027\n    });\n  }\n}\n\nfor (const [email, itopList] of itopByEmail.entries()) {\n  if (!email) continue;\n  const adList = adByEmail.get(email) || [];\n  if (itopList.length !== 1 || adList.length \u003e 0) continue;\n\n  const itop = itopList[0];\n  inactivar.push({\n    categoria: \u0027INACTIVAR_EN_ITOP\u0027,\n    accion_propuesta: \u0027Candidato a inactivar en iTop\u0027,\n    criticidad: cfg.criticidad.inactivarEnItop,\n    email,\n    email_itop: itop.email || email,\n    email_ad: \u0027\u0027,\n    nombre_itop: itop.friendlyname,\n    estado_itop: itop.status,\n    cargo_itop: itop.title,\n    organizacion_itop: itop.org_name,\n    existe_en_ad: \u0027No\u0027,\n    estado_ad: \u0027No encontrado como vigente\u0027,\n    motivo: \u0027Existe activo o registrado en iTop, pero no aparece vigente en AD\u0027,\n    bloqueo_operativo: \u0027Pendiente de validar\u0027,\n    motivo_bloqueo: \u0027Validar activos asignados, tickets abiertos y actas antes de inactivar\u0027,\n    requiere_revision: \u0027Si\u0027\n  });\n}\n\nresumen.crear_en_itop = crear.length;\nresumen.inactivar_en_itop = inactivar.length;\nresumen.diferencias_datos = diferencias.length;\nresumen.excepciones = excepciones.length;\nresumen.sin_accion = sinAccion.length;\n\nconst totalCambios = crear.length + inactivar.length + diferencias.length + excepciones.length;\n\nreturn [{\n  json: {\n    config: cfg,\n    sys,\n    resumen,\n    totalCambios,\n    hayCambios: totalCambios \u003e 0,\n    hojas: {\n      \u002700_Resumen\u0027: [\n        { indicador: \u0027Fecha ejecucion\u0027, valor: resumen.fecha_ejecucion, comentario: \u0027Ejecucion semanal o bajo demanda\u0027 },\n        { indicador: \u0027Origen ejecucion\u0027, valor: resumen.origen_ejecucion, comentario: \u0027manual, cron o webhook\u0027 },\n        { indicador: \u0027Modo\u0027, valor: resumen.modo, comentario: \u0027No aplica cambios automaticos\u0027 },\n        { indicador: \u0027Usuarios AD vigentes\u0027, valor: resumen.total_ad_vigentes, comentario: \u0027Fuente LDAP\u0027 },\n        { indicador: \u0027Usuarios AD excluidos\u0027, valor: resumen.total_ad_excluidos, comentario: \u0027Cuentas tecnicas u OU excluidas\u0027 },\n        { indicador: \u0027Personas iTop procesadas\u0027, valor: resumen.total_itop, comentario: \u0027Fuente REST/OQL\u0027 },\n        { indicador: \u0027Coincidencias por email\u0027, valor: resumen.coincidencias_email, comentario: \u0027Match principal\u0027 },\n        { indicador: \u0027Candidatos a crear\u0027, valor: resumen.crear_en_itop, comentario: \u0027AD si / iTop no\u0027 },\n        { indicador: \u0027Candidatos a inactivar\u0027, valor: resumen.inactivar_en_itop, comentario: \u0027iTop si / AD no\u0027 },\n        { indicador: \u0027Diferencias de datos\u0027, valor: resumen.diferencias_datos, comentario: \u0027Cargo/rol\u0027 },\n        { indicador: \u0027Excepciones\u0027, valor: resumen.excepciones, comentario: \u0027Requieren revision\u0027 },\n        { indicador: \u0027Sincronizados / Estado correcto\u0027, valor: resumen.sin_accion, comentario: \u0027Correo y cargo/rol coinciden segun reglas activas\u0027 }\n      ],\n      \u002701_Crear_en_iTop\u0027: crear,\n      \u002702_Inactivar_en_iTop\u0027: inactivar,\n      \u002703_Diferencias_Datos\u0027: diferencias,\n      \u002704_Sin_Accion\u0027: sinAccion,\n      \u002705_Excepciones\u0027: excepciones\n    }\n  }\n}];\n"
+                                     },
+                      "id":  "f262eef1-7012-43a6-ae72-ea4b73403977",
+                      "name":  "Conciliar AD vs iTop",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       58848,
+                                       15792
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const cfg = $json.config || {};\nconst trigger = $(\u0027SetTrigger - Flujo\u0027).first()?.json || {};\nconst flags = $(\u0027Config Reporte\u0027).first()?.json?.flags || {};\nconst resumen = $json.resumen || {};\nconst hojasOriginales = $json.hojas || {};\nconst hayCambios = $json.hayCambios === true;\nconst totalCambios = Number($json.totalCambios || 0);\nconst timezone = cfg.zonaHoraria || cfg.timezone || \u0027America/Santiago\u0027;\n\nfunction clean(value) {\n  if (value === undefined || value === null) return \u0027\u0027;\n  return String(value).trim();\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027y\u0027, \u0027si\u0027, \u0027s\u0027, \u0027on\u0027, \u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027, \u00270\u0027, \u0027no\u0027, \u0027n\u0027, \u0027off\u0027, \u0027disabled\u0027].includes(text)) return false;\n  return fallback;\n}\n\nfunction escapeHtml(value) {\n  return String(value ?? \u0027\u0027)\n    .replace(/\u0026/g, \u0027\u0026amp;\u0027)\n    .replace(/\u003c/g, \u0027\u0026lt;\u0027)\n    .replace(/\u003e/g, \u0027\u0026gt;\u0027)\n    .replace(/\"/g, \u0027\u0026quot;\u0027)\n    .replace(/\u0027/g, \u0027\u0026#039;\u0027);\n}\n\nfunction escXml(value) {\n  return String(value ?? \u0027\u0027)\n    .replace(/\u0026/g, \u0027\u0026amp;\u0027)\n    .replace(/\u003c/g, \u0027\u0026lt;\u0027)\n    .replace(/\u003e/g, \u0027\u0026gt;\u0027)\n    .replace(/\"/g, \u0027\u0026quot;\u0027)\n    .replace(/\u0027/g, \u0027\u0026apos;\u0027)\n    .replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]/g, \u0027\u0027);\n}\n\nfunction colName(n) {\n  let s = \u0027\u0027;\n  while (n \u003e 0) {\n    const m = (n - 1) % 26;\n    s = String.fromCharCode(65 + m) + s;\n    n = Math.floor((n - m) / 26);\n  }\n  return s;\n}\n\nfunction safeSheetName(name, index, used) {\n  let safe = clean(name || `Hoja_${index + 1}`)\n    .replace(/[\\\\/?*\\[\\]:]/g, \u0027_\u0027)\n    .replace(/^\u0027+|\u0027+$/g, \u0027\u0027)\n    .substring(0, 31);\n  if (!safe) safe = `Hoja_${index + 1}`;\n  let candidate = safe;\n  let counter = 2;\n  while (used.has(candidate.toLowerCase())) {\n    const suffix = `_${counter++}`;\n    candidate = safe.substring(0, 31 - suffix.length) + suffix;\n  }\n  used.add(candidate.toLowerCase());\n  return candidate;\n}\n\nfunction rowsForSheet(rows) {\n  const normalizedRows = Array.isArray(rows) ? rows : [];\n  const cols = [];\n  for (const row of normalizedRows) {\n    for (const key of Object.keys(row || {})) {\n      if (!cols.includes(key)) cols.push(key);\n    }\n  }\n  if (!cols.length) cols.push(\u0027sin_datos\u0027);\n  if (!normalizedRows.length) return { cols, rows: [{ sin_datos: \u0027Sin registros para esta hoja\u0027 }] };\n  return { cols, rows: normalizedRows };\n}\n\nfunction sheetXml(rows) {\n  const { cols, rows: dataRows } = rowsForSheet(rows);\n  const allRows = [Object.fromEntries(cols.map(c =\u003e [c, c])), ...dataRows];\n  const rowXml = allRows.map((row, rowIndex) =\u003e {\n    const cells = cols.map((col, colIndex) =\u003e {\n      const ref = `${colName(colIndex + 1)}${rowIndex + 1}`;\n      const value = escXml(row?.[col] ?? \u0027\u0027);\n      return `\u003cc r=\"${ref}\" t=\"inlineStr\"\u003e\u003cis\u003e\u003ct\u003e${value}\u003c/t\u003e\u003c/is\u003e\u003c/c\u003e`;\n    }).join(\u0027\u0027);\n    return `\u003crow r=\"${rowIndex + 1}\"\u003e${cells}\u003c/row\u003e`;\n  }).join(\u0027\u0027);\n  return `\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\u003cworksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"\u003e\u003csheetData\u003e${rowXml}\u003c/sheetData\u003e\u003c/worksheet\u003e`;\n}\n\nfunction crc32(buffer) {\n  const table = crc32.table || (crc32.table = (() =\u003e {\n    const t = [];\n    for (let n = 0; n \u003c 256; n++) {\n      let c = n;\n      for (let k = 0; k \u003c 8; k++) c = (c \u0026 1) ? (0xEDB88320 ^ (c \u003e\u003e\u003e 1)) : (c \u003e\u003e\u003e 1);\n      t[n] = c \u003e\u003e\u003e 0;\n    }\n    return t;\n  })());\n  let crc = 0 ^ (-1);\n  for (let i = 0; i \u003c buffer.length; i++) crc = (crc \u003e\u003e\u003e 8) ^ table[(crc ^ buffer[i]) \u0026 0xFF];\n  return (crc ^ (-1)) \u003e\u003e\u003e 0;\n}\n\nfunction dosDateTime(date = new Date()) {\n  return {\n    time: (date.getHours() \u003c\u003c 11) | (date.getMinutes() \u003c\u003c 5) | Math.floor(date.getSeconds() / 2),\n    date: ((date.getFullYear() - 1980) \u003c\u003c 9) | ((date.getMonth() + 1) \u003c\u003c 5) | date.getDate(),\n  };\n}\n\nfunction zipStore(files) {\n  const localParts = [];\n  const centralParts = [];\n  let offset = 0;\n  const dt = dosDateTime();\n\n  for (const file of files) {\n    const name = Buffer.from(file.name, \u0027utf8\u0027);\n    const data = Buffer.from(file.data, \u0027utf8\u0027);\n    const crc = crc32(data);\n    const local = Buffer.alloc(30);\n    local.writeUInt32LE(0x04034b50, 0);\n    local.writeUInt16LE(20, 4);\n    local.writeUInt16LE(0, 6);\n    local.writeUInt16LE(0, 8);\n    local.writeUInt16LE(dt.time, 10);\n    local.writeUInt16LE(dt.date, 12);\n    local.writeUInt32LE(crc, 14);\n    local.writeUInt32LE(data.length, 18);\n    local.writeUInt32LE(data.length, 22);\n    local.writeUInt16LE(name.length, 26);\n    local.writeUInt16LE(0, 28);\n    localParts.push(local, name, data);\n\n    const central = Buffer.alloc(46);\n    central.writeUInt32LE(0x02014b50, 0);\n    central.writeUInt16LE(20, 4);\n    central.writeUInt16LE(20, 6);\n    central.writeUInt16LE(0, 8);\n    central.writeUInt16LE(0, 10);\n    central.writeUInt16LE(dt.time, 12);\n    central.writeUInt16LE(dt.date, 14);\n    central.writeUInt32LE(crc, 16);\n    central.writeUInt32LE(data.length, 20);\n    central.writeUInt32LE(data.length, 24);\n    central.writeUInt16LE(name.length, 28);\n    central.writeUInt16LE(0, 30);\n    central.writeUInt16LE(0, 32);\n    central.writeUInt16LE(0, 34);\n    central.writeUInt16LE(0, 36);\n    central.writeUInt32LE(0, 38);\n    central.writeUInt32LE(offset, 42);\n    centralParts.push(central, name);\n    offset += local.length + name.length + data.length;\n  }\n\n  const centralSize = centralParts.reduce((sum, part) =\u003e sum + part.length, 0);\n  const end = Buffer.alloc(22);\n  end.writeUInt32LE(0x06054b50, 0);\n  end.writeUInt16LE(0, 4);\n  end.writeUInt16LE(0, 6);\n  end.writeUInt16LE(files.length, 8);\n  end.writeUInt16LE(files.length, 10);\n  end.writeUInt32LE(centralSize, 12);\n  end.writeUInt32LE(offset, 16);\n  end.writeUInt16LE(0, 20);\n  return Buffer.concat([...localParts, ...centralParts, end]);\n}\n\nfunction buildWorkbook(sheets) {\n  const entries = Object.entries(sheets || {});\n  if (!entries.length) entries.push([\u002700_Resumen\u0027, [{ indicador: \u0027Estado\u0027, valor: \u0027Sin datos\u0027, comentario: \u0027No se recibieron hojas desde la conciliacion\u0027 }]]);\n\n  const usedNames = new Set();\n  const prepared = entries.map(([name, rows], index) =\u003e ({\n    name: safeSheetName(name, index, usedNames),\n    rows: Array.isArray(rows) ? rows : [],\n  }));\n\n  const files = [];\n  files.push({ name: \u0027[Content_Types].xml\u0027, data: `\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\u003cTypes xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"\u003e\u003cDefault Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/\u003e\u003cDefault Extension=\"xml\" ContentType=\"application/xml\"/\u003e\u003cOverride PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/\u003e${prepared.map((_, i) =\u003e `\u003cOverride PartName=\"/xl/worksheets/sheet${i + 1}.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/\u003e`).join(\u0027\u0027)}\u003c/Types\u003e` });\n  files.push({ name: \u0027_rels/.rels\u0027, data: `\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\u003cRelationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"\u003e\u003cRelationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/\u003e\u003c/Relationships\u003e` });\n  files.push({ name: \u0027xl/workbook.xml\u0027, data: `\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\u003cworkbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"\u003e\u003csheets\u003e${prepared.map((sheet, i) =\u003e `\u003csheet name=\"${escXml(sheet.name)}\" sheetId=\"${i + 1}\" r:id=\"rId${i + 1}\"/\u003e`).join(\u0027\u0027)}\u003c/sheets\u003e\u003c/workbook\u003e` });\n  files.push({ name: \u0027xl/_rels/workbook.xml.rels\u0027, data: `\u003c?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?\u003e\u003cRelationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"\u003e${prepared.map((_, i) =\u003e `\u003cRelationship Id=\"rId${i + 1}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet${i + 1}.xml\"/\u003e`).join(\u0027\u0027)}\u003c/Relationships\u003e` });\n  prepared.forEach((sheet, i) =\u003e files.push({ name: `xl/worksheets/sheet${i + 1}.xml`, data: sheetXml(sheet.rows) }));\n  return { buffer: zipStore(files), sheetNames: prepared.map(s =\u003e s.name) };\n}\n\nfunction metricRows() {\n  return [\n    { label: \u0027Usuarios AD vigentes\u0027, value: resumen.total_ad_vigentes ?? 0, tone: \u0027blue\u0027 },\n    { label: \u0027Personas iTop procesadas\u0027, value: resumen.total_itop ?? 0, tone: \u0027blue\u0027 },\n    { label: \u0027Estado correcto / sincronizado\u0027, value: resumen.sin_accion ?? 0, tone: \u0027green\u0027 },\n    { label: \u0027Candidatos a crear\u0027, value: resumen.crear_en_itop ?? 0, tone: Number(resumen.crear_en_itop || 0) \u003e 0 ? \u0027orange\u0027 : \u0027green\u0027 },\n    { label: \u0027Candidatos a inactivar\u0027, value: resumen.inactivar_en_itop ?? 0, tone: Number(resumen.inactivar_en_itop || 0) \u003e 0 ? \u0027red\u0027 : \u0027green\u0027 },\n    { label: \u0027Diferencias cargo/rol\u0027, value: resumen.diferencias_datos ?? 0, tone: Number(resumen.diferencias_datos || 0) \u003e 0 ? \u0027orange\u0027 : \u0027green\u0027 },\n    { label: \u0027Excepciones detectadas\u0027, value: resumen.excepciones ?? 0, tone: Number(resumen.excepciones || 0) \u003e 0 ? \u0027red\u0027 : \u0027green\u0027 },\n    { label: \u0027Cambios pendientes\u0027, value: totalCambios, tone: totalCambios \u003e 0 ? \u0027red\u0027 : \u0027green\u0027 },\n  ];\n}\n\nfunction summaryCount(key, sheetName) {\n  const value = resumen?.[key];\n  if (value !== undefined \u0026\u0026 value !== null \u0026\u0026 value !== \u0027\u0027) return Number(value) || 0;\n  return Array.isArray(hojasOriginales[sheetName]) ? hojasOriginales[sheetName].length : 0;\n}\n\nfunction sectionRows() {\n  const sections = [\n    [\u0027Crear en iTop\u0027, \u002701_Crear_en_iTop\u0027, \u0027crear_en_itop\u0027, \u0027Altas presentes en AD sin persona equivalente en iTop.\u0027],\n    [\u0027Desactivar en iTop\u0027, \u002702_Inactivar_en_iTop\u0027, \u0027inactivar_en_itop\u0027, \u0027Personas presentes en iTop sin usuario vigente equivalente en AD.\u0027],\n    [\u0027Analizar diferencias\u0027, \u002703_Diferencias_Datos\u0027, \u0027diferencias_datos\u0027, \u0027Registros con diferencia de cargo/rol entre AD e iTop.\u0027],\n    [\u0027Sincronizados / Estado correcto\u0027, \u002704_Sin_Accion\u0027, \u0027sin_accion\u0027, \u0027Registros con correo y cargo/rol coincidentes entre AD e iTop; no requieren gestion operacional.\u0027],\n    [\u0027Datos en excepciÃ³n\u0027, \u002705_Excepciones\u0027, \u0027excepciones\u0027, \u0027Registros que requieren normalizacion antes de cualquier actualizacion.\u0027],\n  ];\n  return sections.map(([label, sheet, key, description]) =\u003e ({ label, sheet, count: summaryCount(key, sheet), description }));\n}\n\nfunction buildDetailBlocks() {\n  const rows = sectionRows().map(row =\u003e `\n    \u003ctr\u003e\n      \u003ctd style=\"padding:9px 10px; border-bottom:1px solid #e5e7eb; font-size:12px; color:#0f172a; font-weight:bold;\"\u003e${escapeHtml(row.label)}\u003c/td\u003e\n      \u003ctd align=\"right\" style=\"padding:9px 10px; border-bottom:1px solid #e5e7eb; font-size:12px; color:#0f172a;\"\u003e${escapeHtml(row.count)}\u003c/td\u003e\n      \u003ctd style=\"padding:9px 10px; border-bottom:1px solid #e5e7eb; font-size:12px; color:#475569;\"\u003e${escapeHtml(row.description)}\u003c/td\u003e\n    \u003c/tr\u003e`).join(\u0027\u0027);\n\n  return `\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"\u003e\n    \u003cthead\u003e\u003ctr style=\"background-color:#f8fafc;\"\u003e\n      \u003cth align=\"left\" style=\"padding:9px 10px; font-size:11px; color:#334155; border-bottom:1px solid #dbe3ec;\"\u003eBloque\u003c/th\u003e\n      \u003cth align=\"right\" style=\"padding:9px 10px; font-size:11px; color:#334155; border-bottom:1px solid #dbe3ec;\"\u003eRegistros\u003c/th\u003e\n      \u003cth align=\"left\" style=\"padding:9px 10px; font-size:11px; color:#334155; border-bottom:1px solid #dbe3ec;\"\u003eLectura operacional\u003c/th\u003e\n    \u003c/tr\u003e\u003c/thead\u003e\n    \u003ctbody\u003e${rows}\u003c/tbody\u003e\n  \u003c/table\u003e`;\n}\n\nfunction csvEscape(value) {\n  const text = String(value ?? \u0027\u0027).replace(/\"/g, \u0027\"\"\u0027);\n  return `\"${text}\"`;\n}\n\nfunction isEmail(value) {\n  const text = clean(value).toLowerCase();\n  if (!text) return \u0027\u0027;\n  // Evita que DN/OU/rutas LDAP u otros identificadores terminen en columnas de correo.\n  if (/[=,]/.test(text) || /(^|\\b)(ou|cn|dc)=/i.test(text)) return \u0027\u0027;\n  return /^[^\\s@\u003c\u003e;,\"\u0027]+@[^\\s@\u003c\u003e;,\"\u0027]+\\.[^\\s@\u003c\u003e;,\"\u0027]+$/.test(text) ? text : \u0027\u0027;\n}\n\nfunction firstValue(row, names, fallback = \u0027\u0027) {\n  for (const name of names) {\n    const value = row?.[name];\n    if (value !== undefined \u0026\u0026 value !== null \u0026\u0026 String(value).trim() !== \u0027\u0027) return value;\n  }\n  return fallback;\n}\n\nfunction firstEmail(row, names, fallback = \u0027\u0027) {\n  for (const name of names) {\n    const email = isEmail(row?.[name]);\n    if (email) return email;\n  }\n  return isEmail(fallback);\n}\n\nfunction hasDnOrOu(value) {\n  const text = clean(value);\n  if (!text) return false;\n  return /(^|[,\\s])(CN|OU|DC)=/i.test(text) || /distinguishedName/i.test(text);\n}\n\nfunction safeDisplayValue(value) {\n  const text = clean(value);\n  if (!text) return \u0027\u0027;\n  return hasDnOrOu(text) ? \u0027\u0027 : text;\n}\n\nfunction firstSafeValue(row, names, fallback = \u0027\u0027) {\n  for (const name of names) {\n    const value = safeDisplayValue(row?.[name]);\n    if (value) return value;\n  }\n  return safeDisplayValue(fallback);\n}\n\nfunction isMultiUserRow(row) {\n  if (!row || typeof row !== \u0027object\u0027) return false;\n\n  // Multi User solo aplica si la propia conciliacion clasifico la fila como duplicidad real.\n  // No se infiere por separadores, nombres compuestos ni por columnas auxiliares.\n  const categoria = clean(row.categoria || row.estado).toUpperCase();\n  const problema = clean(row.problema || row.motivo || row.observacion)\n    .normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027).toLowerCase();\n  const impacto = clean(row.impacto)\n    .normalize(\u0027NFD\u0027).replace(/[\\u0300-\\u036f]/g, \u0027\u0027).toLowerCase();\n\n  if (categoria !== \u0027EXCEPCION\u0027) return false;\n  if (/correo\\s+duplicado\\s+en\\s+ad/.test(problema)) return true;\n  if (/correo\\s+duplicado\\s+en\\s+itop/.test(problema)) return true;\n  if (/llave\\s+de\\s+cruce\\s+no\\s+unica/.test(impacto)) return true;\n  return false;\n}\n\nfunction normalizeDetailRow(row, forcedEstado) {\n  const estado = firstValue(row, [\u0027categoria\u0027, \u0027estado\u0027], forcedEstado);\n  const origen = firstValue(row, [\u0027origen\u0027], \u0027\u0027);\n\n  let emailItop = firstEmail(row, [\u0027email_itop\u0027, \u0027correo_itop\u0027]);\n  let emailAd = firstEmail(row, [\u0027email_ad\u0027, \u0027correo_ad\u0027, \u0027upn_ad\u0027, \u0027userPrincipalName\u0027, \u0027UserPrincipalName\u0027]);\n  const emailComun = firstEmail(row, [\u0027email\u0027, \u0027correo\u0027]);\n\n  // El campo historico \"email\" solo se copia si tiene formato real de correo.\n  if (!emailItop \u0026\u0026 [\u0027INACTIVAR_EN_ITOP\u0027, \u0027DIFERENCIA_DATOS\u0027, \u0027SIN_ACCION\u0027, \u0027SINCRONIZADO\u0027].includes(String(estado))) emailItop = emailComun;\n  if (!emailAd \u0026\u0026 [\u0027CREAR_EN_ITOP\u0027, \u0027DIFERENCIA_DATOS\u0027, \u0027SIN_ACCION\u0027, \u0027SINCRONIZADO\u0027].includes(String(estado))) emailAd = emailComun;\n  if (!emailItop \u0026\u0026 origen === \u0027iTop\u0027) emailItop = emailComun;\n  if (!emailAd \u0026\u0026 origen === \u0027AD\u0027) emailAd = emailComun;\n\n  const multiUser = isMultiUserRow(row);\n  let usuario = multiUser ? \u0027Multi User\u0027 : firstSafeValue(row, [\n    \u0027display_name_ad\u0027, \u0027nombre_ad\u0027, \u0027nombre\u0027, \u0027nombre_itop\u0027, \u0027friendlyname_itop\u0027, \u0027friendlyname\u0027,\n    \u0027usuario\u0027, \u0027login_ad\u0027, \u0027login\u0027, \u0027key_itop\u0027, \u0027key\u0027\n  ], \u0027\u0027);\n\n  const puestoAd = firstSafeValue(row, [\u0027cargo_puesto_ad\u0027, \u0027puesto_ad\u0027, \u0027title\u0027, \u0027Title\u0027, \u0027cargo_ad\u0027, \u0027cargo\u0027], \u0027\u0027);\n  const puestoItop = firstSafeValue(row, [\u0027cargo_itop\u0027, \u0027puesto_itop\u0027, \u0027function_itop\u0027], \u0027\u0027);\n  const observacion = firstValue(row, [\u0027motivo\u0027, \u0027observacion\u0027, \u0027problema\u0027, \u0027accion_recomendada\u0027], \u0027\u0027);\n  const diff = firstValue(row, [\u0027campos_con_diferencia\u0027], \u0027\u0027);\n  const accion = firstValue(row, [\u0027accion_propuesta\u0027], \u0027\u0027);\n  const requiereRevision = firstValue(row, [\u0027requiere_revision\u0027], \u0027\u0027);\n  const impacto = firstValue(row, [\u0027impacto\u0027], \u0027\u0027);\n  const loginAd = firstSafeValue(row, [\u0027login_ad\u0027, \u0027login\u0027], \u0027\u0027);\n  const keyItop = firstSafeValue(row, [\u0027key_itop\u0027, \u0027key\u0027], \u0027\u0027);\n\n  if (!usuario) usuario = loginAd || keyItop || emailAd || emailItop || `${origen || forcedEstado || \u0027Registro\u0027} sin nombre informado`;\n\n  const partes = [];\n  if (observacion) partes.push(String(observacion));\n  if (multiUser) {\n    const emailDuplicado = emailAd || emailItop || emailComun || \u0027correo no determinado\u0027;\n    partes.push(`Mas de un usuario comparte el correo ${emailDuplicado}; se consolida como Multi User para revision operacional.`);\n  }\n  if (impacto) partes.push(`Impacto: ${impacto}`);\n  if (diff) partes.push(`Campos con diferencia: ${diff}`);\n  if (accion) partes.push(`Accion propuesta: ${accion}`);\n  if (requiereRevision) partes.push(`Requiere revision: ${requiereRevision}`);\n  if (origen) partes.push(`Origen: ${origen}`);\n  if (loginAd \u0026\u0026 usuario !== \u0027Multi User\u0027 \u0026\u0026 loginAd !== usuario) partes.push(`Login AD: ${loginAd}`);\n  if (keyItop \u0026\u0026 usuario !== \u0027Multi User\u0027 \u0026\u0026 keyItop !== usuario) partes.push(`Key iTop: ${keyItop}`);\n  if ((!emailAd \u0026\u0026 origen === \u0027AD\u0027) || (!emailItop \u0026\u0026 origen === \u0027iTop\u0027)) {\n    partes.push(\u0027Registro sin correo valido en origen; no se informa OU/DN en columnas de correo.\u0027);\n  }\n\n  return {\n    \u0027Email iTop\u0027: emailItop,\n    \u0027Email AD\u0027: emailAd,\n    \u0027Estado\u0027: estado || forcedEstado,\n    \u0027Usuario\u0027: usuario,\n    \u0027Puesto AD\u0027: puestoAd,\n    \u0027Puesto iTop\u0027: puestoItop,\n    \u0027Observacion\u0027: partes.join(\u0027 | \u0027).replace(/(?:CN|OU|DC)=[^|]+(?:\\|\\s*)?/gi, \u0027\u0027).replace(/\\s{2,}/g, \u0027 \u0027).trim(),\n  };\n}\n\nfunction normalizeEstadoLabel(value) {\n  const estado = clean(value).toUpperCase();\n  if (estado === \u0027SIN_ACCION\u0027 || estado === \u0027OK\u0027) return \u0027SINCRONIZADO\u0027;\n  return estado || \u0027SIN_REGISTROS\u0027;\n}\n\nfunction humanEstadoLabel(value) {\n  const estado = normalizeEstadoLabel(value);\n  const labels = {\n    \u0027CREAR_EN_ITOP\u0027: \u0027Crear en iTop\u0027,\n    \u0027INACTIVAR_EN_ITOP\u0027: \u0027Desactivar en iTop\u0027,\n    \u0027DIFERENCIA_DATOS\u0027: \u0027Analizar diferencias\u0027,\n    \u0027EXCEPCION\u0027: \u0027Datos en excepciÃ³n\u0027,\n    \u0027SINCRONIZADO\u0027: \u0027Sincronizados\u0027,\n    \u0027SIN_REGISTROS\u0027: \u0027Sin registros\u0027,\n  };\n  return labels[estado] || estado;\n}\n\nfunction estadoOrder(estado) {\n  const e = normalizeEstadoLabel(estado);\n  const order = {\n    \u0027CREAR_EN_ITOP\u0027: 10,\n    \u0027INACTIVAR_EN_ITOP\u0027: 20,\n    \u0027DIFERENCIA_DATOS\u0027: 30,\n    \u0027EXCEPCION\u0027: 40,\n    \u0027SINCRONIZADO\u0027: 90,\n    \u0027SIN_REGISTROS\u0027: 99,\n  };\n  return order[e] ?? 80;\n}\n\nfunction buildDetalleRows(sheets) {\n  const source = sheets || {};\n  const buckets = [\n    [\u0027CREAR_EN_ITOP\u0027, source.crear || source[\u002701_Crear_en_iTop\u0027] || []],\n    [\u0027INACTIVAR_EN_ITOP\u0027, source.inactivar || source[\u002702_Inactivar_en_iTop\u0027] || []],\n    [\u0027DIFERENCIA_DATOS\u0027, source.diferencias || source[\u002703_Diferencias_Datos\u0027] || []],\n    [\u0027EXCEPCION\u0027, source.excepciones || source[\u002705_Excepciones\u0027] || []],\n    // Los sincronizados se dejan al final para priorizar diferencias y excepciones.\n    [\u0027SINCRONIZADO\u0027, source.sinAccion || source.sin_accion || source[\u002704_Sin_Accion\u0027] || []],\n  ];\n\n  const rows = [];\n  for (const [estado, rowsRaw] of buckets) {\n    for (const row of (Array.isArray(rowsRaw) ? rowsRaw : [])) {\n      const normalized = normalizeDetailRow(row || {}, estado);\n      normalized.Estado = normalizeEstadoLabel(normalized.Estado || estado);\n      rows.push(normalized);\n    }\n  }\n\n  const outputRows = rows.length ? rows : [{\n    \u0027Email iTop\u0027: \u0027\u0027,\n    \u0027Email AD\u0027: \u0027\u0027,\n    \u0027Estado\u0027: \u0027SIN_REGISTROS\u0027,\n    \u0027Usuario\u0027: \u0027\u0027,\n    \u0027Puesto AD\u0027: \u0027\u0027,\n    \u0027Puesto iTop\u0027: \u0027\u0027,\n    \u0027Observacion\u0027: \u0027Sin registros para exportar en esta ejecucion\u0027,\n  }];\n\n  return outputRows.sort((a, b) =\u003e {\n    const diff = estadoOrder(a.Estado) - estadoOrder(b.Estado);\n    if (diff !== 0) return diff;\n    return String(a.Usuario || a[\u0027Email AD\u0027] || a[\u0027Email iTop\u0027] || \u0027\u0027).localeCompare(String(b.Usuario || b[\u0027Email AD\u0027] || b[\u0027Email iTop\u0027] || \u0027\u0027), \u0027es\u0027);\n  });\n}\n\nfunction buildDetalleTableHtml(rows) {\n  // La columna Estado se omite solo en la tabla HTML del correo, porque ya se informa en la agrupacion.\n  // Se mantiene en el CSV para trazabilidad y posterior analisis.\n  const headers = [\u0027Email iTop\u0027, \u0027Email AD\u0027, \u0027Usuario\u0027, \u0027Puesto AD\u0027, \u0027Puesto iTop\u0027, \u0027Observacion\u0027];\n  const list = Array.isArray(rows) ? rows : [];\n  const countsByEstado = list.reduce((acc, row) =\u003e {\n    const estado = normalizeEstadoLabel(row?.Estado);\n    acc[estado] = (acc[estado] || 0) + 1;\n    return acc;\n  }, {});\n\n  let currentEstado = null;\n  const body = list.map(row =\u003e {\n    const estado = normalizeEstadoLabel(row?.Estado);\n    const estadoHumano = humanEstadoLabel(estado);\n    const rowForMail = { ...row, Estado: estadoHumano };\n    const groupHeader = estado !== currentEstado\n      ? (() =\u003e {\n          currentEstado = estado;\n          const count = countsByEstado[estado] || 0;\n          return `\u003ctr\u003e\u003ctd colspan=\"${headers.length}\" style=\"padding:8px 10px; background-color:#eef2f7; border-top:1px solid #cbd5e1; border-bottom:1px solid #cbd5e1; font-size:11px; line-height:15px; color:#0f172a; font-weight:bold;\"\u003eEstado: ${escapeHtml(estadoHumano)} (${escapeHtml(count)})\u003c/td\u003e\u003c/tr\u003e`;\n        })()\n      : \u0027\u0027;\n    const dataRow = `\u003ctr\u003e\n      ${headers.map(header =\u003e `\u003ctd style=\"padding:7px 8px; border-bottom:1px solid #e5e7eb; font-size:11px; line-height:16px; color:#334155; vertical-align:top;\"\u003e${escapeHtml(rowForMail?.[header] ?? \u0027\u0027)}\u003c/td\u003e`).join(\u0027\u0027)}\n    \u003c/tr\u003e`;\n    return groupHeader + dataRow;\n  }).join(\u0027\u0027);\n\n  return `\u003cdiv style=\"margin-top:14px;\"\u003e\n    \u003cdiv style=\"font-size:14px; line-height:20px; font-weight:bold; color:#0f172a; margin-bottom:6px;\"\u003eTabla de datos\u003c/div\u003e\n    \u003cdiv style=\"font-size:12px; line-height:18px; color:#64748b; margin-bottom:8px;\"\u003eRegistros agrupados por estado. Los sincronizados se muestran al final para facilitar el anÃ¡lisis de diferencias.\u003c/div\u003e\n    \u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"\u003e\n      \u003cthead\u003e\u003ctr style=\"background-color:#f8fafc;\"\u003e\n        ${headers.map(header =\u003e `\u003cth align=\"left\" style=\"padding:8px; font-size:10px; line-height:14px; color:#334155; border-bottom:1px solid #dbe3ec; text-transform:uppercase;\"\u003e${escapeHtml(header)}\u003c/th\u003e`).join(\u0027\u0027)}\n      \u003c/tr\u003e\u003c/thead\u003e\n      \u003ctbody\u003e${body}\u003c/tbody\u003e\n    \u003c/table\u003e\n  \u003c/div\u003e`;\n}\n\nfunction buildCsv(sheets) {\n  const outputRows = buildDetalleRows(sheets);\n  const headers = [\u0027Email iTop\u0027, \u0027Email AD\u0027, \u0027Estado\u0027, \u0027Usuario\u0027, \u0027Puesto AD\u0027, \u0027Puesto iTop\u0027, \u0027Observacion\u0027];\n\n  const lines = [headers.map(csvEscape).join(\u0027;\u0027)];\n  for (const row of outputRows) {\n    lines.push(headers.map(key =\u003e csvEscape(row[key] ?? \u0027\u0027)).join(\u0027;\u0027));\n  }\n\n  return {\n    content: \u0027\\uFEFF\u0027 + lines.join(\u0027\\r\\n\u0027),\n    sheetNames: [\u0027Detalle_Conciliacion\u0027],\n    rowCount: outputRows.length,\n    rows: outputRows,\n    tableHtml: buildDetalleTableHtml(outputRows),\n  };\n}\n\nconst csv = buildCsv(hojasOriginales);\nconst generatedAt = new Date().toLocaleString(\u0027es-CL\u0027, { timeZone: timezone, year: \u0027numeric\u0027, month: \u00272-digit\u0027, day: \u00272-digit\u0027, hour: \u00272-digit\u0027, minute: \u00272-digit\u0027 });\nconst generatedAtFile = new Date().toISOString().replace(/[:.]/g, \u0027-\u0027).replace(\u0027T\u0027, \u0027_\u0027).slice(0, 19);\nconst filename = `${cfg.nombreReporte || \u0027conciliacion_ad_itop\u0027}_${generatedAtFile}.csv`;\nconst binaryData = await this.helpers.prepareBinaryData(Buffer.from(csv.content, \u0027utf8\u0027), filename, \u0027text/csv\u0027);\n\nconst subjectBase = clean(cfg.mail?.subjectPrefix || \u0027Conciliacion semanal AD vs iTop - Fase 1 informativa\u0027);\nconst subject = hayCambios ? `${subjectBase} - Cambios pendientes detectados` : `${subjectBase} - Sin cambios pendientes`;\nconst executiveSummary = hayCambios\n  ? \u0027La conciliacion semanal AD vs iTop detecto cambios pendientes o excepciones. El proceso se mantiene en modalidad informativa, por lo que no se ejecuto ninguna actualizacion automatica sobre iTop.\u0027\n  : \u0027La conciliacion semanal AD vs iTop fue ejecutada correctamente y no detecto cambios pendientes ni excepciones que requieran gestion en esta ejecucion.\u0027;\n\nreturn [{\n  json: {\n    ...$json,\n    flags,\n    report_template_key: $(\u0027Config Reporte\u0027).first()?.json?.report_template_key || \u0027itop-ad-conciliacion-identidades-fase1\u0027,\n    report_title: \u0027Conciliacion semanal Active Directory vs iTop\u0027,\n    report_subtitle: \u0027Fase 1 informativa - sin modificaciones automaticas sobre iTop\u0027,\n    email_from: cfg.mail?.from || $json.email_from,\n    email_to: cfg.mail?.to || $json.email_to,\n    email_cc: cfg.mail?.cc || \u0027\u0027,\n    email_bcc: cfg.mail?.bcc || \u0027\u0027,\n    email_subject: subject,\n    generated_at: generatedAt,\n    company: $json.Company || $json.company || \u0027TecnoComp\u0027,\n    Company: $json.Company || $json.company || \u0027TecnoComp\u0027,\n    itop_organization: trigger.itop_organization || $json.itop_organization || cfg.itop_organization || \u0027Minera GoldFields Chile\u0027,\n    itop_url: cfg.itop?.baseUrl || $json.itop_url || \u0027#\u0027,\n    mode: resumen.modo || cfg.modo || \u0027AUDITORIA\u0027,\n    applies_changes: resumen.aplica_cambios_itop === true ? \u0027Si\u0027 : \u0027No\u0027,\n    total_ad_vigentes: String(resumen.total_ad_vigentes ?? 0),\n    total_itop: String(resumen.total_itop ?? 0),\n    coincidencias_email: String(resumen.coincidencias_email ?? 0),\n    crear_en_itop: String(resumen.crear_en_itop ?? 0),\n    inactivar_en_itop: String(resumen.inactivar_en_itop ?? 0),\n    diferencias_datos: String(resumen.diferencias_datos ?? 0),\n    excepciones: String(resumen.excepciones ?? 0),\n    sin_accion: String(resumen.sin_accion ?? 0),\n    total_cambios: String(totalCambios),\n    hayCambios,\n    totalCambios,\n    executive_summary: executiveSummary,\n    metric_cards: metricRows(),\n    detail_blocks: buildDetailBlocks(),\n    detail_table_html: csv.tableHtml,\n    detail_rows: csv.rows,\n    operational_notes: [\n      \u0027El reporte opera en modo informativo y no modifica objetos en iTop.\u0027,\n      \u0027El cruce principal se realiza por correo electronico normalizado.\u0027,\n      \u0027El archivo CSV adjunto consolida el detalle nominal con las columnas operacionales definidas para la conciliacion.\u0027,\n      \u0027Las excepciones deben normalizarse antes de avanzar a cualquier fase de actualizacion controlada.\u0027\n    ].join(\u0027\\n\u0027),\n    attachment_binary_names: normalizeBoolean(flags.include_attachment, true) ? \u0027csv\u0027 : \u0027\u0027,\n    include_attachment_effective: normalizeBoolean(flags.include_attachment, true),\n    has_csv_binary: true,\n    csv_filename: filename,\n    csv_section_names: csv.sheetNames.join(\u0027, \u0027),\n    csv_row_count: String(csv.rowCount),\n  },\n  binary: { csv: binaryData },\n}];\n"
+                                     },
+                      "id":  "10e834c5-c898-452c-b04b-654ab968b35f",
+                      "name":  "Preparar datos reporte",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       59072,
+                                       15792
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const fs = require(\u0027fs\u0027);\nconst path = require(\u0027path\u0027);\n\nfunction escapeHtml(value) {\n  return String(value ?? \u0027\u0027)\n    .replace(/\u0026/g, \u0027\u0026amp;\u0027)\n    .replace(/\u003c/g, \u0027\u0026lt;\u0027)\n    .replace(/\u003e/g, \u0027\u0026gt;\u0027)\n    .replace(/\"/g, \u0027\u0026quot;\u0027)\n    .replace(/\u0027/g, \u0027\u0026#039;\u0027);\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, \u0027utf8\u0027);\n}\n\nfunction render(template, values) {\n  return String(template || \u0027\u0027).replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) =\u003e {\n    const parts = key.split(\u0027.\u0027);\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? \u0027\u0027 : String(value);\n  });\n}\n\nfunction normalizeText(value, forSubject = false) {\n  let text = String(value ?? \u0027\u0027);\n  const htmlMap = [\n    [\u0027AutomatizaciÃ³n\u0027,\u0027Automatizaci\u0026oacute;n\u0027], [\u0027OrganizaciÃ³n\u0027,\u0027Organizaci\u0026oacute;n\u0027], [\u0027ProducciÃ³n\u0027,\u0027Producci\u0026oacute;n\u0027],\n    [\u0027automÃ¡ticamente\u0027,\u0027autom\u0026aacute;ticamente\u0027], [\u0027expiraciÃ³n\u0027,\u0027expiraci\u0026oacute;n\u0027], [\u0027prÃ³ximo\u0027,\u0027pr\u0026oacute;ximo\u0027], [\u0027revisiÃ³n\u0027,\u0027revisi\u0026oacute;n\u0027],\n    [\u0027comparaciÃ³n\u0027,\u0027comparaci\u0026oacute;n\u0027], [\u0027conciliaciÃ³n\u0027,\u0027conciliaci\u0026oacute;n\u0027], [\u0027automÃ¡ticos\u0027,\u0027autom\u0026aacute;ticos\u0027], [\u0027electrÃ³nico\u0027,\u0027electr\u0026oacute;nico\u0027], [\u0027acciÃ³n\u0027,\u0027acci\u0026oacute;n\u0027],    [\u0027Automatizaci??n\u0027,\u0027Automatizaci\u0026oacute;n\u0027], [\u0027Organizaci??n\u0027,\u0027Organizaci\u0026oacute;n\u0027], [\u0027organizaci??n\u0027,\u0027organizaci\u0026oacute;n\u0027],\n    [\u0027Producci??n\u0027,\u0027Producci\u0026oacute;n\u0027], [\u0027garant??a\u0027,\u0027garant\u0026iacute;a\u0027], [\u0027Garant??a\u0027,\u0027Garant\u0026iacute;a\u0027], [\u0027GARANT??A\u0027,\u0027GARANT\u0026Iacute;A\u0027],\n    [\u0027pr??ximos\u0027,\u0027pr\u0026oacute;ximos\u0027], [\u0027Pr??ximos\u0027,\u0027Pr\u0026oacute;ximos\u0027], [\u0027PR??XIMOS\u0027,\u0027PR\u0026Oacute;XIMOS\u0027], [\u0027pr??ximo\u0027,\u0027pr\u0026oacute;ximo\u0027], [\u0027pr??xima\u0027,\u0027pr\u0026oacute;xima\u0027],\n    [\u0027d??as\u0027,\u0027d\u0026iacute;as\u0027], [\u0027D??AS\u0027,\u0027D\u0026Iacute;AS\u0027], [\u0027D??as\u0027,\u0027D\u0026iacute;as\u0027], [\u0027m??s\u0027,\u0027m\u0026aacute;s\u0027], [\u0027M??S\u0027,\u0027M\u0026Aacute;S\u0027], [\u0027M??s\u0027,\u0027M\u0026aacute;s\u0027],\n    [\u0027T??tulo\u0027,\u0027T\u0026iacute;tulo\u0027], [\u0027antig??edad\u0027,\u0027antig\u0026uuml;edad\u0027], [\u0027actualizaci??n\u0027,\u0027actualizaci\u0026oacute;n\u0027], [\u0027configuraci??n\u0027,\u0027configuraci\u0026oacute;n\u0027],\n    [\u0027f??sicos\u0027,\u0027f\u0026iacute;sicos\u0027], [\u0027f??sico\u0027,\u0027f\u0026iacute;sico\u0027], [\u0027f??sica\u0027,\u0027f\u0026iacute;sica\u0027], [\u0027tel??fono\u0027,\u0027tel\u0026eacute;fono\u0027], [\u0027m??viles\u0027,\u0027m\u0026oacute;viles\u0027],\n    [\u0027perif??rico\u0027,\u0027perif\u0026eacute;rico\u0027], [\u0027perif??ricos\u0027,\u0027perif\u0026eacute;ricos\u0027], [\u0027??nico\u0027,\u0027\u0026uacute;nico\u0027], [\u0027??nica\u0027,\u0027\u0026uacute;nica\u0027], [\u0027??ltimo\u0027,\u0027\u0026uacute;ltimo\u0027],\n    [\u0027cr??tico\u0027,\u0027cr\u0026iacute;tico\u0027], [\u0027cr??ticos\u0027,\u0027cr\u0026iacute;ticos\u0027], [\u0027par??metros\u0027,\u0027par\u0026aacute;metros\u0027], [\u0027env??a\u0027,\u0027env\u0026iacute;a\u0027], [\u0027envi??\u0027,\u0027envi\u0026oacute;\u0027],\n    [\u0027asignaci??n\u0027,\u0027asignaci\u0026oacute;n\u0027], [\u0027ubicaci??n\u0027,\u0027ubicaci\u0026oacute;n\u0027], [\u0027descripci??n\u0027,\u0027descripci\u0026oacute;n\u0027], [\u0027categor??a\u0027,\u0027categor\u0026iacute;a\u0027],\n    [\u0027seg??n\u0027,\u0027seg\u0026uacute;n\u0027], [\u0027hist??rico\u0027,\u0027hist\u0026oacute;rico\u0027], [\u0027relaci??n\u0027,\u0027relaci\u0026oacute;n\u0027], [\u0027operaci??n\u0027,\u0027operaci\u0026oacute;n\u0027], [\u0027an??lisis\u0027,\u0027an\u0026aacute;lisis\u0027],\n    [\u0027creaci??n\u0027,\u0027creaci\u0026oacute;n\u0027], [\u0027aprobaci??n\u0027,\u0027aprobaci\u0026oacute;n\u0027], [\u0027atenci??n\u0027,\u0027atenci\u0026oacute;n\u0027], [\u0027informaci??n\u0027,\u0027informaci\u0026oacute;n\u0027],\n    [\u0027clasificaci??n\u0027,\u0027clasificaci\u0026oacute;n\u0027], [\u0027revisi??n\u0027,\u0027revisi\u0026oacute;n\u0027], [\u0027intervenci??n\u0027,\u0027intervenci\u0026oacute;n\u0027], [\u0027secci??n\u0027,\u0027secci\u0026oacute;n\u0027],\n    [\u0027l??nea\u0027,\u0027l\u0026iacute;nea\u0027], [\u0027c??digos\u0027,\u0027c\u0026oacute;digos\u0027], [\u0027d??nde\u0027,\u0027d\u0026oacute;nde\u0027], [\u0027espa??ol\u0027,\u0027espa\u0026ntilde;ol\u0027], [\u0027vi??etas\u0027,\u0027vi\u0026ntilde;etas\u0027],\n    [\u0027m??ltiples\u0027,\u0027m\u0026uacute;ltiples\u0027], [\u0027m??xima\u0027,\u0027m\u0026aacute;xima\u0027], [\u0027r??pida\u0027,\u0027r\u0026aacute;pida\u0027], [\u0027reposici??n\u0027,\u0027reposici\u0026oacute;n\u0027],\n    [\u0027est??ndar\u0027,\u0027est\u0026aacute;ndar\u0027], [\u0027alg??n\u0027,\u0027alg\u0026uacute;n\u0027], [\u0027??til\u0027,\u0027\u0026uacute;til\u0027], [\u0027port??til\u0027,\u0027port\u0026aacute;til\u0027]\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) =\u003e [bad, good\n    .replace(/\u0026aacute;/g,\u0027a\u0027).replace(/\u0026eacute;/g,\u0027e\u0027).replace(/\u0026iacute;/g,\u0027i\u0027).replace(/\u0026oacute;/g,\u0027o\u0027).replace(/\u0026uacute;/g,\u0027u\u0027)\n    .replace(/\u0026Aacute;/g,\u0027A\u0027).replace(/\u0026Eacute;/g,\u0027E\u0027).replace(/\u0026Iacute;/g,\u0027I\u0027).replace(/\u0026Oacute;/g,\u0027O\u0027).replace(/\u0026Uacute;/g,\u0027U\u0027)\n    .replace(/\u0026uuml;/g,\u0027u\u0027).replace(/\u0026Uuml;/g,\u0027U\u0027).replace(/\u0026ntilde;/g,\u0027n\u0027).replace(/\u0026Ntilde;/g,\u0027N\u0027)]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(\u0027 ?? \u0027).join(forSubject ? \u0027 - \u0027 : \u0027 \u0026bull; \u0027);\n  text = text.split(\u0027??\u0027).join(forSubject ? \u0027-\u0027 : \u0027\u0026bull;\u0027);\n  return text;\n}\n\nfunction getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027y\u0027, \u0027si\u0027, \u0027s\u0027, \u0027on\u0027, \u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027, \u00270\u0027, \u0027no\u0027, \u0027n\u0027, \u0027off\u0027, \u0027disabled\u0027].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  const trigger = getNodeJson(\u0027SetTrigger - Flujo\u0027);\n  const mixed = getNodeJson(\u0027SetMixed - Configuracion efectiva\u0027);\n  const value = trigger[name] ?? trigger.flags?.[name] ?? data[name] ?? data.flags?.[name] ?? mixed[name] ?? mixed.flags?.[name];\n  return normalizeBoolean(value, fallback);\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? \u0027\u0027)\n    .split(/\\r?\\n|\\. /)\n    .map(v =\u003e v.trim().replace(/\\.$/, \u0027\u0027))\n    .filter(Boolean);\n  if (!lines.length) return \u0027\u003cdiv style=\"font-size:13px; line-height:20px; color:#64748b;\"\u003eSin observaciones adicionales.\u003c/div\u003e\u0027;\n  return \u0027\u003cul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\"\u003e\u0027 +\n    lines.map(line =\u003e \u0027\u003cli\u003e\u0027 + escapeHtml(line) + \u0027.\u003c/li\u003e\u0027).join(\u0027\u0027) +\n    \u0027\u003c/ul\u003e\u0027;\n}\n\nfunction statCard(data, stat) {\n  const value = data[stat.value] ?? data[stat.fallbackValue] ?? \u0027-\u0027;\n  return \u0027\u003ctd class=\"summary-card\" width=\"33.33%\" valign=\"top\"\u003e\u003ctable role=\"presentation\" width=\"100%\" style=\"border:1px solid \u0027 + stat.border + \u0027; background-color:\u0027 + stat.background + \u0027;\"\u003e\u003ctr\u003e\u003ctd style=\"padding:12px;\"\u003e\u003cdiv style=\"font-size:11px; color:\u0027 + stat.labelColor + \u0027; font-weight:bold;\"\u003e\u0027 + escapeHtml(stat.label) + \u0027\u003c/div\u003e\u003cdiv style=\"font-size:24px; color:\u0027 + stat.valueColor + \u0027; font-weight:bold;\"\u003e\u0027 + escapeHtml(value) + \u0027\u003c/div\u003e\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003c/td\u003e\u0027;\n}\n\nfunction statRows(data, stats) {\n  const rows = [];\n  for (let i = 0; i \u003c stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(stat =\u003e statCard(data, stat));\n    while (cells.length \u003c 3) cells.push(\u0027\u003ctd class=\"summary-card\" width=\"33.33%\" valign=\"top\"\u003e\u0026nbsp;\u003c/td\u003e\u0027);\n    rows.push(\u0027\u003ctr\u003e\u0027 + cells.join(\u0027\u0027) + \u0027\u003c/tr\u003e\u0027);\n  }\n  return rows.join(\u0027\\n\u0027);\n}\n\nfunction simpleTable(title, rows, headers, emptyText) {\n  if (!rows) return \u0027\u0027;\n  const headerHtml = headers.map(h =\u003e \u0027\u003cth align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\"\u003e\u0027 + escapeHtml(h) + \u0027\u003c/th\u003e\u0027).join(\u0027\u0027);\n  const body = rows || \u0027\u003ctr\u003e\u003ctd colspan=\"\u0027 + headers.length + \u0027\" style=\"padding:14px; font-size:12px; color:#64748b;\"\u003e\u0027 + escapeHtml(emptyText || \u0027Sin registros.\u0027) + \u0027\u003c/td\u003e\u003c/tr\u003e\u0027;\n  return \u0027\u003cdiv style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\"\u003e\u0027 + escapeHtml(title) + \u0027\u003c/div\u003e\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"\u003e\u003cthead\u003e\u003ctr style=\"background:#f8fafc;\"\u003e\u0027 + headerHtml + \u0027\u003c/tr\u003e\u003c/thead\u003e\u003ctbody\u003e\u0027 + body + \u0027\u003c/tbody\u003e\u003c/table\u003e\u0027;\n}\n\nfunction tableContent(data) {\n  const blocks = [];\n  for (const key of [\u0027detail_blocks\u0027, \u0027grouped_section\u0027, \u0027detail_section\u0027, \u0027detail_table_html\u0027]) {\n    if (data[key]) blocks.push(data[key]);\n  }\n  if (data.class_asset_blocks) blocks.push(data.class_asset_blocks);\n  if (data.status_asset_blocks) blocks.push(data.status_asset_blocks);\n  if (data.review_asset_blocks) blocks.push(data.review_asset_blocks);\n  if (data.ticket_sections) blocks.push(data.ticket_sections);\n  if (data.older_section) blocks.push(data.older_section);\n  if (data.recent_section) blocks.push(data.recent_section);\n  if (data.ticket_rows_html) blocks.push(simpleTable(\u0027Tickets abiertos\u0027, data.ticket_rows_html, [\u0027Criticidad\u0027,\u0027Referencia\u0027,\u0027Tipo\u0027,\u0027Titulo\u0027,\u0027Solicitante\u0027,\u0027Estado\u0027,\u0027Creacion\u0027,\u0027Ultimo update\u0027,\u0027Antiguedad\u0027,\u0027SLA\u0027], \u0027Sin tickets.\u0027));\n  if (data.movement_rows) blocks.push(simpleTable(\u0027Movimientos recientes\u0027, data.movement_rows, [\u0027Fecha\u0027,\u0027Movimiento\u0027,\u0027Activo\u0027,\u0027Clase\u0027,\u0027Origen\u0027,\u0027Destino\u0027], \u0027Sin movimientos.\u0027));\n  if (data.class_summary_rows) blocks.push(simpleTable(\u0027Resumen por clase\u0027, data.class_summary_rows, [\u0027Clase\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por clase.\u0027));\n  if (data.warehouse_summary_rows) blocks.push(simpleTable(\u0027Resumen por bodega/localidad\u0027, data.warehouse_summary_rows, [\u0027Bodega/localidad\u0027,\u0027Total\u0027,\u0027Clases\u0027,\u0027Observacion\u0027], \u0027Sin resumen por bodega.\u0027));\n  if (data.status_summary_rows) blocks.push(simpleTable(\u0027Resumen por estado\u0027, data.status_summary_rows, [\u0027Estado\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por estado.\u0027));\n  if (data.location_summary_rows) blocks.push(simpleTable(\u0027Resumen por localidad\u0027, data.location_summary_rows, [\u0027Localidad\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por localidad.\u0027));\n  if (data.class_status_rows) blocks.push(simpleTable(\u0027Clase por estado\u0027, data.class_status_rows, [\u0027Clase\u0027,\u0027Productivo\u0027,\u0027Inventario\u0027,\u0027No operativo\u0027], \u0027Sin matriz de estados.\u0027));\n  if (data.location_matrix_rows) {\n    const header = data.location_matrix_header_cells || \u0027\u003cth align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\"\u003eBodega/localidad\u003c/th\u003e\u0027;\n    blocks.push(\u0027\u003cdiv style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\"\u003eMatriz por bodega/localidad\u003c/div\u003e\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"\u003e\u003cthead\u003e\u003ctr style=\"background:#f8fafc;\"\u003e\u0027 + header + \u0027\u003c/tr\u003e\u003c/thead\u003e\u003ctbody\u003e\u0027 + data.location_matrix_rows + \u0027\u003c/tbody\u003e\u003c/table\u003e\u0027);\n  }\n  if (data.top_location_rows) blocks.push(simpleTable(\u0027Top bodega/localidad\u0027, data.top_location_rows, [\u0027Bodega/localidad\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin top de localidades.\u0027));\n  return blocks.filter(Boolean).join(\u0027\\n\u0027);\n}\n\nfunction buildHtml(item) {\n  const data = item.json || {};\n  const triggerConfig = getNodeJson(\u0027SetTrigger - Flujo\u0027);\n  const mixedConfig = getNodeJson(\u0027SetMixed - Configuracion efectiva\u0027);\n  const root = data.template_root || mixedConfig.template_root || triggerConfig.template_root || \u0027/opt/n8n-config/templates/mail/v1\u0027;\n  const key = data.report_template_key || mixedConfig.report_template_key || triggerConfig.report_template_key || \u0027cmdb-activos-sin-contacto\u0027;\n  const contract = JSON.parse(readText(path.join(root, \u0027reports\u0027, key + \u0027.json\u0027)));\n  const partial = (name) =\u003e readText(path.join(root, contract.partials[name]));\n\n  const styles = partial(\u0027styles\u0027);\n  const header = render(partial(\u0027header\u0027), {\n    eyebrow: escapeHtml(contract.header?.eyebrow || \u0027Automatizacion ITSM / CMDB\u0027),\n    title: escapeHtml(data.report_title || data.email_subject || \u0027Reporte\u0027),\n    subtitle: escapeHtml(contract.header?.subtitle || \u0027\u0027),\n    itop_organization: escapeHtml(data.itop_organization || \u0027-\u0027),\n    generated_at: escapeHtml(data.generated_at || \u0027-\u0027),\n    source_label: escapeHtml(data.source_label || data.report_source_label || contract.header?.source_label || \u0027-\u0027),\n  });\n  const summary = render(partial(\u0027summary\u0027), { description: escapeHtml(data.report_description || contract.summary?.description || \u0027\u0027) });\n  const stats = render(partial(\u0027stats\u0027), { stats_rows: statRows(data, contract.stats || []) });\n  const criteria = render(partial(\u0027criteria\u0027), contract.criteria || {});\n  const tables = flagEnabled(data, \u0027include_detail\u0027, true) ? render(partial(\u0027tables\u0027), {\n    title: contract.tables?.title || \u0027Detalle operacional\u0027,\n    subtitle: contract.tables?.subtitle || \u0027\u0027,\n    content: tableContent(data) || \u0027\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"\u003e\u003ctr\u003e\u003ctd style=\"padding:14px; font-size:13px; color:#64748b;\"\u003eSin registros para el criterio del reporte.\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u0027,\n  }) : \u0027\u0027;\n  const notes = flagEnabled(data, \u0027include_operational_notes\u0027, true) ? render(partial(\u0027notes\u0027), { notes_list: notesList(data.operational_notes) }) : \u0027\u0027;\n  const cta = flagEnabled(data, \u0027include_itop_button_footer\u0027, true) ? render(partial(\u0027cta\u0027), {\n    href: escapeHtml(data.itop_url || \u0027#\u0027),\n    label: contract.cta?.label || \u0027Abrir\u0027,\n  }) : \u0027\u0027;\n  const footer = render(partial(\u0027footer\u0027), {\n    brand: contract.footer?.brand || \u0027Automatizacion ITSM / CMDB\u0027,\n    company: escapeHtml(data.company || data.Company || \u0027\u0027),\n    generated_at: escapeHtml(data.generated_at || \u0027-\u0027),\n  });\n\n  let html = render(partial(\u0027layout\u0027), {\n    title: escapeHtml(data.report_title || data.email_subject || \u0027Reporte\u0027),\n    styles,\n    header,\n    summary: flagEnabled(data, \u0027include_summary\u0027, true) ? summary : \u0027\u0027,\n    stats: flagEnabled(data, \u0027include_summary\u0027, true) ? stats : \u0027\u0027,\n    criteria,\n    tables,\n    notes,\n    cta,\n    footer,\n  });\n  html = normalizeText(html, false);\n  data.email_subject = normalizeText(data.email_subject, true);\n\n  const includeAttachment = flagEnabled(data, \u0027include_attachment\u0027, true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  return {\n    json: {\n      ...data,\n      html,\n      template_version: contract.template_version || \u0027mail-v1\u0027,\n      template_contract: key,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment \u0026\u0026 binary.csv ? \u0027csv\u0027 : \u0027\u0027,\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n}\n\nreturn $input.all().map(buildHtml);\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       59296,
+                                       15792
+                                   ],
+                      "id":  "4c290010-1108-4dcf-b2a3-869d4f155eb5",
+                      "name":  "HTML - Renderer parciales"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "function normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027y\u0027, \u0027si\u0027, \u0027s\u0027, \u0027on\u0027, \u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027, \u00270\u0027, \u0027no\u0027, \u0027n\u0027, \u0027off\u0027, \u0027disabled\u0027].includes(text)) return false;\n  return fallback;\n}\n\nfunction flag(data, name, fallback = true) {\n  return normalizeBoolean(data[name] ?? data.flags?.[name], fallback);\n}\n\nreturn $input.all().flatMap((item) =\u003e {\n  const data = item.json || {};\n  const sendEmail = flag(data, \u0027send_email\u0027, true);\n  const sendWhenNoChanges = flag(data, \u0027send_when_no_changes\u0027, true);\n  const hayCambios = data.hayCambios === true;\n\n  if (!sendEmail) return [];\n  if (!hayCambios \u0026\u0026 !sendWhenNoChanges) return [];\n\n  const includeAttachment = flag(data, \u0027include_attachment\u0027, true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  const hasCsv = Boolean(binary.csv);\n\n  return [{\n    json: {\n      ...data,\n      attachment_binary_names: includeAttachment \u0026\u0026 hasCsv ? \u0027csv\u0027 : \u0027\u0027,\n      include_attachment_effective: includeAttachment,\n      has_csv_binary: hasCsv,\n      attachment_validation: includeAttachment \u0026\u0026 hasCsv\n        ? \u0027OK - binario CSV disponible para envio SMTP\u0027\n        : (includeAttachment ? \u0027WARN - include_attachment activo, pero no existe binary.csv\u0027 : \u0027OK - envio sin adjunto por parametro\u0027),\n    },\n    binary,\n  }];\n});\n"
+                                     },
+                      "id":  "787ad73d-5030-45ff-9e2f-72010017e958",
+                      "name":  "Aplicar flags envio",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       59520,
+                                       15792
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "fromEmail":  "={{ $json.email_from }}",
+                                         "toEmail":  "={{ $json.email_to }}",
+                                         "subject":  "={{ $json.email_subject }}",
+                                         "html":  "={{ $json.html }}",
+                                         "options":  {
+                                                         "appendAttribution":  false,
+                                                         "attachments":  "={{ $json.attachment_binary_names }}",
+                                                         "ccEmail":  "={{ $json.email_cc }}",
+                                                         "bccEmail":  "={{ $json.email_bcc }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.emailSend",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       59744,
+                                       15792
+                                   ],
+                      "id":  "ac1634f6-bdda-4e2b-a75e-75615ec698ec",
+                      "name":  "Enviar correo SMTP",
+                      "webhookId":  "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+                      "credentials":  {
+                                          "smtp":  {
+                                                       "id":  "3SyjzuvErhGGEZZq",
+                                                       "name":  "SMTP_MailPit"
+                                                   }
+                                      }
+                  }
+              ],
+    "pinData":  {
+
+                },
+    "connections":  {
+                        "Ejecutar manualmente":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "SetTrigger - Flujo",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Cron - Semanal":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "SetTrigger - Flujo",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Webhook - ejecucion externa":  {
+                                                            "main":  [
+                                                                         [
+                                                                             {
+                                                                                 "node":  "Validar webhook",
+                                                                                 "type":  "main",
+                                                                                 "index":  0
+                                                                             }
+                                                                         ]
+                                                                     ]
+                                                        },
+                        "Validar webhook":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Responder webhook",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Responder webhook":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Continuar webhook valido",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Continuar webhook valido":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "SetTrigger - Flujo",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "SetTrigger - Flujo":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "SubWorkflow - SetBase reportes correo",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "SubWorkflow - SetBase reportes correo":  {
+                                                                      "main":  [
+                                                                                   [
+                                                                                       {
+                                                                                           "node":  "Config Reporte",
+                                                                                           "type":  "main",
+                                                                                           "index":  0
+                                                                                       }
+                                                                                   ]
+                                                                               ]
+                                                                  },
+                        "Config Reporte":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "LDAP - Usuarios vigentes AD",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                },
+                                                                {
+                                                                    "node":  "iTop - Personas para conciliacion",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "LDAP - Usuarios vigentes AD":  {
+                                                            "main":  [
+                                                                         [
+                                                                             {
+                                                                                 "node":  "Normalizar AD",
+                                                                                 "type":  "main",
+                                                                                 "index":  0
+                                                                             }
+                                                                         ]
+                                                                     ]
+                                                        },
+                        "Normalizar AD":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Merge AD e iTop",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "iTop - Personas para conciliacion":  {
+                                                                  "main":  [
+                                                                               [
+                                                                                   {
+                                                                                       "node":  "Normalizar iTop",
+                                                                                       "type":  "main",
+                                                                                       "index":  0
+                                                                                   }
+                                                                               ]
+                                                                           ]
+                                                              },
+                        "Normalizar iTop":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Merge AD e iTop",
+                                                                     "type":  "main",
+                                                                     "index":  1
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Merge AD e iTop":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Conciliar AD vs iTop",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Conciliar AD vs iTop":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Preparar datos reporte",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Preparar datos reporte":  {
+                                                       "main":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "HTML - Renderer parciales",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                   },
+                        "HTML - Renderer parciales":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "Aplicar flags envio",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "Aplicar flags envio":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Enviar correo SMTP",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                }
+                    },
+    "active":  false,
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate"
+                 },
+    "versionId":  "f91da820-4460-4d7f-ae5b-ac92391d4057",
+    "meta":  {
+                 "templateCredsSetupCompleted":  true,
+                 "instanceId":  "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+             },
+    "id":  "Nt5BU5FoPBc0j7kU",
+    "tags":  [
+                 {
+                     "updatedAt":  "2026-05-13T21:05:52.056Z",
+                     "createdAt":  "2026-05-13T21:05:52.056Z",
+                     "id":  "BXhfElYQQCNwQVhz",
+                     "name":  "iTop"
+                 },
+                 {
+                     "updatedAt":  "2026-05-13T21:05:52.075Z",
+                     "createdAt":  "2026-05-13T21:05:52.075Z",
+                     "id":  "c1UJSVPnTeRmNlYW",
+                     "name":  "AD"
+                 },
+                 {
+                     "updatedAt":  "2026-05-13T21:05:52.061Z",
+                     "createdAt":  "2026-05-13T21:05:52.061Z",
+                     "id":  "B8MDUNeTcrVjrCb4",
+                     "name":  "Conciliacion"
+                 },
+                 {
+                     "updatedAt":  "2026-05-13T21:11:48.851Z",
+                     "createdAt":  "2026-05-13T21:11:48.851Z",
+                     "id":  "aDQwH7STofQoB3kD",
+                     "name":  "Fase 1"
+                 }
+             ]
+}

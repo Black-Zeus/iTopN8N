@@ -1,0 +1,560 @@
+{
+  "name": "CMDB - Activos próximos a vencer garantía - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        3616,
+        544
+      ],
+      "id": "c1ba9cf0-5484-493c-87ac-093c92913a7c",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ea69599-c0b7-4f4f-8016-35854e568c6d",
+              "name": "itop_url",
+              "value": "http://10.130.221.203/itop/",
+              "type": "string"
+            },
+            {
+              "id": "84046551-dee2-418c-ab4c-210417d7c5e4",
+              "name": "email_from",
+              "value": "MesaDeAyudaChile@goldfields.com",
+              "type": "string"
+            },
+            {
+              "id": "24ce8c29-3d21-4c10-af56-2fdecaf5e925",
+              "name": "email_to",
+              "value": "={{ $json.body?.email_to ?? \"jswaneck@tecnocomp.cl\" }}",
+              "type": "string"
+            },
+            {
+              "id": "d476d0ff-1a27-4ee9-a0d7-3871cfb0c7a6",
+              "name": "email_cc",
+              "value": "={{ $json.body?.email_cc ?? \"cconcha@tecnocomp.cl, rmarquez@tecnocomp.cl, vsoto@tecnocomp.cl\" }}",
+              "type": "string"
+            },
+            {
+              "id": "762bc51e-5ea8-4c7e-adb1-4bba033726a7",
+              "name": "email_bcc",
+              "value": "={{ $json.body?.email_bcc ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "aec4a16e-aae6-488c-b88e-fefb1063656c",
+              "name": "email_subject",
+              "value": "={{ \"CMDB - activos proximos a vencer garantia\" }}",
+              "type": "string"
+            },
+            {
+              "id": "7246bf42-df3f-4c96-b9e7-0bf635f94fca",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "421bf6cd-6c51-48d8-bfd9-83d53ca55ec7",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "7b30a68e-c6b3-4f8b-a8b3-3e56731ca708",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "10f7a827-4d15-4395-9d29-82aff3075ab1",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "158698dd-3aea-42b8-99d2-f9e0c7c71d3e",
+              "name": "report_mode",
+              "value": "warranty_upcoming",
+              "type": "string"
+            },
+            {
+              "id": "2702b68b-5f38-4150-8209-1cf3703ea1a5",
+              "name": "csv_basename",
+              "value": "testing_cmdb_garantias_proximas_vencer",
+              "type": "string"
+            },
+            {
+              "id": "ac473303-248f-42f5-ab40-af66c381d91d",
+              "name": "report_title",
+              "value": "={{ \"CMDB - Activos pr\\u00f3ximos a vencer garant\\u00eda\" }}",
+              "type": "string"
+            },
+            {
+              "id": "5bb7bdfc-0aae-486d-b980-63fd0b043cc5",
+              "name": "report_description",
+              "value": "={{ \"Lista activos CMDB no obsoletos cuya garant\\u00eda vence dentro de la ventana definida en la configuraci\\u00f3n del flujo. Por defecto se consideran los pr\\u00f3ximos 12 meses.\" }}",
+              "type": "string"
+            },
+            {
+              "id": "cf2ce329-eea2-472f-898f-5965794c9eb1",
+              "name": "operational_notes",
+              "value": "={{ \"Este reporte fue generado autom\\u00e1ticamente por \\\"Automatizaci\\u00f3n ITSM / CMDB\\\".\\nOrganizaci\\u00f3n iTop considerada en el reporte: Minera GoldFields Chile.\\nSe adjunta un CSV \\u00fanico con el volcado consolidado de activos pr\\u00f3ximos a vencer garant\\u00eda.\" }}",
+              "type": "string"
+            },
+            {
+              "id": "29418ffe-0c3e-43ad-93b8-c3a00c9626d1",
+              "name": "warranty_warning_months",
+              "value": "={{ $json.body?.warranty_warning_months ?? 12 }}",
+              "type": "number"
+            },
+            {
+              "id": "0d1ba1ce-0d64-4354-9616-25d6d7353d82",
+              "name": "include_attachment",
+              "value": "={{ $json.body?.include_attachment ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "66ff3cbd-c7ff-4c11-8568-7223b729fd2c",
+              "name": "include_detail",
+              "value": "={{ $json.body?.include_detail ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "837f913a-d3f6-4df1-b0d2-3aca96372d5c",
+              "name": "include_summary",
+              "value": "={{ $json.body?.include_summary ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "7c6fec44-927e-4fcd-88eb-0ee6234dc93d",
+              "name": "include_operational_notes",
+              "value": "={{ $json.body?.include_operational_notes ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "70386576-5f06-4bff-a5bd-0ae366c57969",
+              "name": "include_itop_button_footer",
+              "value": "={{ $json.body?.include_itop_button_footer ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "d198c617-e1fa-47f8-ad5e-4c3a9dcbdcee",
+              "name": "start_date",
+              "value": "={{ $json.body?.start_date ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "9f06f4bb-e392-41f3-bbe4-3a90dbeee9b1",
+              "name": "end_date",
+              "value": "={{ $json.body?.end_date ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "2af6800d-1377-431e-9f45-42b36c5e4966",
+              "name": "report_template_key",
+              "value": "cmdb-activos-proximos-vencer-garantia",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3840,
+        544
+      ],
+      "id": "8c030773-37ed-49a4-b4dd-57c593302087",
+      "name": "SetTrigger - Flujo"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "PhysicalDevice",
+        "key": "SELECT PhysicalDevice\nWHERE finalclass IN ('PC', 'Laptop', 'MobilePhone', 'Tablet', 'Printer', 'Peripheral', 'NetworkDevice')\nAND status NOT IN ('obsolete')",
+        "output_fields": "id,name,friendlyname,finalclass,status,org_id,org_id_friendlyname,location_id,location_id_friendlyname,contacts_list,brand_id,brand_id_friendlyname,model_id,model_id_friendlyname,serialnumber,asset_number,move2production,purchase_date,end_of_warranty,description",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        4512,
+        544
+      ],
+      "id": "01cbec44-8ced-4579-84c4-1d188c6c8119",
+      "name": "iTop - Activos CMDB",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "FdUX5lCOh0Z3YWW4",
+          "name": "iTopToken_GF_QA"
+        }
+      },
+      "notes": "Consulta base CMDB. El filtrado final se refuerza en el nodo Code para evitar depender exclusivamente del OQL."
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst baseConfig = $('Config Reporte').first().json;\nconst triggerConfig = $('SetTrigger - Flujo').first()?.json || {};\nconst mergedFlags = { ...(baseConfig.flags || {}) };\nfunction mergeFlag(name) {\n  const value = triggerConfig[name];\n  if (value === undefined || value === null || value === '') return;\n  if (typeof value === 'boolean') mergedFlags[name] = value;\n  else if (typeof value === 'number') mergedFlags[name] = value !== 0;\n  else {\n    const text = String(value).trim().toLowerCase();\n    if (['true','1','yes','y','si','s','on','enabled'].includes(text)) mergedFlags[name] = true;\n    else if (['false','0','no','n','off','disabled'].includes(text)) mergedFlags[name] = false;\n  }\n}\nfor (const key of ['include_attachment','include_detail','include_summary','include_operational_notes','include_itop_button_footer','send_email','include_requirements','include_incidents','include_changes','include_problems']) mergeFlag(key);\nconst config = { ...baseConfig, ...triggerConfig, flags: mergedFlags };\nfor (const [key, value] of Object.entries(mergedFlags)) config[key] = value;\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst itopOrganization = String(config.itop_organization || '').trim();\nconst timezone = String(config.timezone || 'America/Santiago').trim();\nconst reportMode = String(config.report_mode || '').trim();\nconst warrantyMonths = Number(config.warranty_warning_months || 12);\nconst warrantyHalfMonths = Math.ceil(warrantyMonths / 2);\nconst now = new Date();\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\"/g, '\"\"');\n  return `\"${text}\"`;\n}\n\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\n\nfunction scalarText(value) {\n  if (value === undefined || value === null) return '';\n  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {\n    const text = String(value).trim();\n    return text === '[object Object]' ? '' : text;\n  }\n  return '';\n}\n\nfunction cleanContactText(value) {\n  let text = scalarText(value);\n  if (!text) return '';\n  if (text.includes(' / ')) text = text.split(' / ')[0].trim();\n  return text;\n}\n\nfunction normalizeContactEntry(entry) {\n  if (entry === undefined || entry === null) return '';\n  const direct = cleanContactText(entry);\n  if (direct) return direct;\n  if (Array.isArray(entry)) return entry.map(normalizeContactEntry).filter(Boolean).join(', ');\n  if (typeof entry === 'object') {\n    if (entry.fields && typeof entry.fields === 'object') {\n      const fromFields = normalizeContactEntry(entry.fields);\n      if (fromFields) return fromFields;\n    }\n    if (entry.objects && typeof entry.objects === 'object') {\n      return Object.values(entry.objects).map(normalizeContactEntry).filter(Boolean).join(', ');\n    }\n    const preferred = ['contact_id_friendlyname','person_id_friendlyname','user_id_friendlyname','contact_name','person_name','display_name','name','friendlyname','email','email_address'];\n    for (const field of preferred) {\n      const text = cleanContactText(entry[field]);\n      if (text) return text;\n    }\n    const nested = ['contact_id','person_id','user_id','contact','person','user'];\n    for (const field of nested) {\n      const text = normalizeContactEntry(entry[field]);\n      if (text) return text;\n    }\n  }\n  return '';\n}\n\nfunction normalizeContacts(value) {\n  const text = normalizeContactEntry(value);\n  if (!text) return '';\n  const unique = [];\n  const seen = new Set();\n  for (const part of text.split(',').map(v => cleanContactText(v)).filter(Boolean)) {\n    const key = part.toLowerCase();\n    if (!seen.has(key)) { seen.add(key); unique.push(part); }\n  }\n  return unique.join(', ');\n}\n\nfunction isBlankValue(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'n/a' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined';\n}\n\nfunction normalizeClass(value) {\n  const raw = String(value || '-').trim();\n  const lower = raw.toLowerCase();\n  if (lower === 'pc' || lower.includes('desktop')) return 'PC';\n  if (lower === 'laptop' || lower.includes('notebook') || lower.includes('portable')) return 'Laptop';\n  if (lower === 'mobilephone' || lower.includes('phone') || lower.includes('telefono') || lower.includes('tel\\u00e9fono')) return 'Tel\\u00e9fonos m\\u00f3viles';\n  if (lower === 'tablet') return 'Tablets';\n  if (lower === 'printer' || lower.includes('impresora')) return 'Impresoras';\n  if (lower === 'peripheral' || lower.includes('periferico') || lower.includes('perif\\u00e9rico')) return 'Perif\\u00e9ricos';\n  if (lower === 'networkdevice') return 'Dispositivos de red';\n  return raw || 'Otros';\n}\n\nfunction classSortWeight(className) {\n  const order = { 'PC': 10, 'Laptop': 20, 'Tablets': 30, 'Tel\\u00e9fonos m\\u00f3viles': 40, 'Impresoras': 50, 'Perif\\u00e9ricos': 60, 'Dispositivos de red': 70, 'Otros': 90 };\n  return order[className] || 80;\n}\n\nfunction translateStatus(value) {\n  const status = String(value || '').trim().toLowerCase();\n  const map = { stock: 'En Inventario', implementation: 'No Productivo', production: 'Productivo', obsolete: 'Obsoleto', inactive: 'Inactivo' };\n  return map[status] || String(value || '-');\n}\n\nfunction parseDate(value) {\n  const raw = String(value || '').trim();\n  if (!raw || raw === '-' || raw.toLowerCase() === 'null') return null;\n  const normalized = raw.length === 10 ? `${raw}T00:00:00` : raw.replace(' ', 'T');\n  const d = new Date(normalized);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\n\nfunction formatDate(value) {\n  const d = value instanceof Date ? value : parseDate(value);\n  if (!d) return '-';\n  return d.toLocaleDateString('es-CL', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' });\n}\n\nfunction daysBetween(a, b) {\n  const start = new Date(a.getFullYear(), a.getMonth(), a.getDate());\n  const end = new Date(b.getFullYear(), b.getMonth(), b.getDate());\n  return Math.ceil((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));\n}\n\nfunction addMonths(date, months) {\n  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());\n  result.setMonth(result.getMonth() + Number(months || 0));\n  return result;\n}\n\nfunction groupBy(list, fn) {\n  const map = new Map();\n  for (const item of list) {\n    const key = fn(item) || '-';\n    if (!map.has(key)) map.set(key, []);\n    map.get(key).push(item);\n  }\n  return map;\n}\n\nfunction buildAssetRows(list, emptyText) {\n  if (!list.length) {\n    return `<tr><td colspan=\"9\" style=\"padding:14px; font-size:12px; color:#64748b;\">${escapeHtml(emptyText)}</td></tr>`;\n  }\n  return list.map(a => `\n    <tr>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.finalclass)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\"><strong>${escapeHtml(a.name)}</strong></td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.status)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.location)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.brand)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.model)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.serial)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.warrantyDateDisplay)}</td>\n      <td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(a.daysLabel)}</td>\n    </tr>`).join('');\n}\n\nfunction buildClassSummary(list) {\n  const groups = [...groupBy(list, a => a.finalclass).entries()]\n    .sort((a, b) => classSortWeight(a[0]) - classSortWeight(b[0]) || a[0].localeCompare(b[0], 'es'));\n  if (!groups.length) return '<tr><td colspan=\"2\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin registros para el criterio.</td></tr>';\n  return groups.map(([klass, rows]) => `<tr><td style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\">${escapeHtml(klass)}</td><td align=\"right\" style=\"padding:8px; border-top:1px solid #e5e7eb; font-size:12px;\"><strong>${rows.length}</strong></td></tr>`).join('');\n}\n\nconst warrantyCutoffDate = addMonths(now, warrantyMonths);\nconst warrantyHalfCutoffDate = addMonths(now, warrantyHalfMonths);\nconst rawRows = flattenInput($input.all());\nlet assets = rawRows.map(row => {\n  const f = row.fields || row;\n  const warrantyDate = parseDate(getField(f, ['end_of_warranty', 'warranty_end_date'], ''));\n  const contacts = normalizeContacts(getField(f, ['contacts_list', 'contact_list', 'contact_id_friendlyname', 'contact_name'], ''));\n  const statusRaw = String(getField(f, ['status'], '-')).trim().toLowerCase();\n  const days = warrantyDate ? daysBetween(now, warrantyDate) : null;\n  return {\n    id: getField(f, ['id', 'key'], row.key || ''),\n    name: getField(f, ['name', 'friendlyname'], '-'),\n    finalclass: normalizeClass(getField(f, ['finalclass', 'class'], '-')),\n    statusRaw,\n    status: translateStatus(statusRaw),\n    organization: getField(f, ['org_id_friendlyname', 'org_name', 'organization_name'], '-'),\n    location: getField(f, ['location_id_friendlyname', 'location_name', 'location_id'], 'Sin bodega/localidad'),\n    contact: contacts,\n    brand: getField(f, ['brand_id_friendlyname', 'brand'], '-'),\n    model: getField(f, ['model_id_friendlyname', 'model'], '-'),\n    serial: getField(f, ['serialnumber', 'serial_number'], '-'),\n    assetNumber: getField(f, ['asset_number', 'assetnumber'], '-'),\n    purchaseDate: getField(f, ['purchase_date'], '-'),\n    warrantyDate,\n    warrantyDateDisplay: formatDate(warrantyDate),\n    daysToWarranty: days,\n    daysLabel: days === null ? '-' : (days >= 0 ? `${days} d\\u00edas` : `${Math.abs(days)} d\\u00edas vencida`),\n  };\n});\n\nif (reportMode === 'without_contact_production') {\n  assets = assets.filter(a => a.statusRaw === 'production' && isBlankValue(a.contact));\n  assets.sort((a, b) => a.location.localeCompare(b.location, 'es') || classSortWeight(a.finalclass) - classSortWeight(b.finalclass) || a.name.localeCompare(b.name, 'es'));\n} else if (reportMode === 'warranty_upcoming') {\n  assets = assets.filter(a => a.statusRaw !== 'obsolete' && a.warrantyDate && a.daysToWarranty >= 0 && a.warrantyDate <= warrantyCutoffDate);\n  assets.sort((a, b) => a.daysToWarranty - b.daysToWarranty || a.name.localeCompare(b.name, 'es'));\n} else if (reportMode === 'warranty_expired') {\n  assets = assets.filter(a => a.statusRaw !== 'obsolete' && a.warrantyDate && a.daysToWarranty < 0);\n  assets.sort((a, b) => a.daysToWarranty - b.daysToWarranty || a.name.localeCompare(b.name, 'es'));\n}\n\nconst generatedAt = now.toLocaleString('es-CL', { timeZone: timezone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });\nconst generatedAtFile = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);\nconst subjectBase = String(config.email_subject || 'Reporte CMDB').trim();\nconst emailSubject = itopOrganization ? `${subjectBase} - ${itopOrganization}` : subjectBase;\n\nconst headers = ['Clase','Activo','Estado','Bodega','Marca','Modelo','Serie','Garant\\u00eda','Plazo'];\nconst csvContent = '\\uFEFF' + [\n  headers.map(csvEscape).join(';'),\n  ...assets.map(a => [a.finalclass,a.name,a.status,a.location,a.brand,a.model,a.serial,a.warrantyDateDisplay,a.daysLabel].map(csvEscape).join(';'))\n].join('\\r\\n');\n\nconst groupedByLocation = [...groupBy(assets, a => a.location).entries()]\n  .sort((a, b) => a[0].localeCompare(b[0], 'es'));\n\nlet detailBlocks = '';\nif (!assets.length) {\n  detailBlocks = '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">No se encontraron activos para el criterio del reporte.</td></tr></table>';\n} else {\n  detailBlocks = groupedByLocation.map(([location, rows]) => `\n    <div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">${escapeHtml(location)} <span style=\"font-weight:normal; color:#64748b;\">(${rows.length})</span></div>\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\">\n      <thead><tr style=\"background:#f8fafc;\">\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Clase</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Activo</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Estado</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Bodega</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Marca</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Modelo</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Serie</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Garant\\u00eda</th>\n        <th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Plazo</th>\n      </tr></thead>\n      <tbody>${buildAssetRows(rows, 'Sin registros.')}</tbody>\n    </table>`).join('');\n}\n\nconst csvBaseName = String(config.csv_basename || 'cmdb_reporte_testing').trim();\nconst withoutLocationCount = assets.filter(a => isBlankValue(a.location) || a.location === 'Sin bodega/localidad').length;\nconst upcomingWarrantyCount = assets.length;\nconst classTypeCount = new Set(assets.map(a => a.finalclass).filter(Boolean)).size;\nconst halfWindowCount = assets.filter(a => a.warrantyDate && a.daysToWarranty !== null && a.daysToWarranty >= 0 && a.warrantyDate <= warrantyHalfCutoffDate).length;\n\nreturn [{\n  json: {\n    flags: config.flags || {},\n    report_template_key: config.report_template_key,\n    template_root: config.template_root,\n    include_attachment: config.flags?.include_attachment ?? config.include_attachment,\n    include_detail: config.flags?.include_detail ?? config.include_detail,\n    include_summary: config.flags?.include_summary ?? config.include_summary,\n    include_operational_notes: config.flags?.include_operational_notes ?? config.include_operational_notes,\n    include_itop_button_footer: config.flags?.include_itop_button_footer ?? config.include_itop_button_footer,\n    email_from: config.email_from,\n    email_to: config.email_to,\n    email_cc: config.email_cc || '',\n    email_bcc: config.email_bcc || '',\n    email_subject: emailSubject,\n    company,\n    Company: company,\n    itop_organization: itopOrganization || '-',\n    generated_at: generatedAt,\n    total_assets: String(assets.length),\n    warranty_months: String(warrantyMonths),\n    without_location_count: String(withoutLocationCount),\n    upcoming_warranty_count: String(upcomingWarrantyCount),\n    half_window_count: String(halfWindowCount),\n    warranty_half_months: String(warrantyHalfMonths),\n    class_type_count: String(classTypeCount),\n    class_summary_rows: buildClassSummary(assets),\n    detail_blocks: detailBlocks,\n    report_title: config.report_title || subjectBase,\n    report_description: config.report_description || '',\n    operational_notes: config.operational_notes || '',\n    itop_url: config.itop_url || '#',\n    csv_filename: `${csvBaseName}_${generatedAtFile}.csv`,\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csvContent, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `${csvBaseName}_${generatedAtFile}.csv`,\n    },\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4736,
+        544
+      ],
+      "id": "4cae4bc8-a367-4916-a815-2bd1f62854be",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, 'utf8');\n}\n\nfunction render(template, values) {\n  return String(template || '').replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) => {\n    const parts = key.split('.');\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? '' : String(value);\n  });\n}\n\nfunction normalizeText(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['Automatizaci??n','Automatizaci&oacute;n'], ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'], ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['antig??edad','antig&uuml;edad'], ['actualizaci??n','actualizaci&oacute;n'], ['configuraci??n','configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['tel??fono','tel&eacute;fono'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['par??metros','par&aacute;metros'], ['env??a','env&iacute;a'], ['envi??','envi&oacute;'],\n    ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'], ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'],\n    ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'],\n    ['creaci??n','creaci&oacute;n'], ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'],\n    ['clasificaci??n','clasificaci&oacute;n'], ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'],\n    ['l??nea','l&iacute;nea'], ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  const trigger = getNodeJson('SetTrigger - Flujo');\n  const mixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const value = trigger[name] ?? trigger.flags?.[name] ?? data[name] ?? data.flags?.[name] ?? mixed[name] ?? mixed.flags?.[name];\n  return normalizeBoolean(value, fallback);\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? '')\n    .split(/\\r?\\n|\\. /)\n    .map(v => v.trim().replace(/\\.$/, ''))\n    .filter(Boolean);\n  if (!lines.length) return '<div style=\"font-size:13px; line-height:20px; color:#64748b;\">Sin observaciones adicionales.</div>';\n  return '<ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">' +\n    lines.map(line => '<li>' + escapeHtml(line) + '.</li>').join('') +\n    '</ul>';\n}\n\nfunction statCard(data, stat) {\n  const value = data[stat.value] ?? data[stat.fallbackValue] ?? '-';\n  return '<td class=\"summary-card\" width=\"33.33%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid ' + stat.border + '; background-color:' + stat.background + ';\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:' + stat.labelColor + '; font-weight:bold;\">' + escapeHtml(stat.label) + '</div><div style=\"font-size:24px; color:' + stat.valueColor + '; font-weight:bold;\">' + escapeHtml(value) + '</div></td></tr></table></td>';\n}\n\nfunction statRows(data, stats) {\n  const rows = [];\n  for (let i = 0; i < stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(stat => statCard(data, stat));\n    while (cells.length < 3) cells.push('<td class=\"summary-card\" width=\"33.33%\" valign=\"top\">&nbsp;</td>');\n    rows.push('<tr>' + cells.join('') + '</tr>');\n  }\n  return rows.join('\\n');\n}\n\nfunction simpleTable(title, rows, headers, emptyText) {\n  if (!rows) return '';\n  const headerHtml = headers.map(h => '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">' + escapeHtml(h) + '</th>').join('');\n  const body = rows || '<tr><td colspan=\"' + headers.length + '\" style=\"padding:14px; font-size:12px; color:#64748b;\">' + escapeHtml(emptyText || 'Sin registros.') + '</td></tr>';\n  return '<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">' + escapeHtml(title) + '</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + headerHtml + '</tr></thead><tbody>' + body + '</tbody></table>';\n}\n\nfunction tableContent(data) {\n  const blocks = [];\n  if (data.detail_blocks) blocks.push(data.detail_blocks);\n  if (data.class_asset_blocks) blocks.push(data.class_asset_blocks);\n  if (data.status_asset_blocks) blocks.push(data.status_asset_blocks);\n  if (data.review_asset_blocks) blocks.push(data.review_asset_blocks);\n  if (data.ticket_sections) blocks.push(data.ticket_sections);\n  if (data.older_section) blocks.push(data.older_section);\n  if (data.recent_section) blocks.push(data.recent_section);\n  if (data.ticket_rows_html) blocks.push(simpleTable('Tickets abiertos', data.ticket_rows_html, ['Criticidad','Referencia','Tipo','Titulo','Solicitante','Estado','Creacion','Ultimo update','Antiguedad','SLA'], 'Sin tickets.'));\n  if (data.movement_rows) blocks.push(simpleTable('Movimientos recientes', data.movement_rows, ['Fecha','Movimiento','Activo','Clase','Origen','Destino'], 'Sin movimientos.'));\n  if (data.class_summary_rows) blocks.push(simpleTable('Resumen por clase', data.class_summary_rows, ['Clase','Total','Dato 1','Observacion'], 'Sin resumen por clase.'));\n  if (data.warehouse_summary_rows) blocks.push(simpleTable('Resumen por bodega/localidad', data.warehouse_summary_rows, ['Bodega/localidad','Total','Clases','Observacion'], 'Sin resumen por bodega.'));\n  if (data.status_summary_rows) blocks.push(simpleTable('Resumen por estado', data.status_summary_rows, ['Estado','Total','Dato 1','Observacion'], 'Sin resumen por estado.'));\n  if (data.location_summary_rows) blocks.push(simpleTable('Resumen por localidad', data.location_summary_rows, ['Localidad','Total','Dato 1','Observacion'], 'Sin resumen por localidad.'));\n  if (data.class_status_rows) blocks.push(simpleTable('Clase por estado', data.class_status_rows, ['Clase','Productivo','Inventario','No operativo'], 'Sin matriz de estados.'));\n  if (data.location_matrix_rows) {\n    const header = data.location_matrix_header_cells || '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Bodega/localidad</th>';\n    blocks.push('<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">Matriz por bodega/localidad</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + header + '</tr></thead><tbody>' + data.location_matrix_rows + '</tbody></table>');\n  }\n  if (data.top_location_rows) blocks.push(simpleTable('Top bodega/localidad', data.top_location_rows, ['Bodega/localidad','Total','Dato 1','Observacion'], 'Sin top de localidades.'));\n  return blocks.filter(Boolean).join('\\n');\n}\n\nfunction buildHtml(item) {\n  const data = item.json || {};\n  const triggerConfig = getNodeJson('SetTrigger - Flujo');\n  const mixedConfig = getNodeJson('SetMixed - Configuracion efectiva');\n  const root = data.template_root || mixedConfig.template_root || triggerConfig.template_root || '/opt/n8n-config/templates/mail/v1';\n  const key = data.report_template_key || mixedConfig.report_template_key || triggerConfig.report_template_key || 'cmdb-activos-sin-contacto';\n  const contract = JSON.parse(readText(path.join(root, 'reports', key + '.json')));\n  const partial = (name) => readText(path.join(root, contract.partials[name]));\n\n  const styles = partial('styles');\n  const header = render(partial('header'), {\n    eyebrow: escapeHtml(contract.header?.eyebrow || 'Automatizacion ITSM / CMDB'),\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    subtitle: escapeHtml(contract.header?.subtitle || ''),\n    itop_organization: escapeHtml(data.itop_organization || '-'),\n    generated_at: escapeHtml(data.generated_at || '-'),\n    source_label: escapeHtml(data.source_label || data.report_source_label || contract.header?.source_label || '-'),\n  });\n  const summary = render(partial('summary'), { description: escapeHtml(data.report_description || contract.summary?.description || '') });\n  const stats = render(partial('stats'), { stats_rows: statRows(data, contract.stats || []) });\n  const criteria = render(partial('criteria'), contract.criteria || {});\n  const tables = flagEnabled(data, 'include_detail', true) ? render(partial('tables'), {\n    title: contract.tables?.title || 'Detalle operacional',\n    subtitle: contract.tables?.subtitle || '',\n    content: tableContent(data) || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin registros para el criterio del reporte.</td></tr></table>',\n  }) : '';\n  const notes = flagEnabled(data, 'include_operational_notes', true) ? render(partial('notes'), { notes_list: notesList(data.operational_notes) }) : '';\n  const cta = flagEnabled(data, 'include_itop_button_footer', true) ? render(partial('cta'), {\n    href: escapeHtml(data.itop_url || '#'),\n    label: contract.cta?.label || 'Abrir',\n  }) : '';\n  const footer = render(partial('footer'), {\n    brand: contract.footer?.brand || 'Automatizacion ITSM / CMDB',\n    company: escapeHtml(data.company || data.Company || ''),\n    generated_at: escapeHtml(data.generated_at || '-'),\n  });\n\n  let html = render(partial('layout'), {\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    styles,\n    header,\n    summary: flagEnabled(data, 'include_summary', true) ? summary : '',\n    stats: flagEnabled(data, 'include_summary', true) ? stats : '',\n    criteria,\n    tables,\n    notes,\n    cta,\n    footer,\n  });\n  html = normalizeText(html, false);\n  data.email_subject = normalizeText(data.email_subject, true);\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  return {\n    json: {\n      ...data,\n      html,\n      template_version: contract.template_version || 'mail-v1',\n      template_contract: key,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n}\n\nreturn $input.all().map(buildHtml);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4960,
+        544
+      ],
+      "id": "66029158-bf97-40fa-be6d-97f1cd7389c1",
+      "name": "HTML - Renderer parciales"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "={{ $json.attachment_binary_names }}",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        5408,
+        544
+      ],
+      "id": "d1e96cc2-3201-447d-9999-d0a4cba972b1",
+      "name": "Enviar correo SMTP",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "0Kph5ncFnrBvdaVP",
+          "name": "SMTP_Exchange"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cmdb-activos-proximos-vencer-garantia",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2944,
+        352
+      ],
+      "id": "9bf7e462-210d-407a-9738-4040af38efa8",
+      "name": "Webhook - ejecucion externa",
+      "webhookId": "830351ea-acf0-4aff-9a25-d1c21aec09a5",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5ueiVRP6pKurE71t",
+          "name": "HeaderAuth_GF_QA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        3616,
+        736
+      ],
+      "id": "56da6450-fe2f-4e6d-afda-11af6c2ac6bf",
+      "name": "Cron - lunes 07:00"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "puR8KZ9UFvq5zRqX",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/puR8KZ9UFvq5zRqX",
+          "cachedResultName": "SYS - Configuracion base reportes correo"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "01698b16-a3eb-4142-8e49-c7a90b3e424a",
+      "name": "SubWorkflow - SetBase reportes correo",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        4064,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $input.first()?.json || {};\nconst trigger = $('SetTrigger - Flujo').first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si'].includes(text)) return true;\n  if (['false', '0', 'no', 'n'].includes(text)) return false;\n  return fallback;\n}\n\nconst flags = { ...(base.flags || {}) };\nfor (const key of ['include_attachment', 'include_detail', 'include_summary', 'include_operational_notes', 'include_itop_button_footer', 'send_email', 'include_requirements', 'include_incidents', 'include_changes', 'include_problems']) {\n  if (trigger[key] !== undefined && trigger[key] !== null && trigger[key] !== '') {\n    flags[key] = normalizeBoolean(trigger[key], flags[key]);\n  }\n}\n\nconst setMixed = {\n  ...base,\n  ...trigger,\n  flags,\n  config_source: 'SetBase + SetTrigger',\n};\n\nfor (const [key, value] of Object.entries(flags)) {\n  if (setMixed[key] === undefined || setMixed[key] === null || setMixed[key] === '') setMixed[key] = value;\n}\n\nreturn [{ json: setMixed }];"
+      },
+      "id": "45318d2f-cb2f-4bf8-ba1c-b29e9b9e4a28",
+      "name": "Config Reporte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction mergeFlags(...sources) {\n  const flags = {};\n  for (const source of sources) {\n    if (!source) continue;\n    Object.assign(flags, source.flags || {});\n    for (const key of ['include_attachment','include_detail','include_summary','include_operational_notes','include_itop_button_footer','send_email','include_requirements','include_incidents','include_changes','include_problems']) {\n      if (source[key] !== undefined && source[key] !== null && source[key] !== '') flags[key] = normalizeBoolean(source[key], flags[key]);\n    }\n  }\n  return flags;\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  return normalizeBoolean(data[name] ?? data.flags?.[name], fallback);\n}\n\nfunction removeOuterRowByMarker(html, marker) {\n  const index = html.indexOf(marker);\n  if (index === -1) return html;\n  const starts = ['\\n      <tr><td', '\\n                        <tr><td', '<tr><td', '<tr>'];\n  let start = -1;\n  for (const needle of starts) {\n    const pos = html.lastIndexOf(needle, index);\n    if (pos !== -1 && pos > start) start = pos;\n  }\n  if (start === -1) start = Math.max(0, index - 200);\n  const ends = ['\\n      <tr><td', '\\n                        <tr><td', '\\n      <tr><td style=\"background-color', '\\n                        <tr><td style=\"background-color'];\n  let end = -1;\n  for (const needle of ends) {\n    const pos = html.indexOf(needle, index + marker.length);\n    if (pos !== -1 && (end === -1 || pos < end)) end = pos;\n  }\n  if (end === -1) {\n    const close = html.indexOf('</td></tr>', index);\n    end = close === -1 ? index + marker.length : close + '</td></tr>'.length;\n  }\n  return html.slice(0, start) + html.slice(end);\n}\n\nfunction removeAllRowsByMarker(html, marker) {\n  let previous;\n  do {\n    previous = html;\n    html = removeOuterRowByMarker(html, marker);\n  } while (html !== previous);\n  return html;\n}\n\nfunction removeTablesByClass(html) {\n  return html\n    .replace(/<table\\b[^>]*class=[\"'][^\"']*(?:data-table|ticket-table)[^\"']*[\"'][\\s\\S]*?<\\/table>/gi, '')\n    .replace(/<table\\b[^>]*(?:data-table|ticket-table)[^>]*>[\\s\\S]*?<\\/table>/gi, '');\n}\n\n\nfunction repairMailEncoding(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['Automatizaci??n','Automatizaci&oacute;n'], ['automatizaci??n','automatizaci&oacute;n'],\n    ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['producci??n','producci&oacute;n'],\n    ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'],\n    ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['t??tulo','t&iacute;tulo'],\n    ['antig??edad','antig&uuml;edad'], ['Antig??edad','Antig&uuml;edad'],\n    ['actualizaci??n','actualizaci&oacute;n'], ['Actualizaci??n','Actualizaci&oacute;n'],\n    ['configuraci??n','configuraci&oacute;n'], ['Configuraci??n','Configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['f??sicamente','f&iacute;sicamente'],\n    ['tel??fono','tel&eacute;fono'], ['Tel??fonos','Tel&eacute;fonos'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['Perif??ricos','Perif&eacute;ricos'],\n    ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'], ['??ltima','&uacute;ltima'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['Cr??tico','Cr&iacute;tico'], ['CR??TICOS','CR&Iacute;TICOS'],\n    ['par??metros','par&aacute;metros'], ['inv??lida','inv&aacute;lida'], ['v??lida','v&aacute;lida'], ['v??lidas','v&aacute;lidas'],\n    ['env??a','env&iacute;a'], ['envi??','envi&oacute;'], ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'],\n    ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'], ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['Hist??rico','Hist&oacute;rico'],\n    ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'], ['creaci??n','creaci&oacute;n'],\n    ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'], ['clasificaci??n','clasificaci&oacute;n'],\n    ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'], ['l??nea','l&iacute;nea'],\n    ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction applyVisualFlags(html, data) {\n  if (!html) return html;\n  if (!flagEnabled(data, 'include_summary', true)) {\n    for (const marker of ['Resumen ejecutivo', 'TOTAL ACTIVOS', 'TOTAL CON CONTACTO', 'TOTAL TICKETS', 'TOTAL CAMBIOS', 'TOTAL MOVIMIENTOS']) html = removeAllRowsByMarker(html, marker);\n  }\n  if (!flagEnabled(data, 'include_detail', true)) {\n    for (const marker of [\n      'Detalle operacional',\n      'Detalle de activos',\n      'Detalle de tickets',\n      'Detalle por agente',\n      'Detalle por antig?edad',\n      'Resumen por estado',\n      'Resumen por bodega/localidad',\n      'Resumen por clase',\n      'Activos por clase',\n      'Por revisar',\n      'Tickets abiertos',\n      'Tickets abiertos pendientes',\n      'Tickets abiertos por agente',\n      'Tickets con m?s de 14 d?as abiertos',\n      'Tickets abiertos hasta 14 d?as',\n      'Movimientos recientes',\n      'data-table',\n      'ticket-table'\n    ]) html = removeAllRowsByMarker(html, marker);\n    html = removeTablesByClass(html);\n    html = html.replace(/\\.data-table[\\s\\S]*?\\}/g, '').replace(/\\.ticket-table[\\s\\S]*?\\}/g, '');\n  }\n  if (!flagEnabled(data, 'include_operational_notes', true)) html = removeAllRowsByMarker(html, 'Observaciones operacionales');\n  if (!flagEnabled(data, 'include_itop_button_footer', true)) html = removeAllRowsByMarker(html, 'Abrir Combodo iTop');\n  return html;\n}\n\nreturn $input.all().map((item) => {\n  const configReporte = getNodeJson('Config Reporte');\n  const setMixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const setTrigger = getNodeJson('SetTrigger - Flujo');\n  const itemJson = item.json || {};\n  const flags = mergeFlags(configReporte, setMixed, itemJson, setTrigger);\n  const data = { ...configReporte, ...setMixed, ...itemJson, ...setTrigger, flags };\n  for (const [key, value] of Object.entries(flags)) data[key] = value;\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  const html = repairMailEncoding(applyVisualFlags(data.html, data), false);\n  data.email_subject = repairMailEncoding(data.email_subject, true);\n\n  return {\n    json: {\n      ...data,\n      html,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n});"
+      },
+      "id": "a45e1d1c-9d87-4b12-b865-769b8bffece7",
+      "name": "Aplicar flags envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5184,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst body = item?.json?.body || {};\nconst errors = [];\n\nfunction text(name) {\n  return String(body[name] ?? '').trim();\n}\n\nfunction positiveNumber(name) {\n  const raw = body[name];\n  if (raw === undefined || raw === null || raw === '') return false;\n  const n = Number(raw);\n  return Number.isFinite(n) && n > 0;\n}\n\nfunction validDateText(name) {\n  const value = text(name);\n  if (!value) return false;\n  const parsed = new Date(value.replace(' ', 'T'));\n  return !Number.isNaN(parsed.getTime());\n}\n\nfunction dateWindowState() {\n  const hasStart = text('start_date').length > 0;\n  const hasEnd = text('end_date').length > 0;\n  if (!hasStart && !hasEnd) return { provided: false, valid: false };\n  if (!hasStart || !hasEnd) return { provided: true, valid: false, error: 'start_date y end_date deben enviarse juntos.' };\n  if (!validDateText('start_date') || !validDateText('end_date')) return { provided: true, valid: false, error: 'start_date y end_date deben ser fechas v\\u00e1lidas.' };\n  const start = new Date(text('start_date').replace(' ', 'T'));\n  const end = new Date(text('end_date').replace(' ', 'T'));\n  if (start > end) return { provided: true, valid: false, error: 'start_date no puede ser mayor que end_date.' };\n  return { provided: true, valid: true };\n}\n\nif (!text('email_to')) {\n  errors.push('email_to es obligatorio para llamadas webhook.');\n}\n\nconst webhookPath = 'cmdb-activos-proximos-vencer-garantia';\nconst window = dateWindowState();\n\nif (webhookPath === 'cmdb-movimientos-recientes-inventario') {\n  const hasMovementDays = positiveNumber('movement_days');\n  if (!hasMovementDays && !window.valid) {\n    errors.push(window.error || 'Debe enviar movement_days positivo o la ventana start_date + end_date.');\n  }\n}\n\nif (webhookPath === 'cmdb-activos-proximos-vencer-garantia') {\n  if (!positiveNumber('warranty_warning_months')) {\n    errors.push('warranty_warning_months es obligatorio y debe ser un numero mayor a 0.');\n  }\n}\n\nif (webhookPath === 'itsm-tickets-sin-actualizacion-24h') {\n  if (!positiveNumber('stale_threshold_hours')) {\n    errors.push('stale_threshold_hours es obligatorio y debe ser un numero mayor a 0.');\n  }\n}\n\nif (window.provided && !window.valid && webhookPath !== 'cmdb-movimientos-recientes-inventario') {\n  errors.push(window.error || 'Ventana de fechas inv\\u00e1lida.');\n}\n\nconst valid = errors.length === 0;\n\nreturn [{\n  json: {\n    ...(item.json || {}),\n    webhook_contract: {\n      valid,\n      status_code: valid ? 202 : 400,\n      message: valid ? 'Workflow accepted' : errors.join(' '),\n      errors,\n    },\n  },\n  binary: item.binary,\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        352
+      ],
+      "id": "0a1ea538-8c16-4b93-95c5-b6b76efdc25d",
+      "name": "Validar webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"message\": $json.webhook_contract.message, \"accepted\": $json.webhook_contract.valid } }}",
+        "options": {
+          "responseCode": "={{ $json.webhook_contract.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3392,
+        352
+      ],
+      "id": "3377b086-2708-4b66-855d-f6fa65ee37ba",
+      "name": "Responder webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst json = item?.json || {};\n\nif (!json.webhook_contract?.valid) {\n  return [];\n}\n\nconst { webhook_contract, ...cleanJson } = json;\nreturn [{ json: cleanJson, binary: item.binary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        352
+      ],
+      "id": "600ef0fe-efee-442e-8aa0-cebf244588b2",
+      "name": "Continuar webhook valido"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Activos CMDB": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Renderer parciales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Renderer parciales": {
+      "main": [
+        [
+          {
+            "node": "Aplicar flags envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetTrigger - Flujo": {
+      "main": [
+        [
+          {
+            "node": "SubWorkflow - SetBase reportes correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubWorkflow - SetBase reportes correo": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Activos CMDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - ejecucion externa": {
+      "main": [
+        [
+          {
+            "node": "Validar webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron - lunes 07:00": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar flags envio": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar webhook": {
+      "main": [
+        [
+          {
+            "node": "Responder webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder webhook": {
+      "main": [
+        [
+          {
+            "node": "Continuar webhook valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continuar webhook valido": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0ca103a7-6fdc-4ff3-baac-94d35e1e7dfc",
+  "meta": {
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "niRdg9cnXAmafPJ",
+  "tags": []
+}

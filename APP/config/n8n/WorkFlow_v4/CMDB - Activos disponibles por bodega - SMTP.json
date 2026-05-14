@@ -1,0 +1,536 @@
+{
+  "name": "CMDB - Activos disponibles por bodega - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        384
+      ],
+      "id": "1679ed2a-d621-4495-9e63-1c683536d966",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a90665b4-2c2d-4359-8bf3-48bb611f7842",
+              "name": "itop_url",
+              "value": "http://10.130.221.203/itop/",
+              "type": "string"
+            },
+            {
+              "id": "1985cc56-77ff-4303-a2b1-d5e7c821daab",
+              "name": "email_from",
+              "value": "MesaDeAyudaChile@goldfields.com",
+              "type": "string"
+            },
+            {
+              "id": "3e1236c5-71c1-4f4a-a22b-57f9d2c9f4cd",
+              "name": "email_to",
+              "value": "={{ $json.body?.email_to ?? \"jswaneck@tecnocomp.cl\" }}",
+              "type": "string"
+            },
+            {
+              "id": "9068ceca-5b23-4af1-a3b1-e4301f4c2581",
+              "name": "email_cc",
+              "value": "={{ $json.body?.email_cc ?? \"cconcha@tecnocomp.cl, rmarquez@tecnocomp.cl, vsoto@tecnocomp.cl\" }}",
+              "type": "string"
+            },
+            {
+              "id": "11438efe-660f-4215-9087-4e4f0e73b94f",
+              "name": "email_bcc",
+              "value": "={{ $json.body?.email_bcc ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "1e13a141-9bca-4086-8664-53f62ca9c98f",
+              "name": "email_subject",
+              "value": "Reporte CMDB - activos en inventario agrupados por clase",
+              "type": "string"
+            },
+            {
+              "id": "29e652ec-26b9-4140-a40a-6708a79abd98",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "be0568f9-2520-4e28-ac05-edfa9594e279",
+              "name": "available_status_values",
+              "value": "stock",
+              "type": "string"
+            },
+            {
+              "id": "34ad0396-b003-4390-b4e1-45b001cf9574",
+              "name": "report_source_label",
+              "value": "={{ \"Producci\\u00f3n / iTop CMDB\" }}",
+              "type": "string"
+            },
+            {
+              "id": "0f791acb-8194-48ce-88f6-c40312c0fd6a",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "6105c651-0fde-4df4-be89-2bc60b9e34f8",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "880f5ad1-345b-4b5e-babe-18f7f3045058",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "1cda2109-9b28-4f77-a771-cfc495882195",
+              "name": "include_attachment",
+              "value": "={{ $json.body?.include_attachment ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "c2b7b011-be9a-4ea5-a80a-67278f40b448",
+              "name": "include_detail",
+              "value": "={{ $json.body?.include_detail ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "2d4d5f81-20d1-478f-b8cb-230b388261f4",
+              "name": "include_summary",
+              "value": "={{ $json.body?.include_summary ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "befd0869-f932-46ca-bf77-04f8d964f3f0",
+              "name": "include_operational_notes",
+              "value": "={{ $json.body?.include_operational_notes ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "0d7f6b55-676f-4e88-9073-afab8dd39177",
+              "name": "include_itop_button_footer",
+              "value": "={{ $json.body?.include_itop_button_footer ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "c415344d-fbd2-4d4a-9697-7d60becad132",
+              "name": "start_date",
+              "value": "={{ $json.body?.start_date ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f698e870-ec0d-47b2-9610-27c81837f600",
+              "name": "end_date",
+              "value": "={{ $json.body?.end_date ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "4db07b6a-c790-47f9-9290-81ae754c25ad",
+              "name": "report_template_key",
+              "value": "cmdb-activos-disponibles-bodega",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2400,
+        384
+      ],
+      "id": "d29996ec-7ba8-4848-8a83-5643a8fbee41",
+      "name": "SetTrigger - Flujo"
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "PhysicalDevice",
+        "key": "SELECT PhysicalDevice\nWHERE finalclass IN ('PC', 'Laptop', 'MobilePhone', 'Tablet', 'Printer', 'Peripheral')\nAND status = 'stock'",
+        "output_fields": "id,name,friendlyname,finalclass,status,org_id,org_id_friendlyname,location_id,location_id_friendlyname,brand_id,brand_id_friendlyname,model_id,model_id_friendlyname,serialnumber,asset_number,move2production,purchase_date,end_of_warranty",
+        "limit": "={{ $json.itop_limit }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        384
+      ],
+      "id": "9c01a592-0a80-4586-8b6c-049973a22519",
+      "name": "iTop - Activos en inventario",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "FdUX5lCOh0Z3YWW4",
+          "name": "iTopToken_GF_QA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseConfig = $('Config Reporte').first().json;\nconst triggerConfig = $('SetTrigger - Flujo').first()?.json || {};\nconst mergedFlags = { ...(baseConfig.flags || {}) };\nfunction mergeFlag(name) {\n  const value = triggerConfig[name];\n  if (value === undefined || value === null || value === '') return;\n  if (typeof value === 'boolean') mergedFlags[name] = value;\n  else if (typeof value === 'number') mergedFlags[name] = value !== 0;\n  else {\n    const text = String(value).trim().toLowerCase();\n    if (['true','1','yes','y','si','s','on','enabled'].includes(text)) mergedFlags[name] = true;\n    else if (['false','0','no','n','off','disabled'].includes(text)) mergedFlags[name] = false;\n  }\n}\nfor (const key of ['include_attachment','include_detail','include_summary','include_operational_notes','include_itop_button_footer','send_email','include_requirements','include_incidents','include_changes','include_problems']) mergeFlag(key);\nconst config = { ...baseConfig, ...triggerConfig, flags: mergedFlags };\nfor (const [key, value] of Object.entries(mergedFlags)) config[key] = value;\n\nconst statusInventario = String(config.available_status_values || 'stock')\n  .split(',')\n  .map(v => v.trim().toLowerCase())\n  .filter(Boolean);\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n\n  for (const item of items) {\n    const j = item.json || {};\n\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({\n          key,\n          ...(value || {}),\n          fields: value?.fields || value || {},\n        });\n      }\n      continue;\n    }\n\n    if (Array.isArray(j)) {\n      rows.push(...j);\n      continue;\n    }\n\n    rows.push(j);\n  }\n\n  return rows;\n}\n\nfunction normalizeClass(value) {\n  const raw = String(value || '-').trim();\n  const lower = raw.toLowerCase();\n\n  if (lower === 'pc' || lower.includes('desktop')) return 'PC';\n  if (lower === 'laptop' || lower.includes('notebook') || lower.includes('portable')) return 'Laptop';\n  if (lower === 'mobilephone' || lower.includes('phone') || lower.includes('telefono') || lower.includes('tel\\u00e9fono')) return 'Tel\\u00e9fonos m\\u00f3viles';\n  if (lower === 'tablet') return 'Tablets';\n  if (lower === 'printer' || lower.includes('impresora')) return 'Impresoras';\n  if (lower === 'peripheral' || lower.includes('periferico') || lower.includes('perif\\u00e9rico')) return 'Perif\\u00e9ricos';\n\n  return raw || 'Otros';\n}\n\nfunction classSortWeight(className) {\n  const order = {\n    'PC': 10,\n    'Laptop': 20,\n    'Tablets': 30,\n    'Tel\\u00e9fonos m\\u00f3viles': 40,\n    'Impresoras': 50,\n    'Perif\\u00e9ricos': 60,\n    'Otros': 90,\n  };\n  return order[className] || 80;\n}\n\nfunction isBlankValue(value) {\n  const v = String(value ?? '').trim();\n  return !v || v === '-' || v.toLowerCase() === 'n/a' || v.toLowerCase() === 'null' || v.toLowerCase() === 'undefined';\n}\n\n\nfunction translatePhysicalDeviceStatus(value) {\n  const status = String(value || '').trim().toLowerCase();\n  const map = {\n    stock: 'En Inventario',\n    implementation: 'No Productivo',\n    production: 'Productivo',\n    obsolete: 'Obsoleto',\n  };\n  return map[status] || String(value || '-');\n}\n\nfunction reviewReasons(asset) {\n  const reasons = [];\n  if (isBlankValue(asset.serial)) reasons.push('sin serie');\n  if (isBlankValue(asset.brand)) reasons.push('sin marca');\n  if (isBlankValue(asset.model)) reasons.push('sin modelo');\n  if (isBlankValue(asset.warehouse) || asset.warehouse === 'Sin bodega/localidad') reasons.push('sin bodega/localidad');\n  return reasons;\n}\n\nfunction badge(text, color = 'gray') {\n  return `<span class=\"badge badge-${color}\">${escapeHtml(text)}</span>`;\n}\n\nconst rawRows = flattenInput($input.all());\n\nconst assets = rawRows\n  .map((row) => {\n    const fields = row.fields || row;\n    const finalclassRaw = getField(fields, ['finalclass', 'class'], '-');\n    const finalclass = normalizeClass(finalclassRaw);\n\n    return {\n      name: getField(fields, ['name', 'friendlyname'], '-'),\n      finalclass,\n      finalclassRaw,\n      statusRaw: String(getField(fields, ['status'], '-')).trim().toLowerCase(),\n      status: translatePhysicalDeviceStatus(getField(fields, ['status'], '-')),\n      organization: getField(fields, ['org_id_friendlyname', 'organization_name'], '-'),\n      warehouse: getField(fields, ['location_id_friendlyname', 'location_name', 'location_id'], 'Sin bodega/localidad'),\n      brand: getField(fields, ['brand_id_friendlyname', 'brand'], '-'),\n      model: getField(fields, ['model_id_friendlyname', 'model'], '-'),\n      serial: getField(fields, ['serialnumber', 'serial_number'], ''),\n      assetNumber: getField(fields, ['asset_number', 'asset_tag'], ''),\n      move2production: getField(fields, ['move2production', 'production_date'], '-'),\n      purchaseDate: getField(fields, ['purchase_date'], '-'),\n      warrantyEnd: getField(fields, ['end_of_warranty'], '-'),\n    };\n  })\n  .filter(asset => {\n    const currentStatus = String(asset.statusRaw || '').toLowerCase();\n    return statusInventario.some(s => currentStatus === s);\n  });\n\nassets.sort((a, b) =>\n  classSortWeight(a.finalclass) - classSortWeight(b.finalclass) ||\n  String(a.finalclass).localeCompare(String(b.finalclass), 'es') ||\n  String(a.warehouse).localeCompare(String(b.warehouse), 'es') ||\n  String(a.name).localeCompare(String(b.name), 'es')\n);\n\nconst classGroups = new Map();\nconst warehouses = new Map();\nconst reviewAssets = [];\n\nlet withoutSerial = 0;\n\nfor (const asset of assets) {\n  if (!classGroups.has(asset.finalclass)) classGroups.set(asset.finalclass, []);\n  classGroups.get(asset.finalclass).push(asset);\n\n  if (!warehouses.has(asset.warehouse)) warehouses.set(asset.warehouse, []);\n  warehouses.get(asset.warehouse).push(asset);\n\n  if (isBlankValue(asset.serial)) withoutSerial++;\n\n  const reasons = reviewReasons(asset);\n  if (reasons.length > 0) {\n    reviewAssets.push({ ...asset, reviewReasonText: reasons.join(', ') });\n  }\n}\n\nconst orderedClassEntries = Array.from(classGroups.entries()).sort(([a], [b]) =>\n  classSortWeight(a) - classSortWeight(b) || a.localeCompare(b, 'es')\n);\n\nconst classSummaryRows = orderedClassEntries.map(([className, list]) => {\n  const byWarehouse = {};\n  let incomplete = 0;\n\n  for (const asset of list) {\n    byWarehouse[asset.warehouse] = (byWarehouse[asset.warehouse] || 0) + 1;\n    if (reviewReasons(asset).length > 0) incomplete++;\n  }\n\n  const warehousesText = Object.entries(byWarehouse)\n    .sort(([a], [b]) => a.localeCompare(b, 'es'))\n    .map(([warehouse, count]) => `${escapeHtml(warehouse)}: ${count}`)\n    .join('<br>');\n\n  const observation = incomplete > 0\n    ? `<span class=\"badge badge-yellow\">Por revisar: ${incomplete}</span>`\n    : `<span class=\"badge badge-green\">Sin observaciones</span>`;\n\n  return `\n    <tr>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"><strong>${escapeHtml(className)}</strong></td>\n      <td align=\"right\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"><strong>${list.length}</strong></td>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${warehousesText || '-'}</td>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${observation}</td>\n    </tr>\n  `;\n}).join('');\n\nconst warehouseSummaryRows = Array.from(warehouses.entries()).sort(([a], [b]) => a.localeCompare(b, 'es')).map(([warehouse, list]) => {\n  const classCounts = {};\n  for (const asset of list) {\n    classCounts[asset.finalclass] = (classCounts[asset.finalclass] || 0) + 1;\n  }\n\n  const classesText = Object.entries(classCounts)\n    .sort(([a], [b]) => classSortWeight(a) - classSortWeight(b) || a.localeCompare(b, 'es'))\n    .map(([name, count]) => `${escapeHtml(name)}: ${count}`)\n    .join('<br>');\n\n  const incomplete = list.filter(a => reviewReasons(a).length > 0).length;\n\n  const observation = incomplete > 0\n    ? `<span class=\"badge badge-yellow\">Por revisar: ${incomplete}</span>`\n    : `<span class=\"badge badge-green\">Sin observaciones</span>`;\n\n  return `\n    <tr>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(warehouse)}</td>\n      <td align=\"right\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"><strong>${list.length}</strong></td>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${classesText}</td>\n      <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${observation}</td>\n    </tr>\n  `;\n}).join('');\n\nfunction assetRows(list, includeReviewColumn = false) {\n  return list.map(asset => {\n    const serialBadge = !isBlankValue(asset.serial)\n      ? escapeHtml(asset.serial)\n      : '<span class=\"badge badge-yellow\">Sin serie</span>';\n\n    const reviewColumn = includeReviewColumn\n      ? `<td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${badge(asset.reviewReasonText || reviewReasons(asset).join(', '), 'yellow')}</td>`\n      : '';\n\n    return `\n      <tr>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.finalclass)}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"><strong>${escapeHtml(asset.name)}</strong></td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.warehouse)}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.brand)}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.model)}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${serialBadge}</td>\n        <td style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\">${escapeHtml(asset.warrantyEnd)}</td>\n        ${reviewColumn}\n      </tr>\n    `;\n  }).join('');\n}\n\nfunction assetsTable(list, includeReviewColumn = false) {\n  const reviewHead = includeReviewColumn\n    ? '<th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Criterio</th>'\n    : '';\n\n  const colSpan = includeReviewColumn ? 8 : 7;\n\n  return `\n    <div class=\"table-scroll\" style=\"width:100%; overflow-x:auto;\">\n      <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%;\">\n        <thead>\n          <tr>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Clase/Tipo</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Nombre</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Bodega</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Marca</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Modelo</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Serie</th>\n            <th style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:left; padding:8px 7px; border-bottom:1px solid #dbe3ec;\">Garant\\u00eda</th>\n            ${reviewHead}\n          </tr>\n        </thead>\n        <tbody>\n          ${list.length ? assetRows(list, includeReviewColumn) : `<tr><td colspan=\"${colSpan}\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin activos para listar.</td></tr>`}\n        </tbody>\n      </table>\n    </div>\n  `;\n}\n\nconst classAssetBlocks = orderedClassEntries.map(([className, list]) => `\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n    <tr>\n      <td style=\"background-color:#f1f5f9; padding:10px 12px;\">\n        <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#0f172a;\">\n          ${escapeHtml(className)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} activos)</span>\n        </div>\n        <div style=\"font-size:12px; line-height:18px; color:#64748b; margin-top:2px;\">\n          Bloque agrupado por clase CMDB normalizada desde iTop. PC y Laptop se mantienen como secciones independientes.\n        </div>\n      </td>\n    </tr>\n    <tr>\n      <td>${assetsTable(list, false)}</td>\n    </tr>\n  </table>\n`).join('');\n\nconst reviewCriteria = [\n  {\n    key: 'sin_serie',\n    title: 'Sin n\\u00famero de serie',\n    description: 'Activos en inventario sin serial registrado en iTop.',\n    match: (asset) => isBlankValue(asset.serial),\n  },\n  {\n    key: 'sin_marca',\n    title: 'Sin marca',\n    description: 'Activos en inventario sin fabricante o marca asociada.',\n    match: (asset) => isBlankValue(asset.brand),\n  },\n  {\n    key: 'sin_modelo',\n    title: 'Sin modelo',\n    description: 'Activos en inventario sin modelo t\\u00e9cnico registrado.',\n    match: (asset) => isBlankValue(asset.model),\n  },\n  {\n    key: 'sin_bodega',\n    title: 'Sin bodega/localidad',\n    description: 'Activos en inventario sin ubicaci\\u00f3n f\\u00edsica clara para control de stock.',\n    match: (asset) => isBlankValue(asset.warehouse) || asset.warehouse === 'Sin bodega/localidad',\n  },\n];\n\nconst reviewAssetBlocks = reviewAssets.length\n  ? reviewCriteria.map((criterion) => {\n      const list = reviewAssets\n        .filter(asset => criterion.match(asset))\n        .sort((a, b) =>\n          String(a.finalclass).localeCompare(String(b.finalclass), 'es') ||\n          String(a.warehouse).localeCompare(String(b.warehouse), 'es') ||\n          String(a.name).localeCompare(String(b.name), 'es')\n        );\n\n      if (!list.length) return '';\n\n      return `\n        <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-bottom:18px; border:1px solid #dbe3ec;\">\n          <tr>\n            <td style=\"background-color:#fff7ed; padding:10px 12px; border-bottom:1px solid #fed7aa;\">\n              <div style=\"font-size:14px; line-height:20px; font-weight:bold; color:#9a3412;\">\n                ${escapeHtml(criterion.title)} <span style=\"color:#64748b; font-weight:normal;\">(${list.length} activos)</span>\n              </div>\n              <div style=\"font-size:12px; line-height:18px; color:#854d0e; margin-top:2px;\">\n                ${escapeHtml(criterion.description)} Un mismo activo puede aparecer en m\\u00e1s de un criterio si presenta m\\u00faltiples datos incompletos.\n              </div>\n            </td>\n          </tr>\n          <tr>\n            <td>${assetsTable(list, true)}</td>\n          </tr>\n        </table>\n      `;\n    }).join('')\n  : '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#166534;\">No se detectaron activos con datos cr\\u00edticos incompletos seg\\u00fan el criterio del reporte.</td></tr></table>';\n\n\nfunction csvEscape(value) {\n  const text = String(value ?? '').replace(/\\r?\\n/g, ' ').trim();\n  if (/[\";\\r\\n]/.test(text)) {\n    return `\"${text.replace(/\"/g, '\"\"')}\"`;\n  }\n  return text;\n}\n\nfunction slug(value) {\n  return String(value || 'cmdb')\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .toLowerCase()\n    .replace(/[^a-z0-9]+/g, '_')\n    .replace(/^_+|_+$/g, '') || 'cmdb';\n}\n\nconst csvHeaders = [\n  'Clase/Tipo',\n  'Nombre',\n  'Estado',\n  'Bodega/Localidad',\n  'Marca',\n  'Modelo',\n  'Serie',\n  'Puesto en Produccion',\n  'Fecha de Compra',\n  'Vencimiento de Garantia',\n];\n\nconst csvRows = assets.map(asset => [\n  asset.finalclass,\n  asset.name,\n  asset.status,\n  asset.warehouse,\n  asset.brand,\n  asset.model,\n  asset.serial,\n  asset.move2production,\n  asset.purchaseDate,\n  asset.warrantyEnd,\n]);\n\nconst csvContent = '\\uFEFF' + [\n  csvHeaders.map(csvEscape).join(';'),\n  ...csvRows.map(row => row.map(csvEscape).join(';')),\n].join('\\r\\n');\n\nconst generatedAt = new Date().toLocaleString('es-CL', {\n  timeZone: config.timezone || 'America/Santiago',\n  year: 'numeric',\n  month: '2-digit',\n  day: '2-digit',\n  hour: '2-digit',\n  minute: '2-digit',\n});\n\n\nconst itopOrganization = String(config.itop_organization || '').trim();\nconst generatedAtFile = new Date()\n  .toISOString()\n  .replace(/[:.]/g, '-')\n  .replace('T', '_')\n  .slice(0, 19);\n\nconst company = String(config.Company || config.company || 'TecnoComp').trim();\nconst baseSubject = String(config.email_subject || 'Reporte CMDB - activos en inventario agrupados por clase').trim();\nconst subjectWithOrganization = itopOrganization\n  ? `${baseSubject} - ${itopOrganization}`\n  : baseSubject;\n\nreturn [\n  {\n    json: {\n      flags: config.flags || {},\n      report_template_key: config.report_template_key,\n      template_root: config.template_root,\n      include_attachment: config.flags?.include_attachment ?? config.include_attachment,\n      include_detail: config.flags?.include_detail ?? config.include_detail,\n      include_summary: config.flags?.include_summary ?? config.include_summary,\n      include_operational_notes: config.flags?.include_operational_notes ?? config.include_operational_notes,\n      include_itop_button_footer: config.flags?.include_itop_button_footer ?? config.include_itop_button_footer,\n      email_from: config.email_from || 'blk.zeus@gmail.com',\n      email_to: config.email_to,\n      email_cc: config.email_cc || '',\n      email_bcc: config.email_bcc || '',\n      email_subject: subjectWithOrganization,\n      itop_organization: itopOrganization,\n      Company: company,\n      company,\n      report_source_label: config.report_source_label || 'Producci\\u00f3n / iTop CMDB',\n      generated_at: generatedAt,\n      total_available: String(assets.length),\n      warehouse_count: String(warehouses.size),\n      class_count: String(classGroups.size),\n      without_serial_count: String(withoutSerial),\n      review_count: String(reviewAssets.length),\n      csv_file_name: `cmdb_stock_${slug(itopOrganization || company)}_${generatedAtFile}.csv`,\n      class_summary_rows: classSummaryRows || '<tr><td colspan=\"4\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin activos en inventario recuperados desde iTop.</td></tr>',\n      warehouse_summary_rows: warehouseSummaryRows || '<tr><td colspan=\"4\" style=\"padding:12px; font-size:12px; color:#64748b;\">Sin activos en inventario recuperados desde iTop.</td></tr>',\n      class_asset_blocks: classAssetBlocks || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin activos en inventario para listar.</td></tr></table>',\n      review_asset_blocks: reviewAssetBlocks,\n      itop_url: config.itop_url || '#',\n    },\n    binary: {\n      csv: {\n        data: Buffer.from(csvContent, 'utf8').toString('base64'),\n        mimeType: 'text/csv; charset=utf-8',\n        fileName: `cmdb_stock_${slug(itopOrganization || company)}_${generatedAtFile}.csv`,\n        fileExtension: 'csv',\n      },\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3296,
+        384
+      ],
+      "id": "530591f0-34b8-4d90-a3cc-7a14b2895803",
+      "name": "Preparar datos reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, 'utf8');\n}\n\nfunction render(template, values) {\n  return String(template || '').replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) => {\n    const parts = key.split('.');\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? '' : String(value);\n  });\n}\n\nfunction normalizeText(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['Automatizaci??n','Automatizaci&oacute;n'], ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'], ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['antig??edad','antig&uuml;edad'], ['actualizaci??n','actualizaci&oacute;n'], ['configuraci??n','configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['tel??fono','tel&eacute;fono'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['par??metros','par&aacute;metros'], ['env??a','env&iacute;a'], ['envi??','envi&oacute;'],\n    ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'], ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'],\n    ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'],\n    ['creaci??n','creaci&oacute;n'], ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'],\n    ['clasificaci??n','clasificaci&oacute;n'], ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'],\n    ['l??nea','l&iacute;nea'], ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  const trigger = getNodeJson('SetTrigger - Flujo');\n  const mixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const value = trigger[name] ?? trigger.flags?.[name] ?? data[name] ?? data.flags?.[name] ?? mixed[name] ?? mixed.flags?.[name];\n  return normalizeBoolean(value, fallback);\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? '')\n    .split(/\\r?\\n|\\. /)\n    .map(v => v.trim().replace(/\\.$/, ''))\n    .filter(Boolean);\n  if (!lines.length) return '<div style=\"font-size:13px; line-height:20px; color:#64748b;\">Sin observaciones adicionales.</div>';\n  return '<ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">' +\n    lines.map(line => '<li>' + escapeHtml(line) + '.</li>').join('') +\n    '</ul>';\n}\n\nfunction statCard(data, stat) {\n  const value = data[stat.value] ?? data[stat.fallbackValue] ?? '-';\n  return '<td class=\"summary-card\" width=\"33.33%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid ' + stat.border + '; background-color:' + stat.background + ';\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:' + stat.labelColor + '; font-weight:bold;\">' + escapeHtml(stat.label) + '</div><div style=\"font-size:24px; color:' + stat.valueColor + '; font-weight:bold;\">' + escapeHtml(value) + '</div></td></tr></table></td>';\n}\n\nfunction statRows(data, stats) {\n  const rows = [];\n  for (let i = 0; i < stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(stat => statCard(data, stat));\n    while (cells.length < 3) cells.push('<td class=\"summary-card\" width=\"33.33%\" valign=\"top\">&nbsp;</td>');\n    rows.push('<tr>' + cells.join('') + '</tr>');\n  }\n  return rows.join('\\n');\n}\n\nfunction simpleTable(title, rows, headers, emptyText) {\n  if (!rows) return '';\n  const headerHtml = headers.map(h => '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">' + escapeHtml(h) + '</th>').join('');\n  const body = rows || '<tr><td colspan=\"' + headers.length + '\" style=\"padding:14px; font-size:12px; color:#64748b;\">' + escapeHtml(emptyText || 'Sin registros.') + '</td></tr>';\n  return '<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">' + escapeHtml(title) + '</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + headerHtml + '</tr></thead><tbody>' + body + '</tbody></table>';\n}\n\nfunction tableContent(data) {\n  const blocks = [];\n  if (data.detail_blocks) blocks.push(data.detail_blocks);\n  if (data.class_asset_blocks) blocks.push(data.class_asset_blocks);\n  if (data.status_asset_blocks) blocks.push(data.status_asset_blocks);\n  if (data.review_asset_blocks) blocks.push(data.review_asset_blocks);\n  if (data.ticket_sections) blocks.push(data.ticket_sections);\n  if (data.older_section) blocks.push(data.older_section);\n  if (data.recent_section) blocks.push(data.recent_section);\n  if (data.ticket_rows_html) blocks.push(simpleTable('Tickets abiertos', data.ticket_rows_html, ['Criticidad','Referencia','Tipo','Titulo','Solicitante','Estado','Creacion','Ultimo update','Antiguedad','SLA'], 'Sin tickets.'));\n  if (data.movement_rows) blocks.push(simpleTable('Movimientos recientes', data.movement_rows, ['Fecha','Movimiento','Activo','Clase','Origen','Destino'], 'Sin movimientos.'));\n  if (data.class_summary_rows) blocks.push(simpleTable('Resumen por clase', data.class_summary_rows, ['Clase','Total','Dato 1','Observacion'], 'Sin resumen por clase.'));\n  if (data.warehouse_summary_rows) blocks.push(simpleTable('Resumen por bodega/localidad', data.warehouse_summary_rows, ['Bodega/localidad','Total','Clases','Observacion'], 'Sin resumen por bodega.'));\n  if (data.status_summary_rows) blocks.push(simpleTable('Resumen por estado', data.status_summary_rows, ['Estado','Total','Dato 1','Observacion'], 'Sin resumen por estado.'));\n  if (data.location_summary_rows) blocks.push(simpleTable('Resumen por localidad', data.location_summary_rows, ['Localidad','Total','Dato 1','Observacion'], 'Sin resumen por localidad.'));\n  if (data.class_status_rows) blocks.push(simpleTable('Clase por estado', data.class_status_rows, ['Clase','Productivo','Inventario','No operativo'], 'Sin matriz de estados.'));\n  if (data.location_matrix_rows) {\n    const header = data.location_matrix_header_cells || '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Bodega/localidad</th>';\n    blocks.push('<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">Matriz por bodega/localidad</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + header + '</tr></thead><tbody>' + data.location_matrix_rows + '</tbody></table>');\n  }\n  if (data.top_location_rows) blocks.push(simpleTable('Top bodega/localidad', data.top_location_rows, ['Bodega/localidad','Total','Dato 1','Observacion'], 'Sin top de localidades.'));\n  return blocks.filter(Boolean).join('\\n');\n}\n\nfunction buildHtml(item) {\n  const data = item.json || {};\n  const triggerConfig = getNodeJson('SetTrigger - Flujo');\n  const mixedConfig = getNodeJson('SetMixed - Configuracion efectiva');\n  const root = data.template_root || mixedConfig.template_root || triggerConfig.template_root || '/opt/n8n-config/templates/mail/v1';\n  const key = data.report_template_key || mixedConfig.report_template_key || triggerConfig.report_template_key || 'cmdb-activos-sin-contacto';\n  const contract = JSON.parse(readText(path.join(root, 'reports', key + '.json')));\n  const partial = (name) => readText(path.join(root, contract.partials[name]));\n\n  const styles = partial('styles');\n  const header = render(partial('header'), {\n    eyebrow: escapeHtml(contract.header?.eyebrow || 'Automatizacion ITSM / CMDB'),\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    subtitle: escapeHtml(contract.header?.subtitle || ''),\n    itop_organization: escapeHtml(data.itop_organization || '-'),\n    generated_at: escapeHtml(data.generated_at || '-'),\n    source_label: escapeHtml(data.source_label || data.report_source_label || contract.header?.source_label || '-'),\n  });\n  const summary = render(partial('summary'), { description: escapeHtml(data.report_description || contract.summary?.description || '') });\n  const stats = render(partial('stats'), { stats_rows: statRows(data, contract.stats || []) });\n  const criteria = render(partial('criteria'), contract.criteria || {});\n  const tables = flagEnabled(data, 'include_detail', true) ? render(partial('tables'), {\n    title: contract.tables?.title || 'Detalle operacional',\n    subtitle: contract.tables?.subtitle || '',\n    content: tableContent(data) || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin registros para el criterio del reporte.</td></tr></table>',\n  }) : '';\n  const notes = flagEnabled(data, 'include_operational_notes', true) ? render(partial('notes'), { notes_list: notesList(data.operational_notes) }) : '';\n  const cta = flagEnabled(data, 'include_itop_button_footer', true) ? render(partial('cta'), {\n    href: escapeHtml(data.itop_url || '#'),\n    label: contract.cta?.label || 'Abrir',\n  }) : '';\n  const footer = render(partial('footer'), {\n    brand: contract.footer?.brand || 'Automatizacion ITSM / CMDB',\n    company: escapeHtml(data.company || data.Company || ''),\n    generated_at: escapeHtml(data.generated_at || '-'),\n  });\n\n  let html = render(partial('layout'), {\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    styles,\n    header,\n    summary: flagEnabled(data, 'include_summary', true) ? summary : '',\n    stats: flagEnabled(data, 'include_summary', true) ? stats : '',\n    criteria,\n    tables,\n    notes,\n    cta,\n    footer,\n  });\n  html = normalizeText(html, false);\n  data.email_subject = normalizeText(data.email_subject, true);\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  return {\n    json: {\n      ...data,\n      html,\n      template_version: contract.template_version || 'mail-v1',\n      template_contract: key,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n}\n\nreturn $input.all().map(buildHtml);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3520,
+        384
+      ],
+      "id": "6a126433-d32b-447a-9df9-44360c4be5e6",
+      "name": "HTML - Renderer parciales"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "={{ $json.attachment_binary_names }}",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3968,
+        384
+      ],
+      "id": "92f2ede1-cebb-4ec9-a1bc-1a5cf8ee3a41",
+      "name": "Send an Email",
+      "webhookId": "7db4ae00-baa9-4802-9cc5-9a9952d26ac7",
+      "credentials": {
+        "smtp": {
+          "id": "0Kph5ncFnrBvdaVP",
+          "name": "SMTP_Exchange"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cmdb-activos-disponibles-bodega",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1504,
+        192
+      ],
+      "id": "5feda85e-2dd3-4450-97b3-7450caa194e2",
+      "name": "Webhook - ejecucion externa",
+      "webhookId": "1def1c19-3901-4fa9-8f6b-2171f1f4c949",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5ueiVRP6pKurE71t",
+          "name": "HeaderAuth_GF_QA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        2176,
+        576
+      ],
+      "id": "bbf41e00-074b-455a-9dd1-f34dea194cbd",
+      "name": "Cron - lunes 07:00"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "puR8KZ9UFvq5zRqX",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/puR8KZ9UFvq5zRqX",
+          "cachedResultName": "SYS - Configuracion base reportes correo"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "87b69a77-6a16-49a7-88fb-4d3a0b6ee2c7",
+      "name": "SubWorkflow - SetBase reportes correo",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2624,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $input.first()?.json || {};\nconst trigger = $('SetTrigger - Flujo').first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si'].includes(text)) return true;\n  if (['false', '0', 'no', 'n'].includes(text)) return false;\n  return fallback;\n}\n\nconst flags = { ...(base.flags || {}) };\nfor (const key of ['include_attachment', 'include_detail', 'include_summary', 'include_operational_notes', 'include_itop_button_footer', 'send_email', 'include_requirements', 'include_incidents', 'include_changes', 'include_problems']) {\n  if (trigger[key] !== undefined && trigger[key] !== null && trigger[key] !== '') {\n    flags[key] = normalizeBoolean(trigger[key], flags[key]);\n  }\n}\n\nconst setMixed = {\n  ...base,\n  ...trigger,\n  flags,\n  config_source: 'SetBase + SetTrigger',\n};\n\nfor (const [key, value] of Object.entries(flags)) {\n  if (setMixed[key] === undefined || setMixed[key] === null || setMixed[key] === '') setMixed[key] = value;\n}\n\nreturn [{ json: setMixed }];"
+      },
+      "id": "3b62d517-a52f-4c9c-8f0a-d299de2768f4",
+      "name": "Config Reporte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2848,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction mergeFlags(...sources) {\n  const flags = {};\n  for (const source of sources) {\n    if (!source) continue;\n    Object.assign(flags, source.flags || {});\n    for (const key of ['include_attachment','include_detail','include_summary','include_operational_notes','include_itop_button_footer','send_email','include_requirements','include_incidents','include_changes','include_problems']) {\n      if (source[key] !== undefined && source[key] !== null && source[key] !== '') flags[key] = normalizeBoolean(source[key], flags[key]);\n    }\n  }\n  return flags;\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  return normalizeBoolean(data[name] ?? data.flags?.[name], fallback);\n}\n\nfunction removeOuterRowByMarker(html, marker) {\n  const index = html.indexOf(marker);\n  if (index === -1) return html;\n  const starts = ['\\n      <tr><td', '\\n                        <tr><td', '<tr><td', '<tr>'];\n  let start = -1;\n  for (const needle of starts) {\n    const pos = html.lastIndexOf(needle, index);\n    if (pos !== -1 && pos > start) start = pos;\n  }\n  if (start === -1) start = Math.max(0, index - 200);\n  const ends = ['\\n      <tr><td', '\\n                        <tr><td', '\\n      <tr><td style=\"background-color', '\\n                        <tr><td style=\"background-color'];\n  let end = -1;\n  for (const needle of ends) {\n    const pos = html.indexOf(needle, index + marker.length);\n    if (pos !== -1 && (end === -1 || pos < end)) end = pos;\n  }\n  if (end === -1) {\n    const close = html.indexOf('</td></tr>', index);\n    end = close === -1 ? index + marker.length : close + '</td></tr>'.length;\n  }\n  return html.slice(0, start) + html.slice(end);\n}\n\nfunction removeAllRowsByMarker(html, marker) {\n  let previous;\n  do {\n    previous = html;\n    html = removeOuterRowByMarker(html, marker);\n  } while (html !== previous);\n  return html;\n}\n\nfunction removeTablesByClass(html) {\n  return html\n    .replace(/<table\\b[^>]*class=[\"'][^\"']*(?:data-table|ticket-table)[^\"']*[\"'][\\s\\S]*?<\\/table>/gi, '')\n    .replace(/<table\\b[^>]*(?:data-table|ticket-table)[^>]*>[\\s\\S]*?<\\/table>/gi, '');\n}\n\n\nfunction repairMailEncoding(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['Automatizaci??n','Automatizaci&oacute;n'], ['automatizaci??n','automatizaci&oacute;n'],\n    ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['producci??n','producci&oacute;n'],\n    ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'],\n    ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['t??tulo','t&iacute;tulo'],\n    ['antig??edad','antig&uuml;edad'], ['Antig??edad','Antig&uuml;edad'],\n    ['actualizaci??n','actualizaci&oacute;n'], ['Actualizaci??n','Actualizaci&oacute;n'],\n    ['configuraci??n','configuraci&oacute;n'], ['Configuraci??n','Configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['f??sicamente','f&iacute;sicamente'],\n    ['tel??fono','tel&eacute;fono'], ['Tel??fonos','Tel&eacute;fonos'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['Perif??ricos','Perif&eacute;ricos'],\n    ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'], ['??ltima','&uacute;ltima'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['Cr??tico','Cr&iacute;tico'], ['CR??TICOS','CR&Iacute;TICOS'],\n    ['par??metros','par&aacute;metros'], ['inv??lida','inv&aacute;lida'], ['v??lida','v&aacute;lida'], ['v??lidas','v&aacute;lidas'],\n    ['env??a','env&iacute;a'], ['envi??','envi&oacute;'], ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'],\n    ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'], ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['Hist??rico','Hist&oacute;rico'],\n    ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'], ['creaci??n','creaci&oacute;n'],\n    ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'], ['clasificaci??n','clasificaci&oacute;n'],\n    ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'], ['l??nea','l&iacute;nea'],\n    ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction applyVisualFlags(html, data) {\n  if (!html) return html;\n  if (!flagEnabled(data, 'include_summary', true)) {\n    for (const marker of ['Resumen ejecutivo', 'TOTAL ACTIVOS', 'TOTAL CON CONTACTO', 'TOTAL TICKETS', 'TOTAL CAMBIOS', 'TOTAL MOVIMIENTOS']) html = removeAllRowsByMarker(html, marker);\n  }\n  if (!flagEnabled(data, 'include_detail', true)) {\n    for (const marker of [\n      'Detalle operacional',\n      'Detalle de activos',\n      'Detalle de tickets',\n      'Detalle por agente',\n      'Detalle por antig?edad',\n      'Resumen por estado',\n      'Resumen por bodega/localidad',\n      'Resumen por clase',\n      'Activos por clase',\n      'Por revisar',\n      'Tickets abiertos',\n      'Tickets abiertos pendientes',\n      'Tickets abiertos por agente',\n      'Tickets con m?s de 14 d?as abiertos',\n      'Tickets abiertos hasta 14 d?as',\n      'Movimientos recientes',\n      'data-table',\n      'ticket-table'\n    ]) html = removeAllRowsByMarker(html, marker);\n    html = removeTablesByClass(html);\n    html = html.replace(/\\.data-table[\\s\\S]*?\\}/g, '').replace(/\\.ticket-table[\\s\\S]*?\\}/g, '');\n  }\n  if (!flagEnabled(data, 'include_operational_notes', true)) html = removeAllRowsByMarker(html, 'Observaciones operacionales');\n  if (!flagEnabled(data, 'include_itop_button_footer', true)) html = removeAllRowsByMarker(html, 'Abrir Combodo iTop');\n  return html;\n}\n\nreturn $input.all().map((item) => {\n  const configReporte = getNodeJson('Config Reporte');\n  const setMixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const setTrigger = getNodeJson('SetTrigger - Flujo');\n  const itemJson = item.json || {};\n  const flags = mergeFlags(configReporte, setMixed, itemJson, setTrigger);\n  const data = { ...configReporte, ...setMixed, ...itemJson, ...setTrigger, flags };\n  for (const [key, value] of Object.entries(flags)) data[key] = value;\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  const html = repairMailEncoding(applyVisualFlags(data.html, data), false);\n  data.email_subject = repairMailEncoding(data.email_subject, true);\n\n  return {\n    json: {\n      ...data,\n      html,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n});"
+      },
+      "id": "5d394692-6187-49f0-a97f-0e123ff50a92",
+      "name": "Aplicar flags envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst body = item?.json?.body || {};\nconst errors = [];\n\nfunction text(name) {\n  return String(body[name] ?? '').trim();\n}\n\nfunction positiveNumber(name) {\n  const raw = body[name];\n  if (raw === undefined || raw === null || raw === '') return false;\n  const n = Number(raw);\n  return Number.isFinite(n) && n > 0;\n}\n\nfunction validDateText(name) {\n  const value = text(name);\n  if (!value) return false;\n  const parsed = new Date(value.replace(' ', 'T'));\n  return !Number.isNaN(parsed.getTime());\n}\n\nfunction dateWindowState() {\n  const hasStart = text('start_date').length > 0;\n  const hasEnd = text('end_date').length > 0;\n  if (!hasStart && !hasEnd) return { provided: false, valid: false };\n  if (!hasStart || !hasEnd) return { provided: true, valid: false, error: 'start_date y end_date deben enviarse juntos.' };\n  if (!validDateText('start_date') || !validDateText('end_date')) return { provided: true, valid: false, error: 'start_date y end_date deben ser fechas v\\u00e1lidas.' };\n  const start = new Date(text('start_date').replace(' ', 'T'));\n  const end = new Date(text('end_date').replace(' ', 'T'));\n  if (start > end) return { provided: true, valid: false, error: 'start_date no puede ser mayor que end_date.' };\n  return { provided: true, valid: true };\n}\n\nif (!text('email_to')) {\n  errors.push('email_to es obligatorio para llamadas webhook.');\n}\n\nconst webhookPath = 'cmdb-activos-disponibles-bodega';\nconst window = dateWindowState();\n\nif (webhookPath === 'cmdb-movimientos-recientes-inventario') {\n  const hasMovementDays = positiveNumber('movement_days');\n  if (!hasMovementDays && !window.valid) {\n    errors.push(window.error || 'Debe enviar movement_days positivo o la ventana start_date + end_date.');\n  }\n}\n\nif (webhookPath === 'cmdb-activos-proximos-vencer-garantia') {\n  if (!positiveNumber('warranty_warning_months')) {\n    errors.push('warranty_warning_months es obligatorio y debe ser un numero mayor a 0.');\n  }\n}\n\nif (webhookPath === 'itsm-tickets-sin-actualizacion-24h') {\n  if (!positiveNumber('stale_threshold_hours')) {\n    errors.push('stale_threshold_hours es obligatorio y debe ser un numero mayor a 0.');\n  }\n}\n\nif (window.provided && !window.valid && webhookPath !== 'cmdb-movimientos-recientes-inventario') {\n  errors.push(window.error || 'Ventana de fechas inv\\u00e1lida.');\n}\n\nconst valid = errors.length === 0;\n\nreturn [{\n  json: {\n    ...(item.json || {}),\n    webhook_contract: {\n      valid,\n      status_code: valid ? 202 : 400,\n      message: valid ? 'Workflow accepted' : errors.join(' '),\n      errors,\n    },\n  },\n  binary: item.binary,\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        192
+      ],
+      "id": "ec3d7e37-f123-4b49-b06d-324c1df259de",
+      "name": "Validar webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"message\": $json.webhook_contract.message, \"accepted\": $json.webhook_contract.valid } }}",
+        "options": {
+          "responseCode": "={{ $json.webhook_contract.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1952,
+        192
+      ],
+      "id": "8e052d5c-0616-486c-9835-4a5aeb009c3f",
+      "name": "Responder webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst json = item?.json || {};\n\nif (!json.webhook_contract?.valid) {\n  return [];\n}\n\nconst { webhook_contract, ...cleanJson } = json;\nreturn [{ json: cleanJson, binary: item.binary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        192
+      ],
+      "id": "760ddc81-761d-4e93-939d-cd2181ee6839",
+      "name": "Continuar webhook valido"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - Activos en inventario": {
+      "main": [
+        [
+          {
+            "node": "Preparar datos reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar datos reporte": {
+      "main": [
+        [
+          {
+            "node": "HTML - Renderer parciales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Renderer parciales": {
+      "main": [
+        [
+          {
+            "node": "Aplicar flags envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetTrigger - Flujo": {
+      "main": [
+        [
+          {
+            "node": "SubWorkflow - SetBase reportes correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubWorkflow - SetBase reportes correo": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "iTop - Activos en inventario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - ejecucion externa": {
+      "main": [
+        [
+          {
+            "node": "Validar webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron - lunes 07:00": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar flags envio": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar webhook": {
+      "main": [
+        [
+          {
+            "node": "Responder webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder webhook": {
+      "main": [
+        [
+          {
+            "node": "Continuar webhook valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continuar webhook valido": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "df3db175-bf8a-47ab-b680-f69f96635cfc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "XicaJzhL51opWk6A",
+  "tags": []
+}

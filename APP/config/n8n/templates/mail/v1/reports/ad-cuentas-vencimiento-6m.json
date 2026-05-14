@@ -1,0 +1,63 @@
+{
+  "template_version": "mail-v1",
+  "partials": {
+    "styles": "partials/styles.html",
+    "layout": "partials/layout.html",
+    "header": "partials/header.html",
+    "summary": "partials/summary.html",
+    "stats": "partials/stats.html",
+    "criteria": "partials/criteria.html",
+    "tables": "partials/tables.html",
+    "notes": "partials/notes.html",
+    "cta": "partials/cta.html",
+    "footer": "partials/footer.html"
+  },
+  "header": {
+    "eyebrow": "Automatización ITSM / CMDB",
+    "subtitle": "Consolidado operativo sincronizado desde Combodo iTop",
+    "source_label": "Producción / iTop"
+  },
+  "summary": {
+    "description": "Reporte de cuentas AD vigentes cuya fecha de expiración se encuentra dentro del periodo configurado."
+  },
+  "criteria": {
+    "title": "Criterio del reporte",
+    "body": "Se consideran cuentas de usuario habilitadas, con accountExpires informado y fecha de expiración dentro del horizonte definido para el reporte."
+  },
+  "tables": {
+    "title": "Cuentas con vencimiento próximo",
+    "subtitle": "Detalle agrupado por mes de vencimiento para revisión operacional."
+  },
+  "cta": {
+    "label": "Abrir Combodo iTop"
+  },
+  "footer": {
+    "brand": "Automatización ITSM / CMDB"
+  },
+  "stats": [
+    {
+      "label": "TOTAL CUENTAS",
+      "value": "total_records",
+      "border": "#bfdbfe",
+      "background": "#eff6ff",
+      "labelColor": "#1e3a8a",
+      "valueColor": "#1e3a8a"
+    },
+    {
+      "label": "DENTRO 30 DÍAS",
+      "value": "within_30_count",
+      "border": "#fecaca",
+      "background": "#fef2f2",
+      "labelColor": "#991b1b",
+      "valueColor": "#991b1b"
+    },
+    {
+      "label": "DENTRO 90 DÍAS",
+      "value": "within_90_count",
+      "border": "#fed7aa",
+      "background": "#fff7ed",
+      "labelColor": "#9a3412",
+      "valueColor": "#9a3412"
+    }
+  ]
+}

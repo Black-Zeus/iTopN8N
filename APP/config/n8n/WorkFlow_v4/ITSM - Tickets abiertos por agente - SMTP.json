@@ -1,0 +1,618 @@
+﻿{
+    "name":  "ITSM - Tickets abiertos por agente - SMTP",
+    "nodes":  [
+                  {
+                      "parameters":  {
+
+                                     },
+                      "type":  "n8n-nodes-base.manualTrigger",
+                      "typeVersion":  1,
+                      "position":  [
+                                       1696,
+                                       560
+                                   ],
+                      "id":  "6f587f4b-09de-45ab-8f5f-504033221166",
+                      "name":  "Ejecutar manualmente"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "51feac48-1708-412c-8aaa-b47a1267aaab",
+                                                                                     "name":  "itop_url",
+                                                                                     "value":  "http://10.130.221.203/itop/",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "b57aa3a3-0ea4-4613-b453-484b0c799033",
+                                                                                     "name":  "email_from",
+                                                                                     "value":  "MesaDeAyudaChile@goldfields.com",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "0916fdf0-fc66-48ce-a23f-5afcfae0fb31",
+                                                                                     "name":  "email_cc",
+                                                                                     "value":  "={{ $json.body?.email_cc ?? \"\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "3756cb34-0554-4b81-b0d6-d5d12bdd28a1",
+                                                                                     "name":  "email_bcc",
+                                                                                     "value":  "={{ $json.body?.email_bcc ?? \"\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "4c783613-ae61-436c-b935-3fe63538f526",
+                                                                                     "name":  "email_subject",
+                                                                                     "value":  "Reporte ITSM - tickets abiertos pendientes por agente",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "5da52442-efa0-4bbb-b141-d39ed5922af3",
+                                                                                     "name":  "timezone",
+                                                                                     "value":  "America/Santiago",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "807d5873-559c-448b-a2f9-753f2058fc89",
+                                                                                     "name":  "itop_organization",
+                                                                                     "value":  "Minera GoldFields Chile",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "cf9bb327-aa11-4fc2-aa04-07f79d4cb68c",
+                                                                                     "name":  "Company",
+                                                                                     "value":  "TecnoComp",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "9578e917-2776-4d3a-9713-99497912212e",
+                                                                                     "name":  "itop_limit",
+                                                                                     "value":  5000,
+                                                                                     "type":  "number"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "6ceb37ee-9220-499b-b585-e45fd0286f8a",
+                                                                                     "name":  "closed_status_values",
+                                                                                     "value":  "closed,resolved,rejected,cancelled,cerrado,resuelto,rechazado",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "b1b0cfc4-8bb1-49a3-97c4-003ce94c0e2b",
+                                                                                     "name":  "send_only_with_agent_email",
+                                                                                     "value":  "={{ $json.body?.send_only_with_agent_email ?? \"true\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "fac46c54-d4c3-472a-b763-0a12a0480407",
+                                                                                     "name":  "fallback_agent_email",
+                                                                                     "value":  "={{ $json.body?.fallback_agent_email ?? \"\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "06ba1f0c-2ed8-48c8-ad6d-9a14c513cf33",
+                                                                                     "name":  "ignore",
+                                                                                     "value":  "={{ $json.body?.ignore ?? \"helpdesk@goldfields.com\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "2a40a116-b544-4e2e-9de2-3b352c9f6575",
+                                                                                     "name":  "include_requirements",
+                                                                                     "value":  "={{ $json.body?.include_requirements ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "e7b0057f-a107-4dab-a9ef-7c50ce9752bf",
+                                                                                     "name":  "include_incidents",
+                                                                                     "value":  "={{ $json.body?.include_incidents ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "d5d348d5-14df-4987-b7ba-e2719d2de48a",
+                                                                                     "name":  "include_changes",
+                                                                                     "value":  "={{ $json.body?.include_changes ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "4292c700-5e4e-4ddb-b353-2c3264d1d1de",
+                                                                                     "name":  "include_problems",
+                                                                                     "value":  "={{ $json.body?.include_problems ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "3fab412b-3182-4146-91ac-ce3de520374b",
+                                                                                     "name":  "email_to",
+                                                                                     "value":  "={{ $json.body?.email_to ?? \"usuario1@company.com\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "91d7c315-c2ce-4159-b225-6acd55304deb",
+                                                                                     "name":  "include_attachment",
+                                                                                     "value":  "={{ $json.body?.include_attachment ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "3b5a7003-4509-4c4c-a597-262df12185e6",
+                                                                                     "name":  "include_detail",
+                                                                                     "value":  "={{ $json.body?.include_detail ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "416be39c-fb96-4fdf-82fd-4e44ace3a988",
+                                                                                     "name":  "include_summary",
+                                                                                     "value":  "={{ $json.body?.include_summary ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "13fd5b06-3461-4e01-9c01-a3f7e0f8238c",
+                                                                                     "name":  "include_operational_notes",
+                                                                                     "value":  "={{ $json.body?.include_operational_notes ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c7d756de-d6cf-4ea7-94f7-b04e47652cd7",
+                                                                                     "name":  "include_itop_button_footer",
+                                                                                     "value":  "={{ $json.body?.include_itop_button_footer ?? true }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "eb3858c2-4957-453d-b144-61c86669b81a",
+                                                                                     "name":  "start_date",
+                                                                                     "value":  "={{ $json.body?.start_date ?? \"\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "f17be684-7ab5-43c5-84dc-9293063933a5",
+                                                                                     "name":  "end_date",
+                                                                                     "value":  "={{ $json.body?.end_date ?? \"\" }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "b0e2bb03-90a8-43c8-a071-ce056da5014e",
+                                                                                     "name":  "report_template_key",
+                                                                                     "value":  "itsm-tickets-abiertos-agente",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       1920,
+                                       560
+                                   ],
+                      "id":  "c0fd9172-91dd-40bd-b4ac-ace76cc15453",
+                      "name":  "SetTrigger - Flujo"
+                  },
+                  {
+                      "parameters":  {
+                                         "authentication":  "token",
+                                         "class":  "UserLocal",
+                                         "key":  "SELECT UserLocal AS u JOIN Person AS p ON u.contactid = p.id",
+                                         "output_fields":  "contactid,last_name,first_name,email,org_id,login,language,status,finalclass,friendlyname,contactid_friendlyname,org_id_friendlyname",
+                                         "limit":  "={{ $json.itop_limit }}",
+                                         "additionalOptions":  {
+
+                                                               }
+                                     },
+                      "type":  "n8n-nodes-itop.iTop",
+                      "typeVersion":  1,
+                      "position":  [
+                                       2592,
+                                       560
+                                   ],
+                      "id":  "df405c15-f277-402a-9572-eeb63596eb96",
+                      "name":  "iTop - Usuarios Locales con Persona",
+                      "credentials":  {
+                                          "iTopTokenApi":  {
+                                                               "id":  "FdUX5lCOh0Z3YWW4",
+                                                               "name":  "iTopToken_GF_QA"
+                                                           }
+                                      },
+                      "notes":  "Consulta UserLocal unido a Person para resolver el correo del agente. UserLocal por sÃ­ solo puede retornar Ãºnicamente id/friendlyname; el correo se recupera desde el contacto/persona relacionado."
+                  },
+                  {
+                      "parameters":  {
+                                         "authentication":  "token",
+                                         "class":  "Ticket",
+                                         "key":  "SELECT Ticket WHERE operational_status NOT IN (\u0027closed\u0027, \u0027resolved\u0027, \u0027rejected\u0027, \u0027cancelled\u0027)",
+                                         "output_fields":  "operational_status,ref,org_id,org_name,caller_id,caller_name,team_id,team_name,team_email,agent_id,agent_name,title,description,start_date,end_date,last_update,close_date,private_log,contacts_list,functionalcis_list,workorders_list,finalclass,friendlyname,org_id_friendlyname,caller_id_friendlyname,team_id_friendlyname,agent_id_friendlyname",
+                                         "limit":  "={{ $json.itop_limit }}",
+                                         "additionalOptions":  {
+
+                                                               }
+                                     },
+                      "type":  "n8n-nodes-itop.iTop",
+                      "typeVersion":  1,
+                      "position":  [
+                                       2816,
+                                       560
+                                   ],
+                      "id":  "ac1af4a8-aa26-4fea-b365-06fe1c5dbf98",
+                      "name":  "iTop - Tickets abiertos",
+                      "credentials":  {
+                                          "iTopTokenApi":  {
+                                                               "id":  "FdUX5lCOh0Z3YWW4",
+                                                               "name":  "iTopToken_GF_QA"
+                                                           }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const baseConfig = $(\u0027Config Reporte\u0027).first().json;\nconst triggerConfig = $(\u0027SetTrigger - Flujo\u0027).first()?.json || {};\nconst mergedFlags = { ...(baseConfig.flags || {}) };\nfunction mergeFlag(name) {\n  const value = triggerConfig[name];\n  if (value === undefined || value === null || value === \u0027\u0027) return;\n  if (typeof value === \u0027boolean\u0027) mergedFlags[name] = value;\n  else if (typeof value === \u0027number\u0027) mergedFlags[name] = value !== 0;\n  else {\n    const text = String(value).trim().toLowerCase();\n    if ([\u0027true\u0027,\u00271\u0027,\u0027yes\u0027,\u0027y\u0027,\u0027si\u0027,\u0027s\u0027,\u0027on\u0027,\u0027enabled\u0027].includes(text)) mergedFlags[name] = true;\n    else if ([\u0027false\u0027,\u00270\u0027,\u0027no\u0027,\u0027n\u0027,\u0027off\u0027,\u0027disabled\u0027].includes(text)) mergedFlags[name] = false;\n  }\n}\nfor (const key of [\u0027include_attachment\u0027,\u0027include_detail\u0027,\u0027include_summary\u0027,\u0027include_operational_notes\u0027,\u0027include_itop_button_footer\u0027,\u0027send_email\u0027,\u0027include_requirements\u0027,\u0027include_incidents\u0027,\u0027include_changes\u0027,\u0027include_problems\u0027]) mergeFlag(key);\nconst config = { ...baseConfig, ...triggerConfig, flags: mergedFlags };\nfor (const [key, value] of Object.entries(mergedFlags)) config[key] = value;\nconst timezone = config.timezone || \u0027America/Santiago\u0027;\nconst now = new Date();\n\nconst closedValues = new Set(String(config.closed_status_values || \u0027closed,resolved,rejected,cancelled,cerrado,resuelto,rechazado\u0027)\n  .split(\u0027,\u0027)\n  .map(v =\u003e v.trim().toLowerCase())\n  .filter(Boolean));\n\nconst company = String(config.Company || config.company || \u0027TecnoComp\u0027).trim();\nconst itopOrganization = String(config.itop_organization || \u0027\u0027).trim();\nconst subjectBase = String(config.email_subject || \u0027Reporte ITSM - tickets abiertos pendientes por agente\u0027).trim();\nconst sendOnlyWithAgentEmail = String(config.send_only_with_agent_email ?? \u0027true\u0027).toLowerCase() !== \u0027false\u0027;\nconst fallbackAgentEmail = String(config.fallback_agent_email || \u0027\u0027).trim();\n\nfunction isEnabledFlag(value, defaultValue = true) {\n  if (value === undefined || value === null || value === \u0027\u0027) return defaultValue;\n  if (typeof value === \u0027boolean\u0027) return value;\n  const normalized = String(value).trim().toLowerCase();\n  return [\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027si\u0027, \u0027s\u0027, \u0027y\u0027, \u0027on\u0027, \u0027enabled\u0027].includes(normalized);\n}\n\nconst includeRequirements = isEnabledFlag(config.include_requirements, true);\nconst includeIncidents = isEnabledFlag(config.include_incidents, true);\nconst includeChanges = isEnabledFlag(config.include_changes, true);\nconst includeProblems = isEnabledFlag(config.include_problems, true);\n\nconst enabledTicketTypes = new Set();\nif (includeRequirements) enabledTicketTypes.add(\u0027requirement\u0027);\nif (includeIncidents) enabledTicketTypes.add(\u0027incident\u0027);\nif (includeChanges) enabledTicketTypes.add(\u0027change\u0027);\nif (includeProblems) enabledTicketTypes.add(\u0027problem\u0027);\n\nfunction normalizeTicketKind(value, fields = {}) {\n  const rawValues = [\n    value,\n    getField(fields, [\u0027finalclass\u0027, \u0027class\u0027, \u0027class_friendlyname\u0027, \u0027ticket_class\u0027, \u0027ticket_type\u0027, \u0027type\u0027, \u0027request_type\u0027, \u0027request_type_friendlyname\u0027], \u0027\u0027),\n    getField(fields, [\u0027ref\u0027, \u0027reference\u0027, \u0027friendlyname\u0027], \u0027\u0027)\n  ].map(v =\u003e String(v || \u0027\u0027).trim()).filter(Boolean);\n\n  const raw = rawValues.join(\u0027 \u0027).toLowerCase();\n\n  if (raw.includes(\u0027userrequest\u0027) || raw.includes(\u0027user request\u0027) || raw.includes(\u0027request\u0027) || raw.includes(\u0027requerimiento\u0027) || raw.includes(\u0027requisito\u0027) || raw.includes(\u0027solicitud\u0027)) {\n    return { key: \u0027requirement\u0027, label: \u0027Requerimiento\u0027 };\n  }\n  if (raw.includes(\u0027incident\u0027) || raw.includes(\u0027incidente\u0027) || raw.includes(\u0027incidencia\u0027)) {\n    return { key: \u0027incident\u0027, label: \u0027Incidente\u0027 };\n  }\n  if (raw.includes(\u0027change\u0027) || raw.includes(\u0027cambio\u0027)) {\n    return { key: \u0027change\u0027, label: \u0027Cambio\u0027 };\n  }\n  if (raw.includes(\u0027problem\u0027) || raw.includes(\u0027problema\u0027)) {\n    return { key: \u0027problem\u0027, label: \u0027Problema\u0027 };\n  }\n\n  return { key: \u0027unknown\u0027, label: rawValues[0] || \u0027No identificado\u0027 };\n}\n\nfunction enabledTicketTypeText() {\n  const labels = [];\n  if (includeRequirements) labels.push(\u0027Requerimientos\u0027);\n  if (includeIncidents) labels.push(\u0027Incidentes\u0027);\n  if (includeChanges) labels.push(\u0027Cambios\u0027);\n  if (includeProblems) labels.push(\u0027Problemas\u0027);\n  return labels.length ? labels.join(\u0027, \u0027) : \u0027Sin tipos habilitados\u0027;\n}\n\nfunction escapeHtml(value) {\n  return String(value ?? \u0027\u0027)\n    .replace(/\u0026/g, \u0027\u0026amp;\u0027)\n    .replace(/\u003c/g, \u0027\u0026lt;\u0027)\n    .replace(/\u003e/g, \u0027\u0026gt;\u0027)\n    .replace(/\"/g, \u0027\u0026quot;\u0027)\n    .replace(/\u0027/g, \u0027\u0026#039;\u0027);\n}\n\nfunction csvEscape(value) {\n  const text = String(value ?? \u0027\u0027).replace(/\"/g, \u0027\"\"\u0027);\n  return `\"${text}\"`;\n}\n\nfunction stripHtml(value) {\n  return String(value ?? \u0027\u0027)\n    .replace(/\u003cbr\\s*\\/?\u003e/gi, \u0027\\n\u0027)\n    .replace(/\u003c\\/p\u003e/gi, \u0027\\n\u0027)\n    .replace(/\u003c[^\u003e]+\u003e/g, \u0027 \u0027)\n    .replace(/\u0026nbsp;/g, \u0027 \u0027)\n    .replace(/\u0026amp;/g, \u0027\u0026\u0027)\n    .replace(/\u0026lt;/g, \u0027\u003c\u0027)\n    .replace(/\u0026gt;/g, \u0027\u003e\u0027)\n    .replace(/\u0026quot;/g, \u0027\"\u0027)\n    .replace(/\u0026#039;/g, \"\u0027\")\n    .replace(/\\s+/g, \u0027 \u0027)\n    .trim();\n}\n\nfunction getField(obj, names, fallback = \u0027\u0027) {\n  for (const name of names) {\n    if (obj \u0026\u0026 obj[name] !== undefined \u0026\u0026 obj[name] !== null \u0026\u0026 obj[name] !== \u0027\u0027) return obj[name];\n    if (obj?.fields \u0026\u0026 obj.fields[name] !== undefined \u0026\u0026 obj.fields[name] !== null \u0026\u0026 obj.fields[name] !== \u0027\u0027) return obj.fields[name];\n  }\n  return fallback;\n}\n\nfunction rawField(obj, names) {\n  for (const name of names) {\n    if (obj \u0026\u0026 obj[name] !== undefined \u0026\u0026 obj[name] !== null \u0026\u0026 obj[name] !== \u0027\u0027) return obj[name];\n    if (obj?.fields \u0026\u0026 obj.fields[name] !== undefined \u0026\u0026 obj.fields[name] !== null \u0026\u0026 obj.fields[name] !== \u0027\u0027) return obj.fields[name];\n  }\n  return undefined;\n}\n\nfunction entryDateValue(entry, fallbackKey = \u0027\u0027) {\n  if (!entry || typeof entry !== \u0027object\u0027) return fallbackKey;\n  return entry.date || entry.created || entry.created_at || entry.creation_date || entry.timestamp || entry.time || fallbackKey || \u0027\u0027;\n}\n\nfunction entryAuthorValue(entry) {\n  if (!entry || typeof entry !== \u0027object\u0027) return \u0027\u0027;\n  return entry.user_id_friendlyname || entry.user_friendlyname || entry.user_name || entry.user_login || entry.author || entry.author_friendlyname || \u0027\u0027;\n}\n\nfunction normalizeLogText(value, fallbackKey = \u0027\u0027) {\n  if (value === undefined || value === null || value === \u0027\u0027) return \u0027\u0027;\n\n  if (typeof value === \u0027string\u0027 || typeof value === \u0027number\u0027 || typeof value === \u0027boolean\u0027) {\n    const text = stripHtml(value);\n    return text \u0026\u0026 text !== \u0027[object Object]\u0027 ? text : \u0027\u0027;\n  }\n\n  if (Array.isArray(value)) {\n    const normalized = value\n      .map((entry, index) =\u003e ({\n        date: entryDateValue(entry, String(index).padStart(6, \u00270\u0027)),\n        text: normalizeLogText(entry, String(index).padStart(6, \u00270\u0027)),\n      }))\n      .filter(e =\u003e e.text);\n    if (!normalized.length) return \u0027\u0027;\n    normalized.sort((a, b) =\u003e String(a.date).localeCompare(String(b.date)));\n    return normalized[normalized.length - 1].text;\n  }\n\n  if (typeof value === \u0027object\u0027) {\n    const direct = rawField(value, [\n      \u0027message\u0027, \u0027html\u0027, \u0027text\u0027, \u0027body\u0027, \u0027content\u0027, \u0027comment\u0027, \u0027note\u0027,\n      \u0027last_comment\u0027, \u0027last_note\u0027, \u0027entry\u0027, \u0027value\u0027, \u0027description\u0027\n    ]);\n\n    if (direct !== undefined \u0026\u0026 direct !== value) {\n      const text = normalizeLogText(direct, fallbackKey);\n      if (text) {\n        const date = entryDateValue(value, fallbackKey);\n        const author = entryAuthorValue(value);\n        const prefix = [date, author].map(v =\u003e stripHtml(v)).filter(Boolean).join(\u0027 - \u0027);\n        return prefix ? `${prefix}: ${text}` : text;\n      }\n    }\n\n    const collection = value.entries || value.items || value.log || value.logs || value.records || value.data;\n    if (collection \u0026\u0026 collection !== value) {\n      const entries = Array.isArray(collection)\n        ? collection.map((v, i) =\u003e [String(i).padStart(6, \u00270\u0027), v])\n        : Object.entries(collection);\n      const normalized = entries\n        .map(([key, entry]) =\u003e ({ date: entryDateValue(entry, key), text: normalizeLogText(entry, key) }))\n        .filter(e =\u003e e.text);\n      if (!normalized.length) return \u0027\u0027;\n      normalized.sort((a, b) =\u003e String(a.date).localeCompare(String(b.date)));\n      return normalized[normalized.length - 1].text;\n    }\n\n    // Fallback para estructuras de iTop expuestas como objetos planos o respuestas parciales.\n    const nestedEntries = Object.entries(value)\n      .filter(([, val]) =\u003e val \u0026\u0026 typeof val === \u0027object\u0027)\n      .map(([key, val]) =\u003e ({ date: entryDateValue(val, key), text: normalizeLogText(val, key) }))\n      .filter(e =\u003e e.text);\n    if (nestedEntries.length) {\n      nestedEntries.sort((a, b) =\u003e String(a.date).localeCompare(String(b.date)));\n      return nestedEntries[nestedEntries.length - 1].text;\n    }\n\n    const leafTexts = [];\n    const ignored = new Set([\u0027id\u0027, \u0027key\u0027, \u0027code\u0027, \u0027class\u0027, \u0027finalclass\u0027, \u0027type\u0027, \u0027attribute\u0027, \u0027attcode\u0027, \u0027att_code\u0027]);\n    for (const [key, val] of Object.entries(value)) {\n      if (ignored.has(String(key).toLowerCase())) continue;\n      if (typeof val === \u0027string\u0027 || typeof val === \u0027number\u0027 || typeof val === \u0027boolean\u0027) {\n        const text = stripHtml(val);\n        if (text \u0026\u0026 text !== \u0027[object Object]\u0027) leafTexts.push(text);\n      }\n    }\n    const unique = [...new Set(leafTexts)].filter(t =\u003e t.length \u003e 1);\n    return unique.slice(-3).join(\u0027 / \u0027);\n  }\n\n  return \u0027\u0027;\n}\n\nfunction getLastReadableNote(fields) {\n  const candidates = [\n    rawField(fields, [\u0027last_comment\u0027, \u0027last_note\u0027, \u0027last_public_log\u0027, \u0027last_private_log\u0027, \u0027last_update_reason\u0027, \u0027last_change\u0027]),\n    rawField(fields, [\u0027public_log\u0027, \u0027private_log\u0027, \u0027user_satisfaction\u0027, \u0027caselog\u0027, \u0027work_log\u0027, \u0027history\u0027]),\n    rawField(fields, [\u0027description\u0027])\n  ];\n\n  for (const candidate of candidates) {\n    const text = normalizeLogText(candidate);\n    if (text) return text;\n  }\n  return \u0027-\u0027;\n}\n\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects \u0026\u0026 typeof j.objects === \u0027object\u0027) {\n      for (const [key, value] of Object.entries(j.objects)) {\n        rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      }\n      continue;\n    }\n    if (Array.isArray(j)) {\n      rows.push(...j);\n      continue;\n    }\n    rows.push(j);\n  }\n  return rows;\n}\n\nfunction parseDate(value) {\n  if (!value || value === \u0027-\u0027) return null;\n  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;\n  const raw = String(value).trim();\n  if (!raw) return null;\n  const normalized = raw.includes(\u0027T\u0027) ? raw : raw.replace(\u0027 \u0027, \u0027T\u0027);\n  const d = new Date(normalized);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\n\nfunction fmtDateTime(value) {\n  const d = parseDate(value);\n  if (!d) return \u0027-\u0027;\n  return d.toLocaleString(\u0027es-CL\u0027, {\n    timeZone: timezone,\n    year: \u0027numeric\u0027,\n    month: \u00272-digit\u0027,\n    day: \u00272-digit\u0027,\n    hour: \u00272-digit\u0027,\n    minute: \u00272-digit\u0027\n  });\n}\n\nfunction diffHours(from, to = now) {\n  const d = parseDate(from);\n  if (!d) return 0;\n  return Math.max(0, Math.floor((to.getTime() - d.getTime()) / 36e5));\n}\n\nfunction formatDurationFromHours(hours) {\n  const h = Math.max(0, Math.floor(Number(hours || 0)));\n  const days = Math.floor(h / 24);\n  const rem = h % 24;\n  if (days \u003c= 0) return `${rem}h`;\n  if (rem === 0) return `${days}d`;\n  return `${days}d ${rem}h`;\n}\n\nfunction isBlank(value) {\n  const v = String(value ?? \u0027\u0027).trim();\n  return !v || v === \u0027-\u0027 || v.toLowerCase() === \u0027null\u0027 || v.toLowerCase() === \u0027undefined\u0027 || v.toLowerCase() === \u0027n/a\u0027;\n}\n\nfunction isClosed(status) {\n  const s = String(status || \u0027\u0027).trim().toLowerCase();\n  return closedValues.has(s);\n}\n\nfunction collectLogEntries(value, collector = []) {\n  if (value === undefined || value === null || value === \u0027\u0027) return collector;\n\n  if (typeof value === \u0027string\u0027 || typeof value === \u0027number\u0027 || typeof value === \u0027boolean\u0027) {\n    const text = stripHtml(value);\n    if (text \u0026\u0026 text !== \u0027[object Object]\u0027) collector.push({ date: \u0027\u0027, author: \u0027\u0027, text });\n    return collector;\n  }\n\n  if (Array.isArray(value)) {\n    value.forEach(v =\u003e collectLogEntries(v, collector));\n    return collector;\n  }\n\n  if (typeof value === \u0027object\u0027) {\n    const date = value.date || value.created || value.created_at || value.creation_date || value.timestamp || value.time || value.modification_date || \u0027\u0027;\n    const author = value.user_id_friendlyname || value.user_friendlyname || value.user_name || value.user_login || value.author || value.author_friendlyname || \u0027\u0027;\n\n    const direct = rawField(value, [\n      \u0027message\u0027, \u0027html\u0027, \u0027text\u0027, \u0027body\u0027, \u0027content\u0027, \u0027comment\u0027, \u0027note\u0027,\n      \u0027entry\u0027, \u0027value\u0027, \u0027description\u0027\n    ]);\n\n    if (direct !== undefined \u0026\u0026 direct !== value) {\n      const text = stripHtml(direct);\n      if (text \u0026\u0026 text !== \u0027[object Object]\u0027) collector.push({ date, author, text });\n    }\n\n    const collection = value.entries || value.items || value.log || value.logs || value.records || value.data;\n    if (collection \u0026\u0026 collection !== value) collectLogEntries(collection, collector);\n  }\n\n  return collector;\n}\n\nfunction getLastLog(fields) {\n  const candidates = [\n    rawField(fields, [\u0027last_comment\u0027, \u0027last_note\u0027, \u0027last_public_log\u0027, \u0027last_private_log\u0027, \u0027last_update_reason\u0027, \u0027last_change\u0027]),\n    rawField(fields, [\u0027public_log\u0027, \u0027private_log\u0027, \u0027user_satisfaction\u0027, \u0027caselog\u0027, \u0027work_log\u0027, \u0027history\u0027])\n  ];\n\n  const entries = [];\n  for (const candidate of candidates) collectLogEntries(candidate, entries);\n\n  const valid = entries.filter(e =\u003e e.text);\n  if (!valid.length) return { text: \u0027-\u0027, date: null };\n\n  valid.sort((a, b) =\u003e {\n    const da = parseDate(a.date)?.getTime() || 0;\n    const db = parseDate(b.date)?.getTime() || 0;\n    return da - db;\n  });\n\n  const last = valid[valid.length - 1];\n  const prefix = [last.date ? fmtDateTime(last.date) : \u0027\u0027, stripHtml(last.author)].filter(Boolean).join(\u0027 - \u0027);\n  return {\n    text: prefix ? `${prefix}: ${last.text}` : last.text,\n    date: parseDate(last.date)\n  };\n}\n\nfunction detectLastUpdate(fields, createdAt) {\n  const explicitUpdate = getField(fields, [\n    \u0027last_update\u0027,\n    \u0027last_update_date\u0027,\n    \u0027last_modification_date\u0027,\n    \u0027last_modified\u0027,\n    \u0027modification_date\u0027,\n    \u0027date_mod\u0027,\n    \u0027updated_at\u0027,\n    \u0027last_activity\u0027,\n    \u0027last_activity_date\u0027\n  ], \u0027\u0027);\n\n  const explicitUpdateDate = parseDate(explicitUpdate);\n  const lastLog = getLastLog(fields);\n  const logDate = lastLog.date;\n\n  const updateCandidates = [explicitUpdateDate, logDate].filter(Boolean);\n  updateCandidates.sort((a, b) =\u003e b.getTime() - a.getTime());\n\n  return {\n    date: updateCandidates[0] || createdAt || null,\n    source: updateCandidates[0] ? \u0027update\u0027 : \u0027creation_fallback\u0027,\n    note: lastLog.text || \u0027-\u0027\n  };\n}\n\nfunction getSlaInfo(fields) {\n  const raw = [\n    getField(fields, [\u0027tto_escalation_deadline\u0027, \u0027ttr_escalation_deadline\u0027, \u0027resolution_deadline\u0027], \u0027\u0027),\n    getField(fields, [\u0027tto_escalation_flag\u0027, \u0027ttr_escalation_flag\u0027, \u0027sla_status\u0027, \u0027sla\u0027, \u0027slas\u0027], \u0027\u0027)\n  ].filter(Boolean).join(\u0027 \u0027);\n\n  const s = raw.toLowerCase();\n  const breached = [\u0027breach\u0027, \u0027breached\u0027, \u0027vencido\u0027, \u0027expired\u0027, \u0027late\u0027, \u0027rojo\u0027, \u0027red\u0027].some(v =\u003e s.includes(v));\n  return { text: raw || \u0027-\u0027, breached };\n}\n\nfunction normalizeStatus(value) {\n  const raw = String(value || \u0027\u0027).trim();\n  const s = raw.toLowerCase();\n  const map = {\n    ongoing: \u0027En curso\u0027,\n    assigned: \u0027Asignado\u0027,\n    new: \u0027Nuevo\u0027,\n    pending: \u0027Pendiente\u0027,\n    waiting_for_approval: \u0027Esperando aprobaci\\u00f3n\u0027,\n    waiting_for_customer: \u0027Esperando solicitante\u0027,\n    escalated_tto: \u0027Escalado TTO\u0027,\n    escalated_ttr: \u0027Escalado TTR\u0027,\n    resolved: \u0027Resuelto\u0027,\n    closed: \u0027Cerrado\u0027,\n    rejected: \u0027Rechazado\u0027,\n    cancelled: \u0027Cancelado\u0027\n  };\n  return map[s] || raw || \u0027-\u0027;\n}\n\nfunction severity(ticket) {\n  if (ticket.slaBreached || ticket.ageDays \u003e 14) return \u0027Cr\\u00edtico\u0027;\n  if (ticket.ageDays \u003e= 7) return \u0027Alto\u0027;\n  return \u0027Seguimiento\u0027;\n}\n\nfunction severityBadge(ticket) {\n  const s = severity(ticket);\n  if (s === \u0027Cr\\u00edtico\u0027) return \u0027\u003cspan class=\"badge badge-red\"\u003eCr\\u00edtico\u003c/span\u003e\u0027;\n  if (s === \u0027Alto\u0027) return \u0027\u003cspan class=\"badge badge-orange\"\u003eAlto\u003c/span\u003e\u0027;\n  return \u0027\u003cspan class=\"badge badge-yellow\"\u003eSeguimiento\u003c/span\u003e\u0027;\n}\n\nfunction td(value, align = \u0027left\u0027) {\n  return `\u003ctd align=\"${align}\" style=\"font-size:12px; line-height:16px; color:#1f2937; padding:8px 7px; border-bottom:1px solid #edf2f7; vertical-align:top;\"\u003e${value}\u003c/td\u003e`;\n}\n\nfunction th(text, align = \u0027left\u0027) {\n  return `\u003cth align=\"${align}\" style=\"background-color:#f8fafc; color:#334155; font-size:11px; line-height:15px; font-weight:bold; text-align:${align}; padding:8px 7px; border-bottom:1px solid #dbe3ec; white-space:nowrap;\"\u003e${escapeHtml(text)}\u003c/th\u003e`;\n}\n\nfunction ticketRow(ticket) {\n  const note = ticket.lastNote \u0026\u0026 ticket.lastNote !== \u0027-\u0027 ? ticket.lastNote : \u0027Sin anotaci\\u00f3n legible desde la respuesta de iTop\u0027;\n  return `\u003ctr\u003e\n    ${td(severityBadge(ticket))}\n    ${td(`\u003cstrong\u003e${escapeHtml(ticket.ref)}\u003c/strong\u003e`)}\n    ${td(`\u003cstrong\u003e${escapeHtml(ticket.title)}\u003c/strong\u003e`)}\n    ${td(escapeHtml(ticket.caller))}\n    ${td(escapeHtml(fmtDateTime(ticket.createdAt)))}\n    ${td(escapeHtml(fmtDateTime(ticket.lastUpdateAt)))}\n    ${td(escapeHtml(formatDurationFromHours(ticket.ageHours)))}\n    ${td(ticket.slaBreached ? \u0027\u003cspan class=\"badge badge-red\"\u003eVencido\u003c/span\u003e\u0027 : escapeHtml(ticket.slaText || \u0027-\u0027))}\n    ${td(`\u003cspan class=\"wrap\"\u003e${escapeHtml(note).slice(0, 500)}\u003c/span\u003e`)}\n  \u003c/tr\u003e`;\n}\n\nfunction renderTicketTable(tickets) {\n  if (!tickets.length) {\n    return `\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec; margin-bottom:20px;\"\u003e\u003ctr\u003e\u003ctd style=\"padding:14px; font-size:13px; color:#64748b;\"\u003eNo existen tickets abiertos asignados al agente.\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e`;\n  }\n\n  const rows = tickets.map(ticketRow).join(\u0027\u0027);\n  return `\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"data-table\" style=\"width:100%; border-collapse:collapse; border:1px solid #dbe3ec; margin-bottom:20px;\"\u003e\n    \u003cthead\u003e\u003ctr\u003e\n      ${th(\u0027Crit.\u0027)}${th(\u0027Referencia\u0027)}${th(\u0027T\\u00edtulo / asunto\u0027)}${th(\u0027Solicitante\u0027)}${th(\u0027Creaci\\u00f3n\u0027)}${th(\u0027\\u00faltimo update\u0027)}${th(\u0027Tiempo abierto\u0027)}${th(\u0027SLA\u0027)}${th(\u0027\\u00faltima anotaci\\u00f3n / cambio registrado\u0027)}\n    \u003c/tr\u003e\u003c/thead\u003e\n    \u003ctbody\u003e${rows}\u003c/tbody\u003e\n  \u003c/table\u003e`;\n}\n\nfunction renderTicketTypeSection(title, tickets) {\n  const sorted = [...tickets].sort((a, b) =\u003e (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));\n  return `\u003cdiv style=\"font-size:15px; line-height:21px; color:#111827; font-weight:bold; margin:16px 0 8px 0;\"\u003e${escapeHtml(title)} \u003cspan style=\"color:#64748b; font-weight:normal;\"\u003e(${sorted.length})\u003c/span\u003e\u003c/div\u003e${renderTicketTable(sorted)}`;\n}\n\nfunction renderTicketsByType(tickets) {\n  const sections = [\n    { key: \u0027requirement\u0027, title: \u0027Requerimientos\u0027 },\n    { key: \u0027incident\u0027, title: \u0027Incidentes\u0027 },\n    { key: \u0027change\u0027, title: \u0027Cambios\u0027 },\n    { key: \u0027problem\u0027, title: \u0027Problemas\u0027 },\n  ];\n\n  const blocks = sections\n    .map(section =\u003e {\n      const list = tickets.filter(ticket =\u003e ticket.ticketType === section.key);\n      if (!list.length) return \u0027\u0027;\n      return renderTicketTypeSection(section.title, list);\n    })\n    .filter(Boolean);\n\n  if (!blocks.length) return renderTicketTable([]);\n  return blocks.join(\u0027\u0027);\n}\n\nfunction normalizeEmail(value) {\n  const text = String(value ?? \u0027\u0027).trim();\n  const match = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n  return match ? match[0].toLowerCase() : \u0027\u0027;\n}\n\nconst ignoredEmails = new Set(\n  String(config.ignore || \u0027helpdesk@goldfields.com\u0027)\n    .split(\u0027,\u0027)\n    .map(v =\u003e normalizeEmail(v))\n    .filter(Boolean)\n);\n\nconst userRows = (() =\u003e {\n  try {\n    return flattenInput($(\u0027iTop - Usuarios Locales con Persona\u0027).all());\n  } catch (error) {\n    return [];\n  }\n})();\n\nconst agentEmailIndex = new Map();\n\nfunction addAgentEmailIndex(key, email) {\n  const k = String(key ?? \u0027\u0027).trim();\n  const e = normalizeEmail(email);\n  if (!k || !e) return;\n  agentEmailIndex.set(k.toLowerCase(), e);\n}\n\nfunction indexAgentRecord(row) {\n  const f = row.fields || row;\n\n  const email = normalizeEmail(getField(f, [\n    \u0027email\u0027,\n    \u0027email_address\u0027,\n    \u0027mail\u0027,\n    \u0027notify_email\u0027,\n    \u0027business_email\u0027,\n    \u0027p.email\u0027,\n    \u0027p_email\u0027,\n    \u0027person_email\u0027,\n    \u0027contact_email\u0027,\n    \u0027contactid_email\u0027,\n    \u0027contact_id_email\u0027,\n    \u0027login\u0027\n  ], \u0027\u0027));\n  if (!email) return;\n\n  const rawKeys = [\n    row.key,\n    getField(f, [\u0027id\u0027], \u0027\u0027),\n    getField(f, [\u0027login\u0027], \u0027\u0027),\n    getField(f, [\u0027friendlyname\u0027, \u0027name\u0027, \u0027display_name\u0027, \u0027full_name\u0027], \u0027\u0027),\n    getField(f, [\u0027email\u0027, \u0027email_address\u0027, \u0027mail\u0027, \u0027p.email\u0027, \u0027p_email\u0027, \u0027person_email\u0027, \u0027contact_email\u0027], \u0027\u0027),\n    getField(f, [\u0027contactid\u0027, \u0027contact_id\u0027, \u0027contactid_id\u0027, \u0027contact_id_id\u0027, \u0027p.id\u0027, \u0027p_id\u0027, \u0027person_id\u0027], \u0027\u0027),\n    getField(f, [\u0027contactid_friendlyname\u0027, \u0027contact_id_friendlyname\u0027, \u0027contact_friendlyname\u0027, \u0027person_id_friendlyname\u0027, \u0027p.friendlyname\u0027, \u0027p_friendlyname\u0027, \u0027person_friendlyname\u0027], \u0027\u0027)\n  ];\n\n  const contactObject = rawField(f, [\u0027contactid\u0027, \u0027contact_id\u0027, \u0027contact\u0027, \u0027person_id\u0027, \u0027person\u0027]);\n  if (contactObject \u0026\u0026 typeof contactObject === \u0027object\u0027) {\n    const cf = contactObject.fields || contactObject;\n    rawKeys.push(\n      contactObject.key,\n      getField(cf, [\u0027id\u0027], \u0027\u0027),\n      getField(cf, [\u0027friendlyname\u0027, \u0027name\u0027, \u0027display_name\u0027, \u0027full_name\u0027], \u0027\u0027),\n      getField(cf, [\u0027email\u0027, \u0027email_address\u0027, \u0027mail\u0027], \u0027\u0027)\n    );\n  }\n\n  const rowKey = String(row.key || \u0027\u0027).trim();\n  const idFromKey = rowKey.includes(\u0027::\u0027) ? rowKey.split(\u0027::\u0027).pop() : \u0027\u0027;\n  if (idFromKey) rawKeys.push(idFromKey, `UserLocal::${idFromKey}`, `User::${idFromKey}`);\n\n  const contactId = String(getField(f, [\u0027contactid\u0027, \u0027contact_id\u0027, \u0027contactid_id\u0027, \u0027contact_id_id\u0027, \u0027p.id\u0027, \u0027p_id\u0027, \u0027person_id\u0027], \u0027\u0027) || \u0027\u0027).trim();\n  if (contactId) rawKeys.push(contactId, `Person::${contactId}`, `Contact::${contactId}`);\n\n  const personFriendly = String(getField(f, [\u0027p.friendlyname\u0027, \u0027p_friendlyname\u0027, \u0027person_friendlyname\u0027, \u0027contactid_friendlyname\u0027, \u0027contact_id_friendlyname\u0027], \u0027\u0027) || \u0027\u0027).trim();\n  if (personFriendly) rawKeys.push(personFriendly);\n\n  for (const key of rawKeys) addAgentEmailIndex(key, email);\n}\nfor (const user of userRows) indexAgentRecord(user);\n\nfunction lookupAgentEmail(value) {\n  if (value === undefined || value === null || value === \u0027\u0027) return \u0027\u0027;\n\n  const directEmail = normalizeEmail(value);\n  if (directEmail) return directEmail;\n\n  if (typeof value === \u0027string\u0027 || typeof value === \u0027number\u0027 || typeof value === \u0027boolean\u0027) {\n    const key = String(value).trim().toLowerCase();\n    return agentEmailIndex.get(key) || \u0027\u0027;\n  }\n\n  if (typeof value === \u0027object\u0027) {\n    const f = value.fields || value;\n    const email = normalizeEmail(getField(f, [\u0027email\u0027, \u0027email_address\u0027, \u0027mail\u0027, \u0027p.email\u0027, \u0027p_email\u0027, \u0027person_email\u0027, \u0027contact_email\u0027, \u0027login\u0027], \u0027\u0027));\n    if (email) return email;\n\n    const candidates = [\n      value.key,\n      getField(f, [\u0027id\u0027], \u0027\u0027),\n      getField(f, [\u0027login\u0027], \u0027\u0027),\n      getField(f, [\u0027contactid\u0027, \u0027contact_id\u0027, \u0027contactid_id\u0027, \u0027contact_id_id\u0027, \u0027person_id\u0027, \u0027user_id\u0027], \u0027\u0027),\n      getField(f, [\u0027contactid_friendlyname\u0027, \u0027contact_id_friendlyname\u0027, \u0027contact_friendlyname\u0027, \u0027person_id_friendlyname\u0027], \u0027\u0027),\n      getField(f, [\u0027friendlyname\u0027, \u0027name\u0027, \u0027display_name\u0027, \u0027full_name\u0027, \u0027p.friendlyname\u0027, \u0027p_friendlyname\u0027, \u0027person_friendlyname\u0027], \u0027\u0027)\n    ];\n\n    for (const candidate of candidates) {\n      const key = String(candidate ?? \u0027\u0027).trim().toLowerCase();\n      if (key \u0026\u0026 agentEmailIndex.has(key)) return agentEmailIndex.get(key);\n    }\n  }\n\n  return \u0027\u0027;\n}\n\nfunction getAgentEmail(fields) {\n  const direct = getField(fields, [\n    \u0027agent_id_email\u0027,\n    \u0027agent_email\u0027,\n    \u0027assignee_id_email\u0027,\n    \u0027assignee_email\u0027,\n    \u0027owner_id_email\u0027,\n    \u0027owner_email\u0027,\n    \u0027agent_id_obsolescence_flag_email\u0027,\n    \u0027agent_id_friendlyname_email\u0027,\n    \u0027agent_email_address\u0027,\n    \u0027agent_id_contact_email\u0027,\n    \u0027agent_id_email_address\u0027,\n    \u0027agent_id_person_email\u0027,\n    \u0027email\u0027\n  ], \u0027\u0027);\n\n  let email = normalizeEmail(direct);\n  if (email) return email;\n\n  const lookupCandidates = [\n    rawField(fields, [\u0027agent_id\u0027]),\n    rawField(fields, [\u0027agent\u0027]),\n    rawField(fields, [\u0027assignee_id\u0027]),\n    rawField(fields, [\u0027assignee\u0027]),\n    rawField(fields, [\u0027owner_id\u0027]),\n    rawField(fields, [\u0027owner\u0027]),\n    getField(fields, [\u0027agent_id\u0027, \u0027assignee_id\u0027, \u0027owner_id\u0027], \u0027\u0027),\n    getField(fields, [\u0027agent_id_friendlyname\u0027, \u0027agent_name\u0027, \u0027assignee_id_friendlyname\u0027, \u0027owner_id_friendlyname\u0027], \u0027\u0027)\n  ];\n\n  for (const candidate of lookupCandidates) {\n    email = lookupAgentEmail(candidate);\n    if (email) return email;\n  }\n\n  return \u0027\u0027;\n}\n\nconst rows = flattenInput($input.all());\n\nconst mappedTickets = rows.map((row) =\u003e {\n  const f = row.fields || row;\n  const statusRaw = getField(f, [\u0027operational_status\u0027, \u0027operational_status_friendlyname\u0027, \u0027status\u0027, \u0027status_friendlyname\u0027], \u0027\u0027);\n  const createdRaw = getField(f, [\u0027start_date\u0027, \u0027creation_date\u0027, \u0027created_at\u0027, \u0027date\u0027, \u0027opened_at\u0027], \u0027\u0027);\n  const createdAt = parseDate(createdRaw);\n  const lastUpdate = detectLastUpdate(f, createdAt);\n  const lastReadableNote = getLastReadableNote(f);\n  const ageHours = diffHours(createdAt, now);\n  const sla = getSlaInfo(f);\n  const ref = getField(f, [\u0027ref\u0027, \u0027reference\u0027, \u0027ticket_ref\u0027, \u0027friendlyname\u0027], row.key || \u0027-\u0027);\n  const agent = getField(f, [\u0027agent_id_friendlyname\u0027, \u0027agent_name\u0027, \u0027assignee_id_friendlyname\u0027, \u0027team_id_friendlyname\u0027, \u0027owner_id_friendlyname\u0027], \u0027Sin agente asignado\u0027);\n  const agentEmail = getAgentEmail(f);\n  const ticketKind = normalizeTicketKind(getField(f, [\u0027finalclass\u0027, \u0027class\u0027, \u0027class_friendlyname\u0027, \u0027ticket_class\u0027, \u0027ticket_type\u0027, \u0027type\u0027], \u0027\u0027), f);\n\n  return {\n    ref,\n    title: stripHtml(getField(f, [\u0027title\u0027, \u0027description\u0027, \u0027name\u0027, \u0027friendlyname\u0027], \u0027-\u0027)),\n    ticketType: ticketKind.key,\n    ticketTypeLabel: ticketKind.label,\n    statusRaw,\n    statusLabel: normalizeStatus(statusRaw),\n    caller: getField(f, [\u0027caller_id_friendlyname\u0027, \u0027customer_id_friendlyname\u0027, \u0027requestor_id_friendlyname\u0027, \u0027person_id_friendlyname\u0027], \u0027-\u0027),\n    agent,\n    agentEmail: agentEmail || fallbackAgentEmail,\n    createdAt,\n    lastUpdateAt: lastUpdate.date,\n    lastUpdateSource: lastUpdate.source,\n    lastNote: lastReadableNote \u0026\u0026 lastReadableNote !== \u0027-\u0027 ? lastReadableNote : lastUpdate.note,\n    ageHours,\n    ageDays: Math.floor(ageHours / 24),\n    slaText: sla.text,\n    slaBreached: sla.breached\n  };\n});\n\n// Evita duplicidad por respuestas repetidas del nodo iTop o joins internos.\n// La referencia del ticket es la llave operativa m\\u00e1s estable para este reporte.\nconst uniqueTicketsByRef = new Map();\nfor (const ticket of mappedTickets) {\n  const key = String(ticket.ref || \u0027\u0027).trim().toLowerCase() || `${String(ticket.title || \u0027\u0027).trim().toLowerCase()}|${String(ticket.agent || \u0027\u0027).trim().toLowerCase()}|${String(ticket.createdAt?.toISOString?.() || \u0027\u0027).trim()}`;\n  if (!uniqueTicketsByRef.has(key)) {\n    uniqueTicketsByRef.set(key, ticket);\n    continue;\n  }\n\n  const current = uniqueTicketsByRef.get(key);\n  const currentHasNote = current.lastNote \u0026\u0026 current.lastNote !== \u0027-\u0027;\n  const ticketHasNote = ticket.lastNote \u0026\u0026 ticket.lastNote !== \u0027-\u0027;\n  if (!currentHasNote \u0026\u0026 ticketHasNote) uniqueTicketsByRef.set(key, ticket);\n}\n\nconst tickets = Array.from(uniqueTicketsByRef.values())\n.filter(t =\u003e !isClosed(t.statusRaw))\n.filter(t =\u003e enabledTicketTypes.has(t.ticketType))\n.filter(t =\u003e !sendOnlyWithAgentEmail || !isBlank(t.agentEmail))\n.filter(t =\u003e !ignoredEmails.has(normalizeEmail(t.agentEmail)))\n.sort((a, b) =\u003e (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));\n\nconst groups = new Map();\n\nfor (const ticket of tickets) {\n  const key = ticket.agentEmail || fallbackAgentEmail || \u0027\u0027;\n  if (!key) continue;\n  if (!groups.has(key)) {\n    groups.set(key, {\n      agentEmail: key,\n      agentName: ticket.agent || \u0027Sin agente asignado\u0027,\n      tickets: []\n    });\n  }\n  groups.get(key).tickets.push(ticket);\n}\n\nconst generatedAt = now.toLocaleString(\u0027es-CL\u0027, {\n  timeZone: timezone,\n  year: \u0027numeric\u0027,\n  month: \u00272-digit\u0027,\n  day: \u00272-digit\u0027,\n  hour: \u00272-digit\u0027,\n  minute: \u00272-digit\u0027\n});\n\nconst generatedAtFile = new Date()\n  .toISOString()\n  .replace(/[:.]/g, \u0027-\u0027)\n  .replace(\u0027T\u0027, \u0027_\u0027)\n  .slice(0, 19);\n\nconst output = [];\n\nfor (const group of groups.values()) {\n  const list = [...group.tickets].sort((a, b) =\u003e (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));\n  const olderThan14Count = list.filter(t =\u003e t.ageDays \u003e 14).length;\n  const slaBreachedCount = list.filter(t =\u003e t.slaBreached).length;\n  const criticalCount = list.filter(t =\u003e severity(t) === \u0027Cr\\u00edtico\u0027).length;\n  const requirementCount = list.filter(t =\u003e t.ticketType === \u0027requirement\u0027).length;\n  const incidentCount = list.filter(t =\u003e t.ticketType === \u0027incident\u0027).length;\n  const changeCount = list.filter(t =\u003e t.ticketType === \u0027change\u0027).length;\n  const problemCount = list.filter(t =\u003e t.ticketType === \u0027problem\u0027).length;\n  const typeStatsText = `Requerimientos: ${requirementCount} ?? Incidentes: ${incidentCount} ?? Cambios: ${changeCount} ?? Problemas: ${problemCount}`;\n  const oldestTicket = list[0] ? `${list[0].ref} ?? ${formatDurationFromHours(list[0].ageHours)}` : \u0027-\u0027;\n\n  const csvHeaders = [\n    \u0027Referencia\u0027,\n    \u0027Tipo\u0027,\n    \u0027Titulo\u0027,\n    \u0027Solicitante\u0027,\n    \u0027Agente\u0027,\n    \u0027Email agente\u0027,\n    \u0027Creacion\u0027,\n    \u0027Ultimo update\u0027,\n    \u0027Tiempo abierto\u0027,\n    \u0027SLA\u0027,\n    \u0027SLA vencido\u0027,\n    \u0027Ultima anotacion o cambio\u0027\n  ];\n\n  const csvRows = list.map(ticket =\u003e [\n    ticket.ref,\n    ticket.ticketTypeLabel,\n    ticket.title,\n    ticket.caller,\n    ticket.agent,\n    ticket.agentEmail,\n    fmtDateTime(ticket.createdAt),\n    fmtDateTime(ticket.lastUpdateAt),\n    formatDurationFromHours(ticket.ageHours),\n    ticket.slaText,\n    ticket.slaBreached ? \u0027Si\u0027 : \u0027No\u0027,\n    ticket.lastNote\n  ]);\n\n  const csvContent = \u0027\\uFEFF\u0027 + [\n    csvHeaders.map(csvEscape).join(\u0027;\u0027),\n    ...csvRows.map(row =\u003e row.map(csvEscape).join(\u0027;\u0027))\n  ].join(\u0027\\r\\n\u0027);\n\n  const safeAgent = String(group.agentName || \u0027agente\u0027)\n    .normalize(\u0027NFD\u0027)\n    .replace(/[\\u0300-\\u036f]/g, \u0027\u0027)\n    .replace(/[^a-zA-Z0-9_-]+/g, \u0027_\u0027)\n    .replace(/^_+|_+$/g, \u0027\u0027)\n    .slice(0, 60) || \u0027agente\u0027;\n\n  const emailSubject = itopOrganization\n    ? `${subjectBase} - ${itopOrganization} - ${group.agentName}`\n    : `${subjectBase} - ${group.agentName}`;\n\n  output.push({\n    json: {\n      flags: config.flags || {},\n      report_template_key: config.report_template_key,\n      template_root: config.template_root,\n      include_attachment: config.flags?.include_attachment ?? config.include_attachment,\n      include_detail: config.flags?.include_detail ?? config.include_detail,\n      include_summary: config.flags?.include_summary ?? config.include_summary,\n      include_operational_notes: config.flags?.include_operational_notes ?? config.include_operational_notes,\n      include_itop_button_footer: config.flags?.include_itop_button_footer ?? config.include_itop_button_footer,\n      email_from: config.email_from,\n      email_to: group.agentEmail,\n      email_cc: config.email_cc || \u0027\u0027,\n      email_bcc: config.email_bcc || \u0027\u0027,\n      email_subject: emailSubject,\n      company,\n      Company: company,\n      itop_organization: itopOrganization || \u0027-\u0027,\n      itop_url: config.itop_url || \u0027#\u0027,\n      generated_at: generatedAt,\n      enabled_ticket_types: enabledTicketTypeText(),\n      include_requirements: String(includeRequirements),\n      include_incidents: String(includeIncidents),\n      include_changes: String(includeChanges),\n      include_problems: String(includeProblems),\n      lookup_records: String(userRows.length),\n      indexed_agent_emails: String(agentEmailIndex.size),\n      ignored_emails: Array.from(ignoredEmails).join(\u0027,\u0027),\n      agent_name: group.agentName,\n      agent_email: group.agentEmail,\n      total_open: String(list.length),\n      older_than_14_count: String(olderThan14Count),\n      sla_breached_count: String(slaBreachedCount),\n      critical_count: String(criticalCount),\n      requirement_count: String(requirementCount),\n      incident_count: String(incidentCount),\n      change_count: String(changeCount),\n      problem_count: String(problemCount),\n      type_stats_text: typeStatsText,\n      oldest_ticket: oldestTicket,\n      ticket_sections: renderTicketsByType(list),\n      csv_filename: `tickets_abiertos_${safeAgent}_${generatedAtFile}.csv`\n    },\n    binary: {\n      csv: {\n        data: Buffer.from(csvContent, \u0027utf8\u0027).toString(\u0027base64\u0027),\n        mimeType: \u0027text/csv\u0027,\n        fileName: `tickets_abiertos_${safeAgent}_${generatedAtFile}.csv`\n      }\n    }\n  });\n}\n\nreturn output;"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3040,
+                                       560
+                                   ],
+                      "id":  "1c7ae5be-8742-4cda-8b4c-f76fab511453",
+                      "name":  "Preparar datos por agente"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const fs = require(\u0027fs\u0027);\nconst path = require(\u0027path\u0027);\n\nfunction escapeHtml(value) {\n  return String(value ?? \u0027\u0027)\n    .replace(/\u0026/g, \u0027\u0026amp;\u0027)\n    .replace(/\u003c/g, \u0027\u0026lt;\u0027)\n    .replace(/\u003e/g, \u0027\u0026gt;\u0027)\n    .replace(/\"/g, \u0027\u0026quot;\u0027)\n    .replace(/\u0027/g, \u0027\u0026#039;\u0027);\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, \u0027utf8\u0027);\n}\n\nfunction render(template, values) {\n  return String(template || \u0027\u0027).replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) =\u003e {\n    const parts = key.split(\u0027.\u0027);\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? \u0027\u0027 : String(value);\n  });\n}\n\nfunction normalizeText(value, forSubject = false) {\n  let text = String(value ?? \u0027\u0027);\n  const htmlMap = [\n    [\u0027Automatizaci??n\u0027,\u0027Automatizaci\u0026oacute;n\u0027], [\u0027Organizaci??n\u0027,\u0027Organizaci\u0026oacute;n\u0027], [\u0027organizaci??n\u0027,\u0027organizaci\u0026oacute;n\u0027],\n    [\u0027Producci??n\u0027,\u0027Producci\u0026oacute;n\u0027], [\u0027garant??a\u0027,\u0027garant\u0026iacute;a\u0027], [\u0027Garant??a\u0027,\u0027Garant\u0026iacute;a\u0027], [\u0027GARANT??A\u0027,\u0027GARANT\u0026Iacute;A\u0027],\n    [\u0027pr??ximos\u0027,\u0027pr\u0026oacute;ximos\u0027], [\u0027Pr??ximos\u0027,\u0027Pr\u0026oacute;ximos\u0027], [\u0027PR??XIMOS\u0027,\u0027PR\u0026Oacute;XIMOS\u0027], [\u0027pr??ximo\u0027,\u0027pr\u0026oacute;ximo\u0027], [\u0027pr??xima\u0027,\u0027pr\u0026oacute;xima\u0027],\n    [\u0027d??as\u0027,\u0027d\u0026iacute;as\u0027], [\u0027D??AS\u0027,\u0027D\u0026Iacute;AS\u0027], [\u0027D??as\u0027,\u0027D\u0026iacute;as\u0027], [\u0027m??s\u0027,\u0027m\u0026aacute;s\u0027], [\u0027M??S\u0027,\u0027M\u0026Aacute;S\u0027], [\u0027M??s\u0027,\u0027M\u0026aacute;s\u0027],\n    [\u0027T??tulo\u0027,\u0027T\u0026iacute;tulo\u0027], [\u0027antig??edad\u0027,\u0027antig\u0026uuml;edad\u0027], [\u0027actualizaci??n\u0027,\u0027actualizaci\u0026oacute;n\u0027], [\u0027configuraci??n\u0027,\u0027configuraci\u0026oacute;n\u0027],\n    [\u0027f??sicos\u0027,\u0027f\u0026iacute;sicos\u0027], [\u0027f??sico\u0027,\u0027f\u0026iacute;sico\u0027], [\u0027f??sica\u0027,\u0027f\u0026iacute;sica\u0027], [\u0027tel??fono\u0027,\u0027tel\u0026eacute;fono\u0027], [\u0027m??viles\u0027,\u0027m\u0026oacute;viles\u0027],\n    [\u0027perif??rico\u0027,\u0027perif\u0026eacute;rico\u0027], [\u0027perif??ricos\u0027,\u0027perif\u0026eacute;ricos\u0027], [\u0027??nico\u0027,\u0027\u0026uacute;nico\u0027], [\u0027??nica\u0027,\u0027\u0026uacute;nica\u0027], [\u0027??ltimo\u0027,\u0027\u0026uacute;ltimo\u0027],\n    [\u0027cr??tico\u0027,\u0027cr\u0026iacute;tico\u0027], [\u0027cr??ticos\u0027,\u0027cr\u0026iacute;ticos\u0027], [\u0027par??metros\u0027,\u0027par\u0026aacute;metros\u0027], [\u0027env??a\u0027,\u0027env\u0026iacute;a\u0027], [\u0027envi??\u0027,\u0027envi\u0026oacute;\u0027],\n    [\u0027asignaci??n\u0027,\u0027asignaci\u0026oacute;n\u0027], [\u0027ubicaci??n\u0027,\u0027ubicaci\u0026oacute;n\u0027], [\u0027descripci??n\u0027,\u0027descripci\u0026oacute;n\u0027], [\u0027categor??a\u0027,\u0027categor\u0026iacute;a\u0027],\n    [\u0027seg??n\u0027,\u0027seg\u0026uacute;n\u0027], [\u0027hist??rico\u0027,\u0027hist\u0026oacute;rico\u0027], [\u0027relaci??n\u0027,\u0027relaci\u0026oacute;n\u0027], [\u0027operaci??n\u0027,\u0027operaci\u0026oacute;n\u0027], [\u0027an??lisis\u0027,\u0027an\u0026aacute;lisis\u0027],\n    [\u0027creaci??n\u0027,\u0027creaci\u0026oacute;n\u0027], [\u0027aprobaci??n\u0027,\u0027aprobaci\u0026oacute;n\u0027], [\u0027atenci??n\u0027,\u0027atenci\u0026oacute;n\u0027], [\u0027informaci??n\u0027,\u0027informaci\u0026oacute;n\u0027],\n    [\u0027clasificaci??n\u0027,\u0027clasificaci\u0026oacute;n\u0027], [\u0027revisi??n\u0027,\u0027revisi\u0026oacute;n\u0027], [\u0027intervenci??n\u0027,\u0027intervenci\u0026oacute;n\u0027], [\u0027secci??n\u0027,\u0027secci\u0026oacute;n\u0027],\n    [\u0027l??nea\u0027,\u0027l\u0026iacute;nea\u0027], [\u0027c??digos\u0027,\u0027c\u0026oacute;digos\u0027], [\u0027d??nde\u0027,\u0027d\u0026oacute;nde\u0027], [\u0027espa??ol\u0027,\u0027espa\u0026ntilde;ol\u0027], [\u0027vi??etas\u0027,\u0027vi\u0026ntilde;etas\u0027],\n    [\u0027m??ltiples\u0027,\u0027m\u0026uacute;ltiples\u0027], [\u0027m??xima\u0027,\u0027m\u0026aacute;xima\u0027], [\u0027r??pida\u0027,\u0027r\u0026aacute;pida\u0027], [\u0027reposici??n\u0027,\u0027reposici\u0026oacute;n\u0027],\n    [\u0027est??ndar\u0027,\u0027est\u0026aacute;ndar\u0027], [\u0027alg??n\u0027,\u0027alg\u0026uacute;n\u0027], [\u0027??til\u0027,\u0027\u0026uacute;til\u0027], [\u0027port??til\u0027,\u0027port\u0026aacute;til\u0027]\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) =\u003e [bad, good\n    .replace(/\u0026aacute;/g,\u0027a\u0027).replace(/\u0026eacute;/g,\u0027e\u0027).replace(/\u0026iacute;/g,\u0027i\u0027).replace(/\u0026oacute;/g,\u0027o\u0027).replace(/\u0026uacute;/g,\u0027u\u0027)\n    .replace(/\u0026Aacute;/g,\u0027A\u0027).replace(/\u0026Eacute;/g,\u0027E\u0027).replace(/\u0026Iacute;/g,\u0027I\u0027).replace(/\u0026Oacute;/g,\u0027O\u0027).replace(/\u0026Uacute;/g,\u0027U\u0027)\n    .replace(/\u0026uuml;/g,\u0027u\u0027).replace(/\u0026Uuml;/g,\u0027U\u0027).replace(/\u0026ntilde;/g,\u0027n\u0027).replace(/\u0026Ntilde;/g,\u0027N\u0027)]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(\u0027 ?? \u0027).join(forSubject ? \u0027 - \u0027 : \u0027 \u0026bull; \u0027);\n  text = text.split(\u0027??\u0027).join(forSubject ? \u0027-\u0027 : \u0027\u0026bull;\u0027);\n  return text;\n}\n\nfunction getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027y\u0027, \u0027si\u0027, \u0027s\u0027, \u0027on\u0027, \u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027, \u00270\u0027, \u0027no\u0027, \u0027n\u0027, \u0027off\u0027, \u0027disabled\u0027].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  const trigger = getNodeJson(\u0027SetTrigger - Flujo\u0027);\n  const mixed = getNodeJson(\u0027SetMixed - Configuracion efectiva\u0027);\n  const value = trigger[name] ?? trigger.flags?.[name] ?? data[name] ?? data.flags?.[name] ?? mixed[name] ?? mixed.flags?.[name];\n  return normalizeBoolean(value, fallback);\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? \u0027\u0027)\n    .split(/\\r?\\n|\\. /)\n    .map(v =\u003e v.trim().replace(/\\.$/, \u0027\u0027))\n    .filter(Boolean);\n  if (!lines.length) return \u0027\u003cdiv style=\"font-size:13px; line-height:20px; color:#64748b;\"\u003eSin observaciones adicionales.\u003c/div\u003e\u0027;\n  return \u0027\u003cul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\"\u003e\u0027 +\n    lines.map(line =\u003e \u0027\u003cli\u003e\u0027 + escapeHtml(line) + \u0027.\u003c/li\u003e\u0027).join(\u0027\u0027) +\n    \u0027\u003c/ul\u003e\u0027;\n}\n\nfunction statCard(data, stat) {\n  const value = data[stat.value] ?? data[stat.fallbackValue] ?? \u0027-\u0027;\n  return \u0027\u003ctd class=\"summary-card\" width=\"33.33%\" valign=\"top\"\u003e\u003ctable role=\"presentation\" width=\"100%\" style=\"border:1px solid \u0027 + stat.border + \u0027; background-color:\u0027 + stat.background + \u0027;\"\u003e\u003ctr\u003e\u003ctd style=\"padding:12px;\"\u003e\u003cdiv style=\"font-size:11px; color:\u0027 + stat.labelColor + \u0027; font-weight:bold;\"\u003e\u0027 + escapeHtml(stat.label) + \u0027\u003c/div\u003e\u003cdiv style=\"font-size:24px; color:\u0027 + stat.valueColor + \u0027; font-weight:bold;\"\u003e\u0027 + escapeHtml(value) + \u0027\u003c/div\u003e\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003c/td\u003e\u0027;\n}\n\nfunction statRows(data, stats) {\n  const rows = [];\n  for (let i = 0; i \u003c stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(stat =\u003e statCard(data, stat));\n    while (cells.length \u003c 3) cells.push(\u0027\u003ctd class=\"summary-card\" width=\"33.33%\" valign=\"top\"\u003e\u0026nbsp;\u003c/td\u003e\u0027);\n    rows.push(\u0027\u003ctr\u003e\u0027 + cells.join(\u0027\u0027) + \u0027\u003c/tr\u003e\u0027);\n  }\n  return rows.join(\u0027\\n\u0027);\n}\n\nfunction simpleTable(title, rows, headers, emptyText) {\n  if (!rows) return \u0027\u0027;\n  const headerHtml = headers.map(h =\u003e \u0027\u003cth align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\"\u003e\u0027 + escapeHtml(h) + \u0027\u003c/th\u003e\u0027).join(\u0027\u0027);\n  const body = rows || \u0027\u003ctr\u003e\u003ctd colspan=\"\u0027 + headers.length + \u0027\" style=\"padding:14px; font-size:12px; color:#64748b;\"\u003e\u0027 + escapeHtml(emptyText || \u0027Sin registros.\u0027) + \u0027\u003c/td\u003e\u003c/tr\u003e\u0027;\n  return \u0027\u003cdiv style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\"\u003e\u0027 + escapeHtml(title) + \u0027\u003c/div\u003e\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"\u003e\u003cthead\u003e\u003ctr style=\"background:#f8fafc;\"\u003e\u0027 + headerHtml + \u0027\u003c/tr\u003e\u003c/thead\u003e\u003ctbody\u003e\u0027 + body + \u0027\u003c/tbody\u003e\u003c/table\u003e\u0027;\n}\n\nfunction tableContent(data) {\n  const blocks = [];\n  if (data.detail_blocks) blocks.push(data.detail_blocks);\n  if (data.class_asset_blocks) blocks.push(data.class_asset_blocks);\n  if (data.status_asset_blocks) blocks.push(data.status_asset_blocks);\n  if (data.review_asset_blocks) blocks.push(data.review_asset_blocks);\n  if (data.ticket_sections) blocks.push(data.ticket_sections);\n  if (data.older_section) blocks.push(data.older_section);\n  if (data.recent_section) blocks.push(data.recent_section);\n  if (data.ticket_rows_html) blocks.push(simpleTable(\u0027Tickets abiertos\u0027, data.ticket_rows_html, [\u0027Criticidad\u0027,\u0027Referencia\u0027,\u0027Tipo\u0027,\u0027Titulo\u0027,\u0027Solicitante\u0027,\u0027Estado\u0027,\u0027Creacion\u0027,\u0027Ultimo update\u0027,\u0027Antiguedad\u0027,\u0027SLA\u0027], \u0027Sin tickets.\u0027));\n  if (data.movement_rows) blocks.push(simpleTable(\u0027Movimientos recientes\u0027, data.movement_rows, [\u0027Fecha\u0027,\u0027Movimiento\u0027,\u0027Activo\u0027,\u0027Clase\u0027,\u0027Origen\u0027,\u0027Destino\u0027], \u0027Sin movimientos.\u0027));\n  if (data.class_summary_rows) blocks.push(simpleTable(\u0027Resumen por clase\u0027, data.class_summary_rows, [\u0027Clase\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por clase.\u0027));\n  if (data.warehouse_summary_rows) blocks.push(simpleTable(\u0027Resumen por bodega/localidad\u0027, data.warehouse_summary_rows, [\u0027Bodega/localidad\u0027,\u0027Total\u0027,\u0027Clases\u0027,\u0027Observacion\u0027], \u0027Sin resumen por bodega.\u0027));\n  if (data.status_summary_rows) blocks.push(simpleTable(\u0027Resumen por estado\u0027, data.status_summary_rows, [\u0027Estado\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por estado.\u0027));\n  if (data.location_summary_rows) blocks.push(simpleTable(\u0027Resumen por localidad\u0027, data.location_summary_rows, [\u0027Localidad\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por localidad.\u0027));\n  if (data.class_status_rows) blocks.push(simpleTable(\u0027Clase por estado\u0027, data.class_status_rows, [\u0027Clase\u0027,\u0027Productivo\u0027,\u0027Inventario\u0027,\u0027No operativo\u0027], \u0027Sin matriz de estados.\u0027));\n  if (data.location_matrix_rows) {\n    const header = data.location_matrix_header_cells || \u0027\u003cth align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\"\u003eBodega/localidad\u003c/th\u003e\u0027;\n    blocks.push(\u0027\u003cdiv style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\"\u003eMatriz por bodega/localidad\u003c/div\u003e\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"\u003e\u003cthead\u003e\u003ctr style=\"background:#f8fafc;\"\u003e\u0027 + header + \u0027\u003c/tr\u003e\u003c/thead\u003e\u003ctbody\u003e\u0027 + data.location_matrix_rows + \u0027\u003c/tbody\u003e\u003c/table\u003e\u0027);\n  }\n  if (data.top_location_rows) blocks.push(simpleTable(\u0027Top bodega/localidad\u0027, data.top_location_rows, [\u0027Bodega/localidad\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin top de localidades.\u0027));\n  return blocks.filter(Boolean).join(\u0027\\n\u0027);\n}\n\nfunction buildHtml(item) {\n  const data = item.json || {};\n  const triggerConfig = getNodeJson(\u0027SetTrigger - Flujo\u0027);\n  const mixedConfig = getNodeJson(\u0027SetMixed - Configuracion efectiva\u0027);\n  const root = data.template_root || mixedConfig.template_root || triggerConfig.template_root || \u0027/opt/n8n-config/templates/mail/v1\u0027;\n  const key = data.report_template_key || mixedConfig.report_template_key || triggerConfig.report_template_key || \u0027cmdb-activos-sin-contacto\u0027;\n  const contract = JSON.parse(readText(path.join(root, \u0027reports\u0027, key + \u0027.json\u0027)));\n  const partial = (name) =\u003e readText(path.join(root, contract.partials[name]));\n\n  const styles = partial(\u0027styles\u0027);\n  const header = render(partial(\u0027header\u0027), {\n    eyebrow: escapeHtml(contract.header?.eyebrow || \u0027Automatizacion ITSM / CMDB\u0027),\n    title: escapeHtml(data.report_title || data.email_subject || \u0027Reporte\u0027),\n    subtitle: escapeHtml(contract.header?.subtitle || \u0027\u0027),\n    itop_organization: escapeHtml(data.itop_organization || \u0027-\u0027),\n    generated_at: escapeHtml(data.generated_at || \u0027-\u0027),\n    source_label: escapeHtml(data.source_label || data.report_source_label || contract.header?.source_label || \u0027-\u0027),\n  });\n  const summary = render(partial(\u0027summary\u0027), { description: escapeHtml(data.report_description || contract.summary?.description || \u0027\u0027) });\n  const stats = render(partial(\u0027stats\u0027), { stats_rows: statRows(data, contract.stats || []) });\n  const criteria = render(partial(\u0027criteria\u0027), contract.criteria || {});\n  const tables = flagEnabled(data, \u0027include_detail\u0027, true) ? render(partial(\u0027tables\u0027), {\n    title: contract.tables?.title || \u0027Detalle operacional\u0027,\n    subtitle: contract.tables?.subtitle || \u0027\u0027,\n    content: tableContent(data) || \u0027\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"\u003e\u003ctr\u003e\u003ctd style=\"padding:14px; font-size:13px; color:#64748b;\"\u003eSin registros para el criterio del reporte.\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u0027,\n  }) : \u0027\u0027;\n  const notes = flagEnabled(data, \u0027include_operational_notes\u0027, true) ? render(partial(\u0027notes\u0027), { notes_list: notesList(data.operational_notes) }) : \u0027\u0027;\n  const cta = flagEnabled(data, \u0027include_itop_button_footer\u0027, true) ? render(partial(\u0027cta\u0027), {\n    href: escapeHtml(data.itop_url || \u0027#\u0027),\n    label: contract.cta?.label || \u0027Abrir\u0027,\n  }) : \u0027\u0027;\n  const footer = render(partial(\u0027footer\u0027), {\n    brand: contract.footer?.brand || \u0027Automatizacion ITSM / CMDB\u0027,\n    company: escapeHtml(data.company || data.Company || \u0027\u0027),\n    generated_at: escapeHtml(data.generated_at || \u0027-\u0027),\n  });\n\n  let html = render(partial(\u0027layout\u0027), {\n    title: escapeHtml(data.report_title || data.email_subject || \u0027Reporte\u0027),\n    styles,\n    header,\n    summary: flagEnabled(data, \u0027include_summary\u0027, true) ? summary : \u0027\u0027,\n    stats: flagEnabled(data, \u0027include_summary\u0027, true) ? stats : \u0027\u0027,\n    criteria,\n    tables,\n    notes,\n    cta,\n    footer,\n  });\n  html = normalizeText(html, false);\n  data.email_subject = normalizeText(data.email_subject, true);\n\n  const includeAttachment = flagEnabled(data, \u0027include_attachment\u0027, true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  return {\n    json: {\n      ...data,\n      html,\n      template_version: contract.template_version || \u0027mail-v1\u0027,\n      template_contract: key,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment \u0026\u0026 binary.csv ? \u0027csv\u0027 : \u0027\u0027,\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n}\n\nreturn $input.all().map(buildHtml);\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3264,
+                                       560
+                                   ],
+                      "id":  "72a40952-41d3-45ca-baa7-34eb50cf8bb5",
+                      "name":  "HTML - Renderer parciales"
+                  },
+                  {
+                      "parameters":  {
+                                         "fromEmail":  "={{ $json.email_from }}",
+                                         "toEmail":  "={{ $json.email_to }}",
+                                         "subject":  "={{ $json.email_subject }}",
+                                         "html":  "={{ $json.html }}",
+                                         "options":  {
+                                                         "appendAttribution":  false,
+                                                         "attachments":  "={{ $json.attachment_binary_names }}",
+                                                         "ccEmail":  "={{ $json.email_cc }}",
+                                                         "bccEmail":  "={{ $json.email_bcc }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.emailSend",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       3712,
+                                       560
+                                   ],
+                      "id":  "63d3e73a-72ad-4e41-bbb0-cdef54c380cf",
+                      "name":  "Enviar correo SMTP",
+                      "webhookId":  "0711891f-e083-4c41-82df-2dec573e4bbe",
+                      "credentials":  {
+                                          "smtp":  {
+                                                       "id":  "0Kph5ncFnrBvdaVP",
+                                                       "name":  "SMTP_Exchange"
+                                                   }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "itsm-tickets-abiertos-agente",
+                                         "authentication":  "headerAuth",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       1024,
+                                       368
+                                   ],
+                      "id":  "b201c775-d897-444b-ad97-23b0887d900f",
+                      "name":  "Webhook - ejecucion externa",
+                      "webhookId":  "af375e9f-9f54-4622-bfcf-d4f3ed525f37",
+                      "credentials":  {
+                                          "httpHeaderAuth":  {
+                                                                 "id":  "5ueiVRP6pKurE71t",
+                                                                 "name":  "HeaderAuth_GF_QA"
+                                                             }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "puR8KZ9UFvq5zRqX",
+                                                            "mode":  "list",
+                                                            "cachedResultUrl":  "/n8n/workflow/puR8KZ9UFvq5zRqX",
+                                                            "cachedResultName":  "SYS - Configuracion base reportes correo"
+                                                        },
+                                         "options":  {
+                                                         "waitForSubWorkflow":  true
+                                                     }
+                                     },
+                      "id":  "a2e93b5d-bc48-4a91-97e6-e22f54de82f7",
+                      "name":  "SubWorkflow - SetBase reportes correo",
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       2144,
+                                       560
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const base = $input.first()?.json || {};\nconst trigger = $(\u0027SetTrigger - Flujo\u0027).first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027y\u0027, \u0027si\u0027].includes(text)) return true;\n  if ([\u0027false\u0027, \u00270\u0027, \u0027no\u0027, \u0027n\u0027].includes(text)) return false;\n  return fallback;\n}\n\nconst flags = { ...(base.flags || {}) };\nfor (const key of [\u0027include_attachment\u0027, \u0027include_detail\u0027, \u0027include_summary\u0027, \u0027include_operational_notes\u0027, \u0027include_itop_button_footer\u0027, \u0027send_email\u0027, \u0027include_requirements\u0027, \u0027include_incidents\u0027, \u0027include_changes\u0027, \u0027include_problems\u0027]) {\n  if (trigger[key] !== undefined \u0026\u0026 trigger[key] !== null \u0026\u0026 trigger[key] !== \u0027\u0027) {\n    flags[key] = normalizeBoolean(trigger[key], flags[key]);\n  }\n}\n\nconst setMixed = {\n  ...base,\n  ...trigger,\n  flags,\n  config_source: \u0027SetBase + SetTrigger\u0027,\n};\n\nfor (const [key, value] of Object.entries(flags)) {\n  if (setMixed[key] === undefined || setMixed[key] === null || setMixed[key] === \u0027\u0027) setMixed[key] = value;\n}\n\nreturn [{ json: setMixed }];"
+                                     },
+                      "id":  "d4747786-177e-42c6-b45c-cdede91009b3",
+                      "name":  "Config Reporte",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2368,
+                                       560
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "function getNodeJson(name) {\n  try {\n    return $(name).first()?.json || {};\n  } catch (error) {\n    return {};\n  }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n\n  const text = String(value).trim().toLowerCase();\n\n  if ([\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027y\u0027, \u0027si\u0027, \u0027s\u0027, \u0027on\u0027, \u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027, \u00270\u0027, \u0027no\u0027, \u0027n\u0027, \u0027off\u0027, \u0027disabled\u0027].includes(text)) return false;\n\n  return fallback;\n}\n\nfunction mergeFlags(...sources) {\n  const flags = {};\n\n  for (const source of sources) {\n    if (!source) continue;\n\n    Object.assign(flags, source.flags || {});\n\n    for (const key of [\n      \u0027include_attachment\u0027,\n      \u0027include_detail\u0027,\n      \u0027include_summary\u0027,\n      \u0027include_operational_notes\u0027,\n      \u0027include_itop_button_footer\u0027,\n      \u0027send_email\u0027,\n      \u0027include_requirements\u0027,\n      \u0027include_incidents\u0027,\n      \u0027include_changes\u0027,\n      \u0027include_problems\u0027,\n    ]) {\n      if (source[key] !== undefined \u0026\u0026 source[key] !== null \u0026\u0026 source[key] !== \u0027\u0027) {\n        flags[key] = normalizeBoolean(source[key], flags[key]);\n      }\n    }\n  }\n\n  return flags;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  return normalizeBoolean(data[name] ?? data.flags?.[name], fallback);\n}\n\nfunction removeOuterRowByMarker(html, marker) {\n  const index = html.indexOf(marker);\n  if (index === -1) return html;\n\n  const starts = [\n    \u0027\\n      \u003ctr\u003e\u003ctd\u0027,\n    \u0027\\n                        \u003ctr\u003e\u003ctd\u0027,\n    \u0027\u003ctr\u003e\u003ctd\u0027,\n    \u0027\u003ctr\u003e\u0027,\n  ];\n\n  let start = -1;\n\n  for (const needle of starts) {\n    const pos = html.lastIndexOf(needle, index);\n    if (pos !== -1 \u0026\u0026 pos \u003e start) start = pos;\n  }\n\n  if (start === -1) start = Math.max(0, index - 200);\n\n  const ends = [\n    \u0027\\n      \u003ctr\u003e\u003ctd\u0027,\n    \u0027\\n                        \u003ctr\u003e\u003ctd\u0027,\n    \u0027\\n      \u003ctr\u003e\u003ctd style=\"background-color\u0027,\n    \u0027\\n                        \u003ctr\u003e\u003ctd style=\"background-color\u0027,\n  ];\n\n  let end = -1;\n\n  for (const needle of ends) {\n    const pos = html.indexOf(needle, index + marker.length);\n    if (pos !== -1 \u0026\u0026 (end === -1 || pos \u003c end)) end = pos;\n  }\n\n  if (end === -1) {\n    const close = html.indexOf(\u0027\u003c/td\u003e\u003c/tr\u003e\u0027, index);\n    end = close === -1 ? index + marker.length : close + \u0027\u003c/td\u003e\u003c/tr\u003e\u0027.length;\n  }\n\n  return html.slice(0, start) + html.slice(end);\n}\n\nfunction removeAllRowsByMarker(html, marker) {\n  let previous;\n\n  do {\n    previous = html;\n    html = removeOuterRowByMarker(html, marker);\n  } while (html !== previous);\n\n  return html;\n}\n\nfunction removeTablesByClass(html) {\n  return html\n    .replace(/\u003ctable\\b[^\u003e]*class=[\"\u0027][^\"\u0027]*(?:data-table|ticket-table)[^\"\u0027]*[\"\u0027][\\s\\S]*?\u003c\\/table\u003e/gi, \u0027\u0027)\n    .replace(/\u003ctable\\b[^\u003e]*(?:data-table|ticket-table)[^\u003e]*\u003e[\\s\\S]*?\u003c\\/table\u003e/gi, \u0027\u0027);\n}\n\nfunction repairMailEncoding(value, forSubject = false) {\n  let text = String(value ?? \u0027\u0027);\n\n  const htmlMap = [\n    [\u0027Automatizaci??n\u0027, \u0027Automatizaci\u0026oacute;n\u0027],\n    [\u0027automatizaci??n\u0027, \u0027automatizaci\u0026oacute;n\u0027],\n    [\u0027Organizaci??n\u0027, \u0027Organizaci\u0026oacute;n\u0027],\n    [\u0027organizaci??n\u0027, \u0027organizaci\u0026oacute;n\u0027],\n    [\u0027Producci??n\u0027, \u0027Producci\u0026oacute;n\u0027],\n    [\u0027producci??n\u0027, \u0027producci\u0026oacute;n\u0027],\n    [\u0027garant??a\u0027, \u0027garant\u0026iacute;a\u0027],\n    [\u0027Garant??a\u0027, \u0027Garant\u0026iacute;a\u0027],\n    [\u0027GARANT??A\u0027, \u0027GARANT\u0026Iacute;A\u0027],\n    [\u0027pr??ximos\u0027, \u0027pr\u0026oacute;ximos\u0027],\n    [\u0027Pr??ximos\u0027, \u0027Pr\u0026oacute;ximos\u0027],\n    [\u0027PR??XIMOS\u0027, \u0027PR\u0026Oacute;XIMOS\u0027],\n    [\u0027pr??ximo\u0027, \u0027pr\u0026oacute;ximo\u0027],\n    [\u0027pr??xima\u0027, \u0027pr\u0026oacute;xima\u0027],\n    [\u0027d??as\u0027, \u0027d\u0026iacute;as\u0027],\n    [\u0027D??AS\u0027, \u0027D\u0026Iacute;AS\u0027],\n    [\u0027D??as\u0027, \u0027D\u0026iacute;as\u0027],\n    [\u0027m??s\u0027, \u0027m\u0026aacute;s\u0027],\n    [\u0027M??S\u0027, \u0027M\u0026Aacute;S\u0027],\n    [\u0027M??s\u0027, \u0027M\u0026aacute;s\u0027],\n    [\u0027T??tulo\u0027, \u0027T\u0026iacute;tulo\u0027],\n    [\u0027t??tulo\u0027, \u0027t\u0026iacute;tulo\u0027],\n    [\u0027antig??edad\u0027, \u0027antig\u0026uuml;edad\u0027],\n    [\u0027Antig??edad\u0027, \u0027Antig\u0026uuml;edad\u0027],\n    [\u0027actualizaci??n\u0027, \u0027actualizaci\u0026oacute;n\u0027],\n    [\u0027Actualizaci??n\u0027, \u0027Actualizaci\u0026oacute;n\u0027],\n    [\u0027configuraci??n\u0027, \u0027configuraci\u0026oacute;n\u0027],\n    [\u0027Configuraci??n\u0027, \u0027Configuraci\u0026oacute;n\u0027],\n    [\u0027f??sicos\u0027, \u0027f\u0026iacute;sicos\u0027],\n    [\u0027f??sico\u0027, \u0027f\u0026iacute;sico\u0027],\n    [\u0027f??sica\u0027, \u0027f\u0026iacute;sica\u0027],\n    [\u0027f??sicamente\u0027, \u0027f\u0026iacute;sicamente\u0027],\n    [\u0027tel??fono\u0027, \u0027tel\u0026eacute;fono\u0027],\n    [\u0027Tel??fonos\u0027, \u0027Tel\u0026eacute;fonos\u0027],\n    [\u0027m??viles\u0027, \u0027m\u0026oacute;viles\u0027],\n    [\u0027perif??rico\u0027, \u0027perif\u0026eacute;rico\u0027],\n    [\u0027perif??ricos\u0027, \u0027perif\u0026eacute;ricos\u0027],\n    [\u0027Perif??ricos\u0027, \u0027Perif\u0026eacute;ricos\u0027],\n    [\u0027??nico\u0027, \u0027\u0026uacute;nico\u0027],\n    [\u0027??nica\u0027, \u0027\u0026uacute;nica\u0027],\n    [\u0027??ltimo\u0027, \u0027\u0026uacute;ltimo\u0027],\n    [\u0027??ltima\u0027, \u0027\u0026uacute;ltima\u0027],\n    [\u0027cr??tico\u0027, \u0027cr\u0026iacute;tico\u0027],\n    [\u0027cr??ticos\u0027, \u0027cr\u0026iacute;ticos\u0027],\n    [\u0027Cr??tico\u0027, \u0027Cr\u0026iacute;tico\u0027],\n    [\u0027CR??TICOS\u0027, \u0027CR\u0026Iacute;TICOS\u0027],\n    [\u0027par??metros\u0027, \u0027par\u0026aacute;metros\u0027],\n    [\u0027inv??lida\u0027, \u0027inv\u0026aacute;lida\u0027],\n    [\u0027v??lida\u0027, \u0027v\u0026aacute;lida\u0027],\n    [\u0027v??lidas\u0027, \u0027v\u0026aacute;lidas\u0027],\n    [\u0027env??a\u0027, \u0027env\u0026iacute;a\u0027],\n    [\u0027envi??\u0027, \u0027envi\u0026oacute;\u0027],\n    [\u0027asignaci??n\u0027, \u0027asignaci\u0026oacute;n\u0027],\n    [\u0027ubicaci??n\u0027, \u0027ubicaci\u0026oacute;n\u0027],\n    [\u0027descripci??n\u0027, \u0027descripci\u0026oacute;n\u0027],\n    [\u0027categor??a\u0027, \u0027categor\u0026iacute;a\u0027],\n    [\u0027seg??n\u0027, \u0027seg\u0026uacute;n\u0027],\n    [\u0027hist??rico\u0027, \u0027hist\u0026oacute;rico\u0027],\n    [\u0027Hist??rico\u0027, \u0027Hist\u0026oacute;rico\u0027],\n    [\u0027relaci??n\u0027, \u0027relaci\u0026oacute;n\u0027],\n    [\u0027operaci??n\u0027, \u0027operaci\u0026oacute;n\u0027],\n    [\u0027an??lisis\u0027, \u0027an\u0026aacute;lisis\u0027],\n    [\u0027creaci??n\u0027, \u0027creaci\u0026oacute;n\u0027],\n    [\u0027aprobaci??n\u0027, \u0027aprobaci\u0026oacute;n\u0027],\n    [\u0027atenci??n\u0027, \u0027atenci\u0026oacute;n\u0027],\n    [\u0027informaci??n\u0027, \u0027informaci\u0026oacute;n\u0027],\n    [\u0027clasificaci??n\u0027, \u0027clasificaci\u0026oacute;n\u0027],\n    [\u0027revisi??n\u0027, \u0027revisi\u0026oacute;n\u0027],\n    [\u0027intervenci??n\u0027, \u0027intervenci\u0026oacute;n\u0027],\n    [\u0027secci??n\u0027, \u0027secci\u0026oacute;n\u0027],\n    [\u0027l??nea\u0027, \u0027l\u0026iacute;nea\u0027],\n    [\u0027c??digos\u0027, \u0027c\u0026oacute;digos\u0027],\n    [\u0027d??nde\u0027, \u0027d\u0026oacute;nde\u0027],\n    [\u0027espa??ol\u0027, \u0027espa\u0026ntilde;ol\u0027],\n    [\u0027vi??etas\u0027, \u0027vi\u0026ntilde;etas\u0027],\n    [\u0027m??ltiples\u0027, \u0027m\u0026uacute;ltiples\u0027],\n    [\u0027m??xima\u0027, \u0027m\u0026aacute;xima\u0027],\n    [\u0027r??pida\u0027, \u0027r\u0026aacute;pida\u0027],\n    [\u0027reposici??n\u0027, \u0027reposici\u0026oacute;n\u0027],\n    [\u0027est??ndar\u0027, \u0027est\u0026aacute;ndar\u0027],\n    [\u0027alg??n\u0027, \u0027alg\u0026uacute;n\u0027],\n    [\u0027??til\u0027, \u0027\u0026uacute;til\u0027],\n    [\u0027port??til\u0027, \u0027port\u0026aacute;til\u0027],\n  ];\n\n  const subjectMap = htmlMap.map(([bad, good]) =\u003e [\n    bad,\n    good\n      .replace(/\u0026aacute;/g, \u0027a\u0027)\n      .replace(/\u0026eacute;/g, \u0027e\u0027)\n      .replace(/\u0026iacute;/g, \u0027i\u0027)\n      .replace(/\u0026oacute;/g, \u0027o\u0027)\n      .replace(/\u0026uacute;/g, \u0027u\u0027)\n      .replace(/\u0026Aacute;/g, \u0027A\u0027)\n      .replace(/\u0026Eacute;/g, \u0027E\u0027)\n      .replace(/\u0026Iacute;/g, \u0027I\u0027)\n      .replace(/\u0026Oacute;/g, \u0027O\u0027)\n      .replace(/\u0026Uacute;/g, \u0027U\u0027)\n      .replace(/\u0026uuml;/g, \u0027u\u0027)\n      .replace(/\u0026Uuml;/g, \u0027U\u0027)\n      .replace(/\u0026ntilde;/g, \u0027n\u0027)\n      .replace(/\u0026Ntilde;/g, \u0027N\u0027),\n  ]);\n\n  for (const [bad, good] of forSubject ? subjectMap : htmlMap) {\n    text = text.split(bad).join(good);\n  }\n\n  text = text.split(\u0027 ?? \u0027).join(forSubject ? \u0027 - \u0027 : \u0027 \u0026bull; \u0027);\n  text = text.split(\u0027??\u0027).join(forSubject ? \u0027-\u0027 : \u0027\u0026bull;\u0027);\n\n  return text;\n}\n\nfunction applyVisualFlags(html, data) {\n  if (!html) return html;\n\n  if (!flagEnabled(data, \u0027include_summary\u0027, true)) {\n    for (const marker of [\n      \u0027Resumen ejecutivo\u0027,\n      \u0027TOTAL ACTIVOS\u0027,\n      \u0027TOTAL CON CONTACTO\u0027,\n      \u0027TOTAL TICKETS\u0027,\n      \u0027TOTAL CAMBIOS\u0027,\n      \u0027TOTAL MOVIMIENTOS\u0027,\n    ]) {\n      html = removeAllRowsByMarker(html, marker);\n    }\n  }\n\n  if (!flagEnabled(data, \u0027include_detail\u0027, true)) {\n    for (const marker of [\n      \u0027Detalle operacional\u0027,\n      \u0027Detalle de activos\u0027,\n      \u0027Detalle de tickets\u0027,\n      \u0027Detalle por agente\u0027,\n      \u0027Detalle por antig?edad\u0027,\n      \u0027Resumen por estado\u0027,\n      \u0027Resumen por bodega/localidad\u0027,\n      \u0027Resumen por clase\u0027,\n      \u0027Activos por clase\u0027,\n      \u0027Por revisar\u0027,\n      \u0027Tickets abiertos\u0027,\n      \u0027Tickets abiertos pendientes\u0027,\n      \u0027Tickets abiertos por agente\u0027,\n      \u0027Tickets con m?s de 14 d?as abiertos\u0027,\n      \u0027Tickets abiertos hasta 14 d?as\u0027,\n      \u0027Movimientos recientes\u0027,\n      \u0027data-table\u0027,\n      \u0027ticket-table\u0027,\n    ]) {\n      html = removeAllRowsByMarker(html, marker);\n    }\n\n    html = removeTablesByClass(html);\n    html = html\n      .replace(/\\.data-table[\\s\\S]*?\\}/g, \u0027\u0027)\n      .replace(/\\.ticket-table[\\s\\S]*?\\}/g, \u0027\u0027);\n  }\n\n  if (!flagEnabled(data, \u0027include_operational_notes\u0027, true)) {\n    html = removeAllRowsByMarker(html, \u0027Observaciones operacionales\u0027);\n  }\n\n  if (!flagEnabled(data, \u0027include_itop_button_footer\u0027, true)) {\n    html = removeAllRowsByMarker(html, \u0027Abrir Combodo iTop\u0027);\n  }\n\n  return html;\n}\n\nfunction normalizeEmail(value) {\n  const text = String(value ?? \u0027\u0027).trim();\n  const match = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n  return match ? match[0].toLowerCase() : \u0027\u0027;\n}\n\nreturn $input.all().map((item) =\u003e {\n  const configReporte = getNodeJson(\u0027Config Reporte\u0027);\n  const setMixed = getNodeJson(\u0027SetMixed - Configuracion efectiva\u0027);\n  const setTrigger = getNodeJson(\u0027SetTrigger - Flujo\u0027);\n  const itemJson = item.json || {};\n\n  /*\n   * Orden correcto:\n   * 1. ConfiguraciÃ³n base\n   * 2. Trigger\n   * 3. ConfiguraciÃ³n efectiva\n   * 4. Item actual ya procesado por agente\n   *\n   * El item actual debe quedar al final para que email_to, agent_email,\n   * agent_name y email_subject no sean sobrescritos por defaults globales.\n   */\n  const flags = mergeFlags(configReporte, setTrigger, setMixed, itemJson);\n\n  const data = {\n    ...configReporte,\n    ...setTrigger,\n    ...setMixed,\n    ...itemJson,\n    flags,\n  };\n\n  for (const [key, value] of Object.entries(flags)) {\n    data[key] = value;\n  }\n\n  /*\n   * Blindaje explÃ­cito de destinatarios dinÃ¡micos.\n   * Esto evita que email_to vuelva a tomar el valor default\n   * usuario1@company.com desde SetTrigger o SetBase.\n   */\n  const resolvedEmailTo = normalizeEmail(itemJson.email_to)\n    || normalizeEmail(itemJson.agent_email)\n    || \u0027\u0027;\n\n  data.email_to = resolvedEmailTo;\n  data.agent_email = normalizeEmail(itemJson.agent_email) || data.agent_email || \u0027\u0027;\n  data.agent_name = itemJson.agent_name || data.agent_name || \u0027\u0027;\n\n  /*\n   * Si no hay destinatario real, se marca el envÃ­o como deshabilitado.\n   * Esto evita envÃ­os accidentales a correos default.\n   */\n  if (!data.email_to) {\n    data.send_email = false;\n    data.flags = {\n      ...(data.flags || {}),\n      send_email: false,\n    };\n  }\n\n  const includeAttachment = flagEnabled(data, \u0027include_attachment\u0027, true);\n  const binary = includeAttachment ? item.binary || {} : {};\n\n  const html = repairMailEncoding(\n    applyVisualFlags(data.html, data),\n    false,\n  );\n\n  data.email_subject = repairMailEncoding(data.email_subject, true);\n\n  return {\n    json: {\n      ...data,\n      html,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment \u0026\u0026 binary.csv ? \u0027csv\u0027 : \u0027\u0027,\n      has_csv_binary: Boolean(binary.csv),\n\n      /*\n       * Campos de auditorÃ­a temporal.\n       * Puedes eliminarlos despuÃ©s de validar.\n       */\n      debug_email_to_from_item: itemJson.email_to || \u0027\u0027,\n      debug_agent_email_from_item: itemJson.agent_email || \u0027\u0027,\n      debug_email_to_final: data.email_to || \u0027\u0027,\n    },\n    binary,\n  };\n});"
+                                     },
+                      "id":  "c192e493-7a10-4d39-b16b-acf350c7cd05",
+                      "name":  "Aplicar flags envio",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3488,
+                                       560
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const item = $input.first();\nconst body = item?.json?.body || {};\nconst errors = [];\n\nfunction text(name) {\n  return String(body[name] ?? \u0027\u0027).trim();\n}\n\nfunction positiveNumber(name) {\n  const raw = body[name];\n  if (raw === undefined || raw === null || raw === \u0027\u0027) return false;\n  const n = Number(raw);\n  return Number.isFinite(n) \u0026\u0026 n \u003e 0;\n}\n\nfunction validDateText(name) {\n  const value = text(name);\n  if (!value) return false;\n  const parsed = new Date(value.replace(\u0027 \u0027, \u0027T\u0027));\n  return !Number.isNaN(parsed.getTime());\n}\n\nfunction dateWindowState() {\n  const hasStart = text(\u0027start_date\u0027).length \u003e 0;\n  const hasEnd = text(\u0027end_date\u0027).length \u003e 0;\n  if (!hasStart \u0026\u0026 !hasEnd) return { provided: false, valid: false };\n  if (!hasStart || !hasEnd) return { provided: true, valid: false, error: \u0027start_date y end_date deben enviarse juntos.\u0027 };\n  if (!validDateText(\u0027start_date\u0027) || !validDateText(\u0027end_date\u0027)) return { provided: true, valid: false, error: \u0027start_date y end_date deben ser fechas v\\u00e1lidas.\u0027 };\n  const start = new Date(text(\u0027start_date\u0027).replace(\u0027 \u0027, \u0027T\u0027));\n  const end = new Date(text(\u0027end_date\u0027).replace(\u0027 \u0027, \u0027T\u0027));\n  if (start \u003e end) return { provided: true, valid: false, error: \u0027start_date no puede ser mayor que end_date.\u0027 };\n  return { provided: true, valid: true };\n}\n\nif (!text(\u0027email_to\u0027)) {\n  errors.push(\u0027email_to es obligatorio para llamadas webhook.\u0027);\n}\n\nconst webhookPath = \u0027itsm-tickets-abiertos-agente\u0027;\nconst window = dateWindowState();\n\nif (webhookPath === \u0027cmdb-movimientos-recientes-inventario\u0027) {\n  const hasMovementDays = positiveNumber(\u0027movement_days\u0027);\n  if (!hasMovementDays \u0026\u0026 !window.valid) {\n    errors.push(window.error || \u0027Debe enviar movement_days positivo o la ventana start_date + end_date.\u0027);\n  }\n}\n\nif (webhookPath === \u0027cmdb-activos-proximos-vencer-garantia\u0027) {\n  if (!positiveNumber(\u0027warranty_warning_months\u0027)) {\n    errors.push(\u0027warranty_warning_months es obligatorio y debe ser un numero mayor a 0.\u0027);\n  }\n}\n\nif (webhookPath === \u0027itsm-tickets-sin-actualizacion-24h\u0027) {\n  if (!positiveNumber(\u0027stale_threshold_hours\u0027)) {\n    errors.push(\u0027stale_threshold_hours es obligatorio y debe ser un numero mayor a 0.\u0027);\n  }\n}\n\nif (window.provided \u0026\u0026 !window.valid \u0026\u0026 webhookPath !== \u0027cmdb-movimientos-recientes-inventario\u0027) {\n  errors.push(window.error || \u0027Ventana de fechas inv\\u00e1lida.\u0027);\n}\n\nconst valid = errors.length === 0;\n\nreturn [{\n  json: {\n    ...(item.json || {}),\n    webhook_contract: {\n      valid,\n      status_code: valid ? 202 : 400,\n      message: valid ? \u0027Workflow accepted\u0027 : errors.join(\u0027 \u0027),\n      errors,\n    },\n  },\n  binary: item.binary,\n}];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1248,
+                                       368
+                                   ],
+                      "id":  "41d391a8-cc7f-443e-a0d9-4f661273fddd",
+                      "name":  "Validar webhook"
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ { \"message\": $json.webhook_contract.message, \"accepted\": $json.webhook_contract.valid } }}",
+                                         "options":  {
+                                                         "responseCode":  "={{ $json.webhook_contract.status_code }}",
+                                                         "responseHeaders":  {
+                                                                                 "entries":  [
+                                                                                                 {
+                                                                                                     "name":  "Content-Type",
+                                                                                                     "value":  "application/json; charset=utf-8"
+                                                                                                 }
+                                                                                             ]
+                                                                             }
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.5,
+                      "position":  [
+                                       1472,
+                                       368
+                                   ],
+                      "id":  "35c05dbd-b734-4ebc-a67c-ba39fdc7f73f",
+                      "name":  "Responder webhook"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const item = $input.first();\nconst json = item?.json || {};\n\nif (!json.webhook_contract?.valid) {\n  return [];\n}\n\nconst { webhook_contract, ...cleanJson } = json;\nreturn [{ json: cleanJson, binary: item.binary }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1696,
+                                       368
+                                   ],
+                      "id":  "0b2a1fd5-96ba-45b9-981b-b17eeb252b09",
+                      "name":  "Continuar webhook valido"
+                  },
+                  {
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "triggerAtHour":  6
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       1696,
+                                       752
+                                   ],
+                      "id":  "c28db1a4-59f0-4270-ba1c-aca4369fd1c4",
+                      "name":  "Cron - Diario"
+                  }
+              ],
+    "pinData":  {
+
+                },
+    "connections":  {
+                        "Ejecutar manualmente":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "SetTrigger - Flujo",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "iTop - Tickets abiertos":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Preparar datos por agente",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Preparar datos por agente":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "HTML - Renderer parciales",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "HTML - Renderer parciales":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "Aplicar flags envio",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "iTop - Usuarios Locales con Persona":  {
+                                                                    "main":  [
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "iTop - Tickets abiertos",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ]
+                                                                             ]
+                                                                },
+                        "SetTrigger - Flujo":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "SubWorkflow - SetBase reportes correo",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "SubWorkflow - SetBase reportes correo":  {
+                                                                      "main":  [
+                                                                                   [
+                                                                                       {
+                                                                                           "node":  "Config Reporte",
+                                                                                           "type":  "main",
+                                                                                           "index":  0
+                                                                                       }
+                                                                                   ]
+                                                                               ]
+                                                                  },
+                        "Config Reporte":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "iTop - Usuarios Locales con Persona",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Webhook - ejecucion externa":  {
+                                                            "main":  [
+                                                                         [
+                                                                             {
+                                                                                 "node":  "Validar webhook",
+                                                                                 "type":  "main",
+                                                                                 "index":  0
+                                                                             }
+                                                                         ]
+                                                                     ]
+                                                        },
+                        "Aplicar flags envio":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Enviar correo SMTP",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Validar webhook":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Responder webhook",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Responder webhook":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Continuar webhook valido",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Continuar webhook valido":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "SetTrigger - Flujo",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "Cron - Diario":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "SetTrigger - Flujo",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          }
+                    },
+    "active":  true,
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate"
+                 },
+    "versionId":  "a34d2f5e-8da2-4a28-929c-3799efff5c11",
+    "meta":  {
+                 "templateCredsSetupCompleted":  true,
+                 "instanceId":  "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+             },
+    "id":  "6ZNlk0b0DsgkOyUy",
+    "tags":  [
+
+             ]
+}

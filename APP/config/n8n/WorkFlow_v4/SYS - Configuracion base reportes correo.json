@@ -1,0 +1,204 @@
+{
+  "name": "SYS - Configuracion base reportes correo",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "8024c6aa-d2c9-4a69-8cab-7c9dd5f1fcd2",
+      "name": "Cuando es llamado por otro workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "55c10a39-31e0-4b9a-b5d7-c3f207c991bf",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "6d8ff6bf-87a2-4089-be7d-1d99385f7c9a",
+              "name": "company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "8c7f51ae-482b-4718-befe-e9e716a270ff",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "aa8f1c2b-21fd-434a-9a5d-2949c29802b2",
+              "name": "email_from",
+              "value": "notificaciones@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "b1db8423-8b8a-477d-9730-b4aa3f28d074",
+              "name": "email_to",
+              "value": "destinatario@dominio.cl",
+              "type": "string"
+            },
+            {
+              "id": "1b61d8c4-5905-4cc1-a0c9-541d6f470f6d",
+              "name": "email_cc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "852058b0-0fe9-416a-93f6-b381a17383d1",
+              "name": "email_bcc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "8292743f-cf27-43f5-8f1f-dd35ba4ba882",
+              "name": "itop_url",
+              "value": "http://172.16.123.132/itop/",
+              "type": "string"
+            },
+            {
+              "id": "c359072a-71a6-4e46-a40e-e1646f3a984b",
+              "name": "itop_organization",
+              "value": "Minera GoldFields Chile",
+              "type": "string"
+            },
+            {
+              "id": "82ac1483-463b-4214-8bb2-e30419c54427",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "74a900e4-5421-4eb4-b11b-de30495e7412",
+              "name": "template_root",
+              "value": "/opt/n8n-config/templates/mail/v1",
+              "type": "string"
+            },
+            {
+              "id": "9e5cd2e8-d7f7-4f86-9d51-a02fb7a6a9ce",
+              "name": "source_label",
+              "value": "Producción / iTop CMDB",
+              "type": "string"
+            },
+            {
+              "id": "296ccb0c-d572-4588-880a-67fdd95acbc6",
+              "name": "default_detail_level",
+              "value": "full",
+              "type": "string"
+            },
+            {
+              "id": "94b5433c-a5c0-4bbd-a51c-fb5de29c66eb",
+              "name": "flags.send_email",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "ab595751-728d-4152-b761-914d5397efba",
+              "name": "flags.include_attachment",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "1747977d-d1c7-4d97-b8fc-0287ba389caa",
+              "name": "flags.include_summary",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "0000dd06-b97e-40ce-9f3b-c55dfe15c1bb",
+              "name": "flags.include_detail",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "0c2344ce-80ef-445b-bfab-f9788a05ddc5",
+              "name": "flags.include_operational_notes",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "fd5006b2-cd3d-4e20-9dcf-c1df054575fa",
+              "name": "flags.include_itop_button_footer",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "ec308c4d-e3aa-48db-b5be-d8c6ee2a6943",
+              "name": "flags.include_requirements",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "27b747a7-3d10-4ecc-9dcc-e2e05b8e6ad6",
+              "name": "flags.include_incidents",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "0d2d5ff4-99ea-4b53-8060-82cc592c661d",
+              "name": "flags.include_changes",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "e6ceb963-464b-4d77-84dd-c20fc648b58f",
+              "name": "flags.include_problems",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "6aa6505e-be7e-4eb9-96e2-8a0fd1e2f56c",
+              "name": "set_base_version",
+              "value": "mail-config-v3",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "id": "693e7cfe-251e-4290-9625-2175ea9ce9e6",
+      "name": "SetBase - Reportes correo1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        448
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cuando es llamado por otro workflow": {
+      "main": [
+        [
+          {
+            "node": "SetBase - Reportes correo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ecf94c54-f048-4496-b1cf-3265cf489895",
+  "meta": {
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "puR8KZ9UFvq5zRqX",
+  "tags": []
+}

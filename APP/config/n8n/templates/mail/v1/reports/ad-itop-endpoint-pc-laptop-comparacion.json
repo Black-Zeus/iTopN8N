@@ -1,0 +1,63 @@
+{
+  "template_version": "mail-v1",
+  "partials": {
+    "styles": "partials/styles.html",
+    "layout": "partials/layout.html",
+    "header": "partials/header.html",
+    "summary": "partials/summary.html",
+    "stats": "partials/stats.html",
+    "criteria": "partials/criteria.html",
+    "tables": "partials/tables.html",
+    "notes": "partials/notes.html",
+    "cta": "partials/cta.html",
+    "footer": "partials/footer.html"
+  },
+  "header": {
+    "eyebrow": "Automatización ITSM / CMDB",
+    "subtitle": "Consolidado operativo sincronizado desde Combodo iTop",
+    "source_label": "Producción / iTop"
+  },
+  "summary": {
+    "description": "Cruce informativo entre equipos Active Directory y activos PC/Laptop en iTop, usando hostname como llave de comparación."
+  },
+  "criteria": {
+    "title": "Criterio del reporte",
+    "body": "Se comparan endpoints AD dentro del alcance configurado contra activos iTop de clase PC/Laptop. Se omiten equipos con prefijo GFPE para este reporte."
+  },
+  "tables": {
+    "title": "Detalle comparativo AD vs iTop",
+    "subtitle": "Diferencias, registros presentes en una sola fuente y equipos sincronizados."
+  },
+  "cta": {
+    "label": "Abrir Combodo iTop"
+  },
+  "footer": {
+    "brand": "Automatización ITSM / CMDB"
+  },
+  "stats": [
+    {
+      "label": "EQUIPOS AD",
+      "value": "total_ad_equipos",
+      "border": "#bfdbfe",
+      "background": "#eff6ff",
+      "labelColor": "#1e3a8a",
+      "valueColor": "#1e3a8a"
+    },
+    {
+      "label": "PC/LAPTOP ITOP",
+      "value": "total_itop_pc_laptop",
+      "border": "#cbd5e1",
+      "background": "#f8fafc",
+      "labelColor": "#475569",
+      "valueColor": "#0f172a"
+    },
+    {
+      "label": "DIFERENCIAS",
+      "value": "diferencias_estado",
+      "border": "#fecaca",
+      "background": "#fef2f2",
+      "labelColor": "#991b1b",
+      "valueColor": "#991b1b"
+    }
+  ]
+}
