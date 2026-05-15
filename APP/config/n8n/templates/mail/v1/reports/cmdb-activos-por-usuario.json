@@ -1,0 +1,87 @@
+{
+    "template_version":  "mail-v1",
+    "partials":  {
+                     "styles":  "partials/styles.html",
+                     "layout":  "partials/layout.html",
+                     "header":  "partials/header.html",
+                     "summary":  "partials/summary.html",
+                     "stats":  "partials/stats.html",
+                     "criteria":  "partials/criteria.html",
+                     "tables":  "partials/tables.html",
+                     "notes":  "partials/notes.html",
+                     "cta":  "partials/cta.html",
+                     "footer":  "partials/footer.html"
+                 },
+    "header":  {
+                   "eyebrow":  "Automatizacion ITSM / CMDB",
+                   "subtitle":  "Control de asignaciones de activos CMDB por usuario",
+                   "source_label":  "Produccion / iTop"
+               },
+    "criteria":  {
+                     "title":  "Criterio del reporte",
+                     "body":  "Reporte orientado a visualizar rapidamente la asignacion de activos por usuario y apoyar procesos de control, revision y respaldo operacional."
+                 },
+    "tables":  {
+                   "title":  "Activos por usuario",
+                   "subtitle":  "Detalle para revision y seguimiento de asignaciones."
+               },
+    "cta":  {
+                "label":  "Abrir Combodo iTop"
+            },
+    "footer":  {
+                   "brand":  "Automatizacion ITSM / CMDB"
+               },
+    "stats":  [
+                  {
+                      "label":  "USUARIOS",
+                      "value":  "user_count",
+                      "border":  "#cbd5e1",
+                      "background":  "#f8fafc",
+                      "labelColor":  "#475569",
+                      "valueColor":  "#0f172a"
+                  },
+                  {
+                      "label":  "TOTAL ACTIVOS",
+                      "value":  "total_assets",
+                      "border":  "#bbf7d0",
+                      "background":  "#f0fdf4",
+                      "labelColor":  "#166534",
+                      "valueColor":  "#166534"
+                  },
+                  {
+                      "label":  "PC",
+                      "value":  "pc_laptop_count",
+                      "border":  "#bfdbfe",
+                      "background":  "#eff6ff",
+                      "labelColor":  "#1e3a8a",
+                      "valueColor":  "#1e3a8a"
+                  },
+                  {
+                      "label":  "MOVILES",
+                      "value":  "mobile_count",
+                      "border":  "#ddd6fe",
+                      "background":  "#f5f3ff",
+                      "labelColor":  "#6d28d9",
+                      "valueColor":  "#6d28d9"
+                  },
+                  {
+                      "label":  "TABLETS",
+                      "value":  "tablet_count",
+                      "border":  "#fde68a",
+                      "background":  "#fffbeb",
+                      "labelColor":  "#a16207",
+                      "valueColor":  "#a16207"
+                  },
+                  {
+                      "label":  "PERIFERICOS/OTROS",
+                      "value":  "other_count",
+                      "border":  "#fecaca",
+                      "background":  "#fef2f2",
+                      "labelColor":  "#991b1b",
+                      "valueColor":  "#991b1b"
+                  }
+              ],
+    "summary":  {
+                    "description":  "Entrega una vista consolidada de los activos asignados a usuarios en iTop, incluyendo ficha basica, resumen por categoria, detalle de activos y archivo CSV adjunto para analisis o respaldo."
+                }
+}
