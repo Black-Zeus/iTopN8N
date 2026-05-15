@@ -13,26 +13,26 @@
     "footer": "partials/footer.html"
   },
   "header": {
-    "eyebrow": "Automatización ITSM / CMDB",
-    "subtitle": "Consolidado operativo sincronizado desde Combodo iTop",
-    "source_label": "Producción / iTop"
+    "eyebrow": "Automatizacion ITSM / CMDB",
+    "subtitle": "Conciliacion operativa entre Active Directory e iTop",
+    "source_label": "Produccion / AD + iTop"
   },
   "summary": {
-    "description": "Cruce informativo entre equipos Active Directory y activos PC/Laptop en iTop, usando hostname como llave de comparación."
+    "description": "Vista ejecutiva de conciliacion entre endpoints registrados en Active Directory y activos PC/Laptop disponibles en iTop, destacando diferencias, registros exclusivos por fuente y equipos correctamente sincronizados."
   },
   "criteria": {
     "title": "Criterio del reporte",
-    "body": "Se comparan endpoints AD dentro del alcance configurado contra activos iTop de clase PC/Laptop. Se omiten equipos con prefijo GFPE para este reporte."
+    "body": "Permite identificar brechas entre AD e iTop para priorizar regularizacion de inventario, control de vigencia y calidad de datos sobre endpoints PC/Laptop dentro del alcance configurado."
   },
   "tables": {
-    "title": "Detalle comparativo AD vs iTop",
-    "subtitle": "Diferencias, registros presentes en una sola fuente y equipos sincronizados."
+    "title": "Conciliacion AD vs iTop - Endpoint PC/Laptop",
+    "subtitle": "Detalle priorizado de diferencias, registros por revisar y equipos sincronizados."
   },
   "cta": {
     "label": "Abrir Combodo iTop"
   },
   "footer": {
-    "brand": "Automatización ITSM / CMDB"
+    "brand": "Automatizacion ITSM / CMDB"
   },
   "stats": [
     {
@@ -58,6 +58,30 @@
       "background": "#fef2f2",
       "labelColor": "#991b1b",
       "valueColor": "#991b1b"
+    },
+    {
+      "label": "SOLO AD",
+      "value": "solo_ad",
+      "border": "#fed7aa",
+      "background": "#fff7ed",
+      "labelColor": "#9a3412",
+      "valueColor": "#9a3412"
+    },
+    {
+      "label": "SOLO ITOP",
+      "value": "solo_itop",
+      "border": "#fde68a",
+      "background": "#fffbeb",
+      "labelColor": "#92400e",
+      "valueColor": "#92400e"
+    },
+    {
+      "label": "REVISAR",
+      "value": "revisar",
+      "border": "#ddd6fe",
+      "background": "#f5f3ff",
+      "labelColor": "#5b21b6",
+      "valueColor": "#5b21b6"
     }
   ]
 }

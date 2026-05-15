@@ -1,680 +1,664 @@
-﻿{
-    "name":  "AD - iTop - Comparacion Endpoint PC Laptop - SMTP",
-    "nodes":  [
-                  {
-                      "parameters":  {
-
-                                     },
-                      "type":  "n8n-nodes-base.manualTrigger",
-                      "typeVersion":  1,
-                      "position":  [
-                                       18720,
-                                       6048
-                                   ],
-                      "id":  "08a72c67-be71-4192-97c7-98f07cdd9b20",
-                      "name":  "Ejecutar manualmente"
-                  },
-                  {
-                      "parameters":  {
-                                         "httpMethod":  "POST",
-                                         "path":  "ad-itop-endpoint-pc-laptop-comparacion",
-                                         "authentication":  "headerAuth",
-                                         "responseMode":  "responseNode",
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "type":  "n8n-nodes-base.webhook",
-                      "typeVersion":  2.1,
-                      "position":  [
-                                       18048,
-                                       5856
-                                   ],
-                      "id":  "4f76fe03-bc94-429b-9f0a-706b1b85b8f6",
-                      "name":  "Webhook - ejecucion externa",
-                      "webhookId":  "f05d3680-5dbd-48e9-9c80-0a9ec5c73680",
-                      "credentials":  {
-                                          "httpHeaderAuth":  {
-                                                                 "id":  "5ueiVRP6pKurE71t",
-                                                                 "name":  "HeaderAuth_GF_QA"
-                                                             }
-                                      }
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const item = $input.first();\nconst body = item?.json?.body || {};\nconst errors = [];\n\nfunction text(name) { return String(body[name] ?? \u0027\u0027).trim(); }\nfunction optionalBoolean(name) {\n  const raw = body[name];\n  if (raw === undefined || raw === null || raw === \u0027\u0027) return true;\n  const v = String(raw).trim().toLowerCase();\n  return [\u0027true\u0027,\u0027false\u0027,\u00271\u0027,\u00270\u0027,\u0027yes\u0027,\u0027no\u0027,\u0027si\u0027,\u0027s\u0027,\u0027n\u0027,\u0027on\u0027,\u0027off\u0027].includes(v);\n}\n\nif (!text(\u0027email_to\u0027)) errors.push(\u0027email_to es obligatorio para llamadas webhook.\u0027);\nfor (const name of [\u0027include_attachment\u0027,\u0027include_detail\u0027,\u0027include_summary\u0027,\u0027send_email\u0027]) {\n  if (!optionalBoolean(name)) errors.push(`${name} debe ser booleano compatible: true/false, 1/0, si/no.`);\n}\nconst valid = errors.length === 0;\nreturn [{ json: { ...(item.json || {}), webhook_contract: { valid, status_code: valid ? 202 : 400, message: valid ? \u0027Workflow accepted\u0027 : errors.join(\u0027 \u0027), errors } }, binary: item.binary }];"
-                                     },
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       18272,
-                                       5856
-                                   ],
-                      "id":  "c35e2114-02e4-4d3a-884c-fb323dcc3ff2",
-                      "name":  "Validar webhook"
-                  },
-                  {
-                      "parameters":  {
-                                         "respondWith":  "json",
-                                         "responseBody":  "={{ { \"message\": $json.webhook_contract.message, \"accepted\": $json.webhook_contract.valid } }}",
-                                         "options":  {
-                                                         "responseCode":  "={{ $json.webhook_contract.status_code }}",
-                                                         "responseHeaders":  {
-                                                                                 "entries":  [
-                                                                                                 {
-                                                                                                     "name":  "Content-Type",
-                                                                                                     "value":  "application/json; charset=utf-8"
-                                                                                                 }
-                                                                                             ]
-                                                                             }
-                                                     }
-                                     },
-                      "type":  "n8n-nodes-base.respondToWebhook",
-                      "typeVersion":  1.5,
-                      "position":  [
-                                       18496,
-                                       5856
-                                   ],
-                      "id":  "cd962f3b-0808-4e70-b763-1a9718d47455",
-                      "name":  "Responder webhook"
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const item = $input.first();\nconst json = item?.json || {};\nif (!json.webhook_contract?.valid) return [];\nconst { webhook_contract, ...cleanJson } = json;\nreturn [{ json: cleanJson, binary: item.binary }];"
-                                     },
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       18720,
-                                       5856
-                                   ],
-                      "id":  "707a04fb-eb60-43a1-b271-adc27fd907a8",
-                      "name":  "Continuar webhook valido"
-                  },
-                  {
-                      "parameters":  {
-                                         "rule":  {
-                                                      "interval":  [
-                                                                       {
-                                                                           "field":  "months",
-                                                                           "triggerAtHour":  7,
-                                                                           "triggerAtMinute":  30
-                                                                       }
-                                                                   ]
-                                                  }
-                                     },
-                      "type":  "n8n-nodes-base.scheduleTrigger",
-                      "typeVersion":  1.3,
-                      "position":  [
-                                       18720,
-                                       6240
-                                   ],
-                      "id":  "57e93710-a255-4d52-a34f-c00809462926",
-                      "name":  "Cron - Mensual"
-                  },
-                  {
-                      "parameters":  {
-                                         "assignments":  {
-                                                             "assignments":  [
-                                                                                 {
-                                                                                     "id":  "055fc394-a6fe-4fca-9799-f14c8a473850",
-                                                                                     "name":  "email_from",
-                                                                                     "value":  "={{ $json.body?.email_from ?? \"notificaciones@dominio.cl\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "a64270a7-9a43-49dc-a5bc-8c6fb1bc1693",
-                                                                                     "name":  "email_to",
-                                                                                     "value":  "={{ $json.body?.email_to ?? \"mesa.ayuda@dominio.cl\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "a6ce1103-169a-42d8-9963-ed314c0c10b4",
-                                                                                     "name":  "email_cc",
-                                                                                     "value":  "={{ $json.body?.email_cc ?? \"\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "a6944dde-5168-4329-935f-876d82a6bc4e",
-                                                                                     "name":  "email_bcc",
-                                                                                     "value":  "={{ $json.body?.email_bcc ?? \"\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "cd269776-9fae-4b64-9b46-b92f960c439c",
-                                                                                     "name":  "email_subject",
-                                                                                     "value":  "Comparacion AD vs iTop - Endpoint PC/Laptop",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "986e5668-6ce7-4ec9-a6df-22cb55f49998",
-                                                                                     "name":  "timezone",
-                                                                                     "value":  "America/Santiago",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "713e91fc-d6b6-4aad-b505-ec630a283d47",
-                                                                                     "name":  "Company",
-                                                                                     "value":  "TecnoComp",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "7addd653-0b35-4db7-9930-80330b2a3627",
-                                                                                     "name":  "itop_organization",
-                                                                                     "value":  "Minera GoldFields Chile",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "42a2b43e-e35b-4cd3-9bd0-2804325539c7",
-                                                                                     "name":  "report_template_key",
-                                                                                     "value":  "ad-itop-endpoint-pc-laptop-comparacion",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "916fce73-7db7-4e12-bc3f-9c171aa98980",
-                                                                                     "name":  "ldap_base_dn",
-                                                                                     "value":  "={{ $json.body?.ldap_base_dn ?? \"OU=SITES_CHILE,DC=GFPE,DC=GFIROOT,DC=Local\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "0afa455c-0786-415d-9863-4ef1bcd35c94",
-                                                                                     "name":  "ldap_filter",
-                                                                                     "value":  "={{ $json.body?.ldap_filter ?? \"(\u0026(objectClass=computer)(objectCategory=computer))\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "4b59f1a8-6205-40ea-813d-8bc6f9551b9a",
-                                                                                     "name":  "ldap_included_ous",
-                                                                                     "value":  "={{ $json.body?.ldap_included_ous ?? \"Computers,Disable Device,Servers,Servers AWS\" }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "d334e52c-49b5-4b28-9c8c-387a92409a51",
-                                                                                     "name":  "ldap_attributes",
-                                                                                     "value":  "cn,name,sAMAccountName,dNSHostName,distinguishedName,userAccountControl,lastLogonTimestamp,lastLogon,operatingSystem,operatingSystemVersion,managedBy,location,description,info,whenChanged,whenCreated,objectClass,objectCategory",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "b75a4aaa-f381-4f6d-b8f7-765281387434",
-                                                                                     "name":  "itop_pc_class",
-                                                                                     "value":  "PC",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "1f86cef5-ece7-4157-b6b2-a9c1b7f521a6",
-                                                                                     "name":  "itop_laptop_class",
-                                                                                     "value":  "Laptop",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "fa1f2ed5-4683-4bc8-b896-f33995cd8351",
-                                                                                     "name":  "itop_oql_pc",
-                                                                                     "value":  "SELECT PC",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "8c5b1f62-e4c7-4a30-bd90-4639f222c0eb",
-                                                                                     "name":  "itop_oql_laptop",
-                                                                                     "value":  "SELECT Laptop",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "4ca4d8a6-4075-42d3-b53f-7916b7301da5",
-                                                                                     "name":  "itop_output_fields",
-                                                                                     "value":  "name,friendlyname,status,serialnumber,asset_number,org_id,org_id_friendlyname,finalclass,description,location_id_friendlyname,brand_id_friendlyname,model_id_friendlyname",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "4b0f3c9c-1e01-47b7-8e1d-0d4ba142ef6b",
-                                                                                     "name":  "itop_limit",
-                                                                                     "value":  5000,
-                                                                                     "type":  "number"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "d07d18fb-2d8f-4069-9048-26583eb9d366",
-                                                                                     "name":  "include_attachment",
-                                                                                     "value":  "={{ $json.body?.include_attachment ?? true }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "7747dd5a-a333-499c-b388-99f20d2cf010",
-                                                                                     "name":  "include_detail",
-                                                                                     "value":  "={{ $json.body?.include_detail ?? true }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "1ccd5510-be33-44fb-a5a3-fbc8c4b01b10",
-                                                                                     "name":  "include_summary",
-                                                                                     "value":  "={{ $json.body?.include_summary ?? true }}",
-                                                                                     "type":  "string"
-                                                                                 },
-                                                                                 {
-                                                                                     "id":  "cfe4a63a-b994-45c8-9318-1b4e096ede99",
-                                                                                     "name":  "send_email",
-                                                                                     "value":  "={{ $json.body?.send_email ?? true }}",
-                                                                                     "type":  "string"
-                                                                                 }
-                                                                             ]
-                                                         },
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "type":  "n8n-nodes-base.set",
-                      "typeVersion":  3.4,
-                      "position":  [
-                                       18944,
-                                       6048
-                                   ],
-                      "id":  "165cc2cb-5027-4082-bf6c-c6a9b7cfb34c",
-                      "name":  "SetTrigger - Flujo"
-                  },
-                  {
-                      "parameters":  {
-                                         "workflowId":  {
-                                                            "__rl":  true,
-                                                            "value":  "puR8KZ9UFvq5zRqX",
-                                                            "mode":  "list",
-                                                            "cachedResultUrl":  "/n8n/workflow/puR8KZ9UFvq5zRqX",
-                                                            "cachedResultName":  "SYS - Configuracion base reportes correo"
-                                                        },
-                                         "options":  {
-                                                         "waitForSubWorkflow":  true
-                                                     }
-                                     },
-                      "type":  "n8n-nodes-base.executeWorkflow",
-                      "typeVersion":  1.1,
-                      "position":  [
-                                       19168,
-                                       6048
-                                   ],
-                      "id":  "36287ab7-3a1d-46ed-8a04-e98aa1c53939",
-                      "name":  "SubWorkflow - SetBase reportes correo"
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const base = $input.first()?.json || {};\nconst trigger = $(\u0027SetTrigger - Flujo\u0027).first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027,\u00271\u0027,\u0027yes\u0027,\u0027y\u0027,\u0027si\u0027,\u0027s\u0027,\u0027on\u0027,\u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027,\u00270\u0027,\u0027no\u0027,\u0027n\u0027,\u0027off\u0027,\u0027disabled\u0027].includes(text)) return false;\n  return fallback;\n}\n\nconst flags = { ...(base.flags || {}) };\nfor (const key of [\u0027include_attachment\u0027,\u0027include_detail\u0027,\u0027include_summary\u0027,\u0027include_itop_button_footer\u0027,\u0027send_email\u0027]) {\n  flags[key] = normalizeBoolean(trigger[key] ?? base[key], flags[key] ?? true);\n}\n\nconst config = {\n  zonaHoraria: trigger.timezone || base.timezone || \u0027America/Santiago\u0027,\n  nombreReporte: \u0027ad_itop_endpoint_pc_laptop_comparacion\u0027,\n  ldap: {\n    baseDn: trigger.ldap_base_dn,\n    filter: trigger.ldap_filter,\n    attributes: trigger.ldap_attributes,\n    includedOus: String(trigger.ldap_included_ous || \u0027\u0027).split(\u0027,\u0027).map(x =\u003e x.trim()).filter(Boolean)\n  },\n  itop: {\n    pcClass: trigger.itop_pc_class || \u0027PC\u0027,\n    laptopClass: trigger.itop_laptop_class || \u0027Laptop\u0027,\n    oqlPC: trigger.itop_oql_pc || \u0027SELECT PC\u0027,\n    oqlLaptop: trigger.itop_oql_laptop || \u0027SELECT Laptop\u0027,\n    fields: trigger.itop_output_fields || \u0027name,friendlyname,status,serialnumber,asset_number,org_id,org_id_friendlyname,finalclass,description,location_id_friendlyname,brand_id_friendlyname,model_id_friendlyname\u0027\n  },\n  mail: {\n    from: trigger.email_from,\n    to: trigger.email_to,\n    cc: trigger.email_cc || \u0027\u0027,\n    bcc: trigger.email_bcc || \u0027\u0027,\n    subject: trigger.email_subject || \u0027Comparacion AD vs iTop - Endpoint PC/Laptop\u0027\n  }\n};\n\nconst errors = [];\nfunction required(path, value) { if (value === undefined || value === null || String(value).trim() === \u0027\u0027) errors.push(`Parametro obligatorio no informado: ${path}`); }\nrequired(\u0027ldap_base_dn\u0027, config.ldap.baseDn);\nrequired(\u0027ldap_filter\u0027, config.ldap.filter);\nrequired(\u0027ldap_attributes\u0027, config.ldap.attributes);\nrequired(\u0027email_from\u0027, config.mail.from);\nrequired(\u0027email_to\u0027, config.mail.to);\nif (!config.ldap.includedOus.length) errors.push(\u0027ldap_included_ous debe contener al menos una OU relativa bajo SITES_CHILE.\u0027);\nif (errors.length) throw new Error(errors.join(\u0027 | \u0027));\n\nflags.include_itop_button_footer = false;\nreturn [{ json: { ...base, ...trigger, flags, config, config_validated: true, include_itop_button_footer: false } }];"
-                                     },
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       19392,
-                                       6048
-                                   ],
-                      "id":  "a1c12276-f677-4147-aba0-45a7d04f8148",
-                      "name":  "Config Reporte"
-                  },
-                  {
-                      "parameters":  {
-                                         "baseDN":  "={{ $json.config.ldap.baseDn }}",
-                                         "searchFor":  "custom",
-                                         "returnAll":  true,
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "type":  "n8n-nodes-base.ldap",
-                      "typeVersion":  1,
-                      "position":  [
-                                       19616,
-                                       5952
-                                   ],
-                      "id":  "99be8a39-a7fe-4115-9831-d301b51b04c4",
-                      "name":  "LDAP - Endpoint AD",
-                      "credentials":  {
-                                          "ldap":  {
-                                                       "id":  "TcJKQ6y3VWBzndLe",
-                                                       "name":  "LDAP_GF"
-                                                   }
-                                      },
-                      "notes":  "Consulta equipos bajo SITES_CHILE; el filtrado final se realiza por objeto computer, OU configurada, prefijo GF0 y estado activo."
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const cfg = $(\u0027Config Reporte\u0027).first().json.config;\nconst included = (cfg.ldap.includedOus || []).map(x =\u003e String(x).trim().toLowerCase()).filter(Boolean);\n\nfunction clean(v) {\n  if (v === undefined || v === null) return \u0027\u0027;\n  if (Array.isArray(v)) v = v[0] ?? \u0027\u0027;\n  return String(v).trim();\n}\nfunction hasClass(j, name) {\n  const oc = j.objectClass;\n  const arr = Array.isArray(oc) ? oc : String(oc || \u0027\u0027).split(\u0027,\u0027);\n  return arr.map(x =\u003e String(x).toLowerCase()).includes(String(name).toLowerCase());\n}\nfunction isDisabled(uac) {\n  const n = Number(clean(uac));\n  return Number.isFinite(n) \u0026\u0026 (n \u0026 2) === 2;\n}\nfunction filetimeToDate(value) {\n  const raw = clean(value);\n  if (!raw || raw === \u00270\u0027) return null;\n  const n = Number(raw);\n  if (!Number.isFinite(n) || n \u003c= 0) return null;\n  const ms = Math.floor(n / 10000 - 11644473600000);\n  const d = new Date(ms);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\nfunction fmtDate(value) {\n  const d = value instanceof Date ? value : filetimeToDate(value);\n  if (!d) return \u0027-\u0027;\n  return d.toLocaleString(\u0027es-CL\u0027, { timeZone: cfg.zonaHoraria || \u0027America/Santiago\u0027, year: \u0027numeric\u0027, month: \u00272-digit\u0027, day: \u00272-digit\u0027, hour: \u00272-digit\u0027, minute: \u00272-digit\u0027 });\n}\nfunction hostnameOf(j) {\n  const raw = clean(j.dNSHostName || j.dnshostname || j.name || j.cn || j.sAMAccountName || j.samaccountname).replace(/\\$$/, \u0027\u0027);\n  return raw.split(\u0027.\u0027)[0].trim().toUpperCase();\n}\nfunction ouRelative(dn) {\n  const parts = clean(dn).split(\u0027,\u0027).map(x =\u003e x.trim()).filter(x =\u003e /^OU=/i.test(x));\n  return parts.join(\u0027,\u0027);\n}\nfunction ouNames(dn) {\n  return clean(dn).split(\u0027,\u0027).map(x =\u003e x.trim()).filter(x =\u003e /^OU=/i.test(x)).map(x =\u003e x.replace(/^OU=/i, \u0027\u0027).toLowerCase());\n}\nfunction inIncludedOu(dn) {\n  const names = ouNames(dn);\n  return included.some(ou =\u003e names.includes(ou));\n}\nfunction subtype(host) {\n  if (host.endsWith(\u0027-L\u0027)) return \u0027Laptop\u0027;\n  if (host.endsWith(\u0027-D\u0027)) return \u0027Desktop\u0027;\n  if (host.endsWith(\u0027-T\u0027)) return \u0027Tablet\u0027;\n  if (host.endsWith(\u0027-V\u0027)) return \u0027Virtual\u0027;\n  return \u0027Validar\u0027;\n}\nfunction prefixClass(host) {\n  const h = clean(host).toUpperCase();\n  if (h.startsWith(\u0027GF0\u0027)) return \u0027ENDPOINT\u0027;\n  if (h.startsWith(\u0027GFPE\u0027)) return \u0027SERVIDOR\u0027;\n  return \u0027REVISAR\u0027;\n}\n\nconst endpoints = [];\nconst descartados = [];\nfor (const item of $input.all()) {\n  const j = item.json || {};\n  const dn = clean(j.distinguishedName || j.dn);\n  const sam = clean(j.sAMAccountName || j.samaccountname);\n  const host = hostnameOf(j);\n  const computerLike = hasClass(j, \u0027computer\u0027) || sam.endsWith(\u0027$\u0027) || Boolean(j.dNSHostName || j.dnshostname);\n  if (!computerLike) continue;\n\n  if (!inIncludedOu(dn)) {\n    descartados.push({ hostname: host, motivo: \u0027Fuera de OU incluidas\u0027, dn });\n    continue;\n  }\n\n  // Para conciliaciÃ³n 1 a 1 se consideran equipos AD activos e inactivos.\n  // No se excluye por prefijo: GF0=ENDPOINT, GFPE=SERVIDOR, otro=REVISAR.\n  // No se valida subtipo AD como regla de alcance; el sufijo se informa solo como dato operativo.\n  const status = isDisabled(j.userAccountControl) ? \u0027INACTIVO\u0027 : \u0027ACTIVO\u0027;\n  const clasificacionPrefijo = prefixClass(host);\n  endpoints.push({\n    hostname: host,\n    ad_status: status,\n    ad_status_raw: clean(j.userAccountControl),\n    clasificacion_prefijo: clasificacionPrefijo,\n    subtipo: subtype(host),\n    lastLogon: fmtDate(j.lastLogonTimestamp || j.lastLogon),\n    ou_relativa: ouRelative(dn),\n    distinguishedName: dn,\n    dnsHostName: clean(j.dNSHostName || j.dnshostname),\n    operatingSystem: clean(j.operatingSystem),\n    operatingSystemVersion: clean(j.operatingSystemVersion),\n    managedBy: clean(j.managedBy),\n    location: clean(j.location),\n    description: clean(j.description || j.info),\n    whenChanged: clean(j.whenChanged),\n    whenCreated: clean(j.whenCreated)\n  });\n}\nreturn [{ json: { adEndpoints: endpoints, adDiscarded: descartados } }];"
-                                     },
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       19840,
-                                       5952
-                                   ],
-                      "id":  "eb8bbf66-2ddb-4a10-9d18-0b992145a7f9",
-                      "name":  "Normalizar Endpoint AD",
-                      "notes":  "Consulta equipos bajo SITES_CHILE; el filtrado final considera solo objetos computer dentro de las OU configuradas. Para conciliaciÃ³n 1 a 1 se incluyen activos e inactivos. ClasificaciÃ³n por prefijo: GF0=ENDPOINT, GFPE=SERVIDOR, otro=REVISAR."
-                  },
-                  {
-                      "parameters":  {
-                                         "authentication":  "token",
-                                         "class":  "={{ $json.config.itop.pcClass }}",
-                                         "key":  "={{ $json.config.itop.oqlPC }}",
-                                         "output_fields":  "={{ $json.config.itop.fields }}",
-                                         "limit":  "={{ $json.itop_limit ?? 5000 }}",
-                                         "additionalOptions":  {
-
-                                                               }
-                                     },
-                      "type":  "n8n-nodes-itop.iTop",
-                      "typeVersion":  1,
-                      "position":  [
-                                       19616,
-                                       6144
-                                   ],
-                      "id":  "17664f4b-65df-42ab-9416-bf19b7cd31b1",
-                      "name":  "iTop - PC",
-                      "credentials":  {
-                                          "iTopTokenApi":  {
-                                                               "id":  "FdUX5lCOh0Z3YWW4",
-                                                               "name":  "iTopToken_GF_QA"
-                                                           }
-                                      }
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const cfg = $(\u0027Config Reporte\u0027).first().json.config;\n\nfunction clean(v) {\n  if (v === undefined || v === null) return \u0027\u0027;\n  if (Array.isArray(v)) v = v[0] ?? \u0027\u0027;\n  return String(v).trim();\n}\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects \u0026\u0026 typeof j.objects === \u0027object\u0027) {\n      for (const [key, value] of Object.entries(j.objects)) rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      continue;\n    }\n    if (j.data?.objects \u0026\u0026 typeof j.data.objects === \u0027object\u0027) {\n      for (const [key, value] of Object.entries(j.data.objects)) rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\nfunction getField(obj, names, fallback = \u0027\u0027) {\n  for (const name of names) {\n    if (obj \u0026\u0026 obj[name] !== undefined \u0026\u0026 obj[name] !== null \u0026\u0026 obj[name] !== \u0027\u0027) return obj[name];\n    if (obj?.fields \u0026\u0026 obj.fields[name] !== undefined \u0026\u0026 obj.fields[name] !== null \u0026\u0026 obj.fields[name] !== \u0027\u0027) return obj.fields[name];\n  }\n  return fallback;\n}\nfunction hostnameFrom(value) {\n  const raw = clean(value).replace(/\\$$/, \u0027\u0027);\n  return raw.split(\u0027.\u0027)[0].trim().toUpperCase();\n}\nfunction normalizeStatus(value) {\n  const raw = clean(value);\n  const s = raw.toLowerCase();\n\n  // ConversiÃ³n solicitada para comparaciÃ³n:\n  // stock / producciÃ³n  =\u003e ACTIVO\n  // obsolete            =\u003e INACTIVO\n  // implementation      =\u003e VALIDAR\n  // sin estado          =\u003e VALIDAR\n  // otro estado real    =\u003e INACTIVO\n  if ([\u0027production\u0027,\u0027produccion\u0027,\u0027producciÃ³n\u0027,\u0027in production\u0027,\u0027en produccion\u0027,\u0027en producciÃ³n\u0027,\u0027stock\u0027,\u0027en stock\u0027].includes(s)) {\n    return { normalized: \u0027ACTIVO\u0027, raw: raw || \u0027-\u0027 };\n  }\n  if ([\u0027obsolete\u0027,\u0027obsoleto\u0027].includes(s)) {\n    return { normalized: \u0027INACTIVO\u0027, raw: raw || \u0027-\u0027 };\n  }\n  if ([\u0027implementation\u0027,\u0027implementacion\u0027,\u0027implementaciÃ³n\u0027,\u0027in implementation\u0027,\u0027en implementacion\u0027,\u0027en implementaciÃ³n\u0027].includes(s)) {\n    return { normalized: \u0027VALIDAR\u0027, raw: raw || \u0027-\u0027 };\n  }\n  if (!raw) {\n    return { normalized: \u0027VALIDAR\u0027, raw: \u0027-\u0027 };\n  }\n  return { normalized: \u0027INACTIVO\u0027, raw };\n}\n\nconst rows = flattenInput($input.all());\nconst assets = [];\nfor (const row of rows) {\n  const f = row.fields || row;\n  const host = hostnameFrom(getField(f, [\u0027name\u0027, \u0027friendlyname\u0027, \u0027hostname\u0027, \u0027serialnumber\u0027], \u0027\u0027));\n  if (!host) continue;\n  const status = normalizeStatus(getField(f, [\u0027status\u0027, \u0027status_friendlyname\u0027], \u0027\u0027));\n  const finalclass = clean(getField(f, [\u0027finalclass\u0027, \u0027class\u0027], row.class || \u0027\u0027)) || \u0027PC/Laptop\u0027;\n  assets.push({\n    hostname: host,\n    itop_status: status.normalized,\n    itop_status_raw: status.raw,\n    itop_class: finalclass,\n    itop_key: clean(row.key || row.id || getField(f, [\u0027id\u0027, \u0027_key\u0027, \u0027key\u0027], \u0027\u0027)),\n    friendlyname: clean(getField(f, [\u0027friendlyname\u0027], \u0027\u0027)),\n    serialnumber: clean(getField(f, [\u0027serialnumber\u0027, \u0027serial_number\u0027], \u0027\u0027)),\n    asset_number: clean(getField(f, [\u0027asset_number\u0027, \u0027assetnumber\u0027], \u0027\u0027)),\n    org_name: clean(getField(f, [\u0027org_id_friendlyname\u0027, \u0027org_name\u0027], \u0027\u0027)),\n    location: clean(getField(f, [\u0027location_id_friendlyname\u0027, \u0027location_name\u0027], \u0027\u0027)),\n    brand: clean(getField(f, [\u0027brand_id_friendlyname\u0027, \u0027brand_name\u0027], \u0027\u0027)),\n    model: clean(getField(f, [\u0027model_id_friendlyname\u0027, \u0027model_name\u0027], \u0027\u0027))\n  });\n}\nreturn [{ json: { itopAssets: assets } }];"
-                                     },
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       19840,
-                                       6144
-                                   ],
-                      "id":  "9a375dca-d666-496e-b957-3785cf20c4d7",
-                      "name":  "Normalizar iTop PC-Laptop"
-                  },
-                  {
-                      "parameters":  {
-                                         "mode":  "combine",
-                                         "combineBy":  "combineByPosition",
-                                         "options":  {
-
-                                                     }
-                                     },
-                      "type":  "n8n-nodes-base.merge",
-                      "typeVersion":  3,
-                      "position":  [
-                                       20064,
-                                       6048
-                                   ],
-                      "id":  "4fbd4069-7a94-49c9-8b94-b07dde4de3ad",
-                      "name":  "Merge AD e iTop"
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const cfg = $(\u0027Config Reporte\u0027).first().json.config;\nconst input = $input.first().json || {};\nconst adEndpointsRaw = input.adEndpoints || [];\nconst itopAssetsRaw = input.itopAssets || [];\nconst adDiscarded = input.adDiscarded || [];\n\nfunction isGfpeHost(value) {\n  return String(value ?? \u0027\u0027).trim().toUpperCase().startsWith(\u0027GFPE\u0027);\n}\n\n// Este reporte compara endpoints PC/Laptop; se omiten equipos con prefijo GFPE.\nconst adEndpoints = adEndpointsRaw.filter(x =\u003e !isGfpeHost(x.hostname));\nconst itopAssets = itopAssetsRaw.filter(x =\u003e !isGfpeHost(x.hostname));\n\nfunction clean(v) { return String(v ?? \u0027\u0027).trim(); }\nfunction add(map, key, value) { if (!map.has(key)) map.set(key, []); map.get(key).push(value); }\nfunction esc(value) { return String(value ?? \u0027\u0027).replace(/\u0026/g, \u0027\u0026amp;\u0027).replace(/\u003c/g, \u0027\u0026lt;\u0027).replace(/\u003e/g, \u0027\u0026gt;\u0027).replace(/\"/g, \u0027\u0026quot;\u0027).replace(/\u0027/g, \u0027\u0026#039;\u0027); }\nfunction csvEscape(value) { return `\"${String(value ?? \u0027\u0027).replace(/\"/g, \u0027\"\"\u0027)}\"`; }\n\nconst adByHost = new Map();\nconst itopByHost = new Map();\nfor (const a of adEndpoints) add(adByHost, a.hostname, a);\nfor (const a of itopAssets) add(itopByHost, a.hostname, a);\n\nfunction prefixClass(host) {\n  const h = clean(host).toUpperCase();\n  if (h.startsWith(\u0027GF0\u0027)) return \u0027ENDPOINT\u0027;\n  if (h.startsWith(\u0027GFPE\u0027)) return \u0027SERVIDOR\u0027;\n  return \u0027REVISAR\u0027;\n}\n\nfunction resolveTipo(host, ad, itop) {\n  // Tipo visual del equipo segÃºn nomenclatura. La regla de alcance AD se valida por prefijo:\n  // GF0=Endpoint, GFPE=Servidor, otro=Revisar. No se usa el subtipo AD como criterio de exclusiÃ³n.\n  const h = clean(host).toUpperCase();\n  if (h.endsWith(\u0027-L\u0027)) return \u0027Laptop\u0027;\n  if (h.endsWith(\u0027-D\u0027)) return \u0027Desktop\u0027;\n  if (h.endsWith(\u0027-V\u0027)) return \u0027Virtual\u0027;\n  if (h.endsWith(\u0027-T\u0027)) return \u0027Tablet\u0027;\n\n  // Fallback iTop: solo para registros sin sufijo suficiente o SOLO_ITOP.\n  const rawClass = clean(itop?.itop_class || \u0027\u0027).toLowerCase();\n  if (rawClass === \u0027laptop\u0027) return \u0027Laptop\u0027;\n  if (rawClass === \u0027pc\u0027) return \u0027PC\u0027;\n\n  return \u0027Validar\u0027;\n}\n\nconst allHosts = new Set([...adByHost.keys(), ...itopByHost.keys()].filter(Boolean));\nconst rows = [];\nlet sincronizados = 0;\nlet diferencias = 0;\nlet soloAD = 0;\nlet soloITop = 0;\nlet revisar = 0;\nlet duplicados = 0;\n\nfor (const host of [...allHosts].sort()) {\n  const adList = adByHost.get(host) || [];\n  const itopList = itopByHost.get(host) || [];\n  if (adList.length \u003e 1 || itopList.length \u003e 1) duplicados++;\n  const ad = adList[0] || null;\n  const itop = itopList[0] || null;\n  let estado = \u0027\u0027;\n  let observacion = \u0027\u0027;\n  if (ad \u0026\u0026 itop) {\n    if (itop.itop_status === \u0027VALIDAR\u0027) {\n      estado = \u0027REVISAR_ESTADO_ITOP\u0027; revisar++;\n      observacion = \u0027Equipo encontrado en ambos sistemas, pero iTop no informa estado real para convertir.\u0027;\n    } else if (ad.ad_status === itop.itop_status) {\n      estado = \u0027SINCRONIZADO\u0027; sincronizados++;\n      observacion = `Sincronizado: AD=${ad.ad_status}, iTop=${itop.itop_status}. Estado real iTop: ${itop.itop_status_raw || \u0027-\u0027}.`;\n    } else {\n      estado = \u0027DIFERENCIA_ESTADO\u0027; diferencias++;\n      observacion = `Diferencia de estado: AD=${ad.ad_status}; iTop=${itop.itop_status}. Estado real iTop: ${itop.itop_status_raw || \u0027-\u0027}.`;\n    }\n  } else if (ad \u0026\u0026 !itop) {\n    estado = \u0027SOLO_AD\u0027; soloAD++;\n    observacion = \u0027Equipo existe en AD dentro del alcance configurado, pero no existe como PC/Laptop en iTop por hostname. Se considera su estado AD real para conciliaciÃ³n.\u0027;\n  } else if (!ad \u0026\u0026 itop) {\n    estado = \u0027SOLO_ITOP\u0027; soloITop++;\n    observacion = `Equipo existe en iTop PC/Laptop, pero no fue encontrado en AD dentro del alcance configurado. Estado real iTop: ${itop.itop_status_raw || \u0027-\u0027}.`;\n  }\n  if (adList.length \u003e 1) observacion += ` Duplicado AD: ${adList.length} registros con mismo hostname.`;\n  if (itopList.length \u003e 1) observacion += ` Duplicado iTop: ${itopList.length} registros con mismo hostname.`;\n  rows.push({\n    Hostname: host,\n    Tipo: resolveTipo(host, ad, itop),\n    \u0027Clasificacion Prefijo\u0027: ad?.clasificacion_prefijo || prefixClass(host),\n    \u0027AD Status\u0027: String(ad?.ad_status || \u0027NO_ENCONTRADO\u0027).toUpperCase(),\n    \u0027iTop Status\u0027: String(itop?.itop_status || \u0027NO_ENCONTRADO\u0027).toUpperCase(),\n    \u0027iTop Status Real\u0027: itop?.itop_status_raw || \u0027\u0027,\n    Estado: estado,\n    Observacion: observacion,\n    Subtipo: ad?.subtipo || \u0027\u0027,\n    \u0027LastLogon AD\u0027: ad?.lastLogon || \u0027-\u0027,\n    \u0027OU AD\u0027: ad?.ou_relativa || \u0027\u0027,\n    \u0027SO AD\u0027: ad?.operatingSystem || \u0027\u0027,\n    \u0027DNSHostName AD\u0027: ad?.dnsHostName || \u0027\u0027,\n    \u0027Clase iTop\u0027: itop?.itop_class || \u0027\u0027,\n    \u0027Serial iTop\u0027: itop?.serialnumber || \u0027\u0027,\n    \u0027Asset Number iTop\u0027: itop?.asset_number || \u0027\u0027,\n    \u0027Org iTop\u0027: itop?.org_name || \u0027\u0027,\n    \u0027Ubicacion iTop\u0027: itop?.location || \u0027\u0027,\n    \u0027Key iTop\u0027: itop?.itop_key || \u0027\u0027\n  });\n}\n\nconst resumen = {\n  fecha_ejecucion: new Date().toISOString(),\n  total_ad_equipos: adEndpoints.length,\n  total_ad_activos: adEndpoints.filter(x =\u003e x.ad_status === \u0027ACTIVO\u0027).length,\n  total_ad_inactivos: adEndpoints.filter(x =\u003e x.ad_status === \u0027INACTIVO\u0027).length,\n  total_itop_pc_laptop: itopAssets.length,\n  sincronizados,\n  sincronizados_activos: rows.filter(r =\u003e r.Estado === \u0027SINCRONIZADO\u0027 \u0026\u0026 r[\u0027AD Status\u0027] === \u0027ACTIVO\u0027).length,\n  sincronizados_inactivos: rows.filter(r =\u003e r.Estado === \u0027SINCRONIZADO\u0027 \u0026\u0026 r[\u0027AD Status\u0027] === \u0027INACTIVO\u0027).length,\n  diferencias_estado: diferencias,\n  solo_ad: soloAD,\n  solo_itop: soloITop,\n  revisar,\n  duplicados,\n  descartados_ad: adDiscarded.length\n};\nconst hayDiferencias = diferencias + soloAD + soloITop + revisar + duplicados \u003e 0;\n\nconst estadoOrden = {\n  DIFERENCIA_ESTADO: 10,\n  SOLO_AD: 20,\n  SOLO_ITOP: 30,\n  REVISAR_ESTADO_ITOP: 40,\n  SINCRONIZADO: 90\n};\nfunction sincronizadoOrden(row) {\n  if (row.Estado !== \u0027SINCRONIZADO\u0027) return 0;\n  if (row[\u0027AD Status\u0027] === \u0027ACTIVO\u0027) return 1;\n  if (row[\u0027AD Status\u0027] === \u0027INACTIVO\u0027) return 2;\n  return 3;\n}\nrows.sort((a, b) =\u003e {\n  const oa = estadoOrden[a.Estado] ?? 80;\n  const ob = estadoOrden[b.Estado] ?? 80;\n  if (oa !== ob) return oa - ob;\n  const sa = sincronizadoOrden(a);\n  const sb = sincronizadoOrden(b);\n  if (sa !== sb) return sa - sb;\n  return String(a.Hostname || \u0027\u0027).localeCompare(String(b.Hostname || \u0027\u0027));\n});\n\nconst csvHeaders = [\u0027Hostname\u0027,\u0027Tipo\u0027,\u0027Clasificacion Prefijo\u0027,\u0027AD Status\u0027,\u0027iTop Status\u0027,\u0027iTop Status Real\u0027,\u0027Estado\u0027,\u0027Observacion\u0027,\u0027Subtipo\u0027,\u0027LastLogon AD\u0027,\u0027OU AD\u0027,\u0027SO AD\u0027,\u0027DNSHostName AD\u0027,\u0027Clase iTop\u0027,\u0027Serial iTop\u0027,\u0027Asset Number iTop\u0027,\u0027Org iTop\u0027,\u0027Ubicacion iTop\u0027,\u0027Key iTop\u0027];\nconst csv = \u0027\\uFEFF\u0027 + [csvHeaders.map(csvEscape).join(\u0027;\u0027), ...rows.map(r =\u003e csvHeaders.map(h =\u003e csvEscape(r[h])).join(\u0027;\u0027))].join(\u0027\\r\\n\u0027);\nconst stamp = new Date().toISOString().replace(/[:.]/g, \u0027-\u0027).replace(\u0027T\u0027, \u0027_\u0027).slice(0, 19);\n\nfunction badge(text, tone) {\n  const bg = tone === \u0027ok\u0027 ? \u0027#dcfce7\u0027 : tone === \u0027warn\u0027 ? \u0027#ffedd5\u0027 : tone === \u0027bad\u0027 ? \u0027#fee2e2\u0027 : \u0027#e0f2fe\u0027;\n  const fg = tone === \u0027ok\u0027 ? \u0027#166534\u0027 : tone === \u0027warn\u0027 ? \u0027#9a3412\u0027 : tone === \u0027bad\u0027 ? \u0027#991b1b\u0027 : \u0027#075985\u0027;\n  return `\u003cspan style=\"display:inline-block;padding:3px 8px;border-radius:999px;background:${bg};color:${fg};font-size:11px;font-weight:bold;\"\u003e${esc(text)}\u003c/span\u003e`;\n}\nfunction metric(label, value) {\n  return `\u003ctd style=\"padding:10px;border:1px solid #e2e8f0;background:#f8fafc;\"\u003e\u003cdiv style=\"font-size:11px;color:#64748b;text-transform:uppercase;\"\u003e${esc(label)}\u003c/div\u003e\u003cdiv style=\"font-size:22px;font-weight:bold;color:#0f172a;\"\u003e${esc(value)}\u003c/div\u003e\u003c/td\u003e`;\n}\nfunction td(v) { return `\u003ctd style=\"font-size:12px;line-height:16px;color:#1f2937;padding:8px;border-bottom:1px solid #e5e7eb;vertical-align:top;\"\u003e${v}\u003c/td\u003e`; }\nfunction th(v) { return `\u003cth align=\"left\" style=\"font-size:11px;color:#334155;background:#f1f5f9;padding:8px;border-bottom:1px solid #cbd5e1;\"\u003e${esc(v)}\u003c/th\u003e`; }\nfunction stateBadge(s) {\n  if (s === \u0027SINCRONIZADO\u0027) return badge(s, \u0027ok\u0027);\n  if (s === \u0027DIFERENCIA_ESTADO\u0027 || s === \u0027SOLO_ITOP\u0027) return badge(s, \u0027bad\u0027);\n  if (s === \u0027SOLO_AD\u0027 || s === \u0027REVISAR_ESTADO_ITOP\u0027) return badge(s, \u0027warn\u0027);\n  return badge(s, \u0027info\u0027);\n}\n\nfunction renderRow(r) {\n  return `\u003ctr\u003e${td(`\u003cstrong\u003e${esc(r.Hostname)}\u003c/strong\u003e`)}${td(esc(r.Tipo || \u0027Validar\u0027))}${td(esc(r[\u0027AD Status\u0027]))}${td(esc(r[\u0027iTop Status\u0027]))}${td(stateBadge(r.Estado))}${td(esc(r.Observacion))}\u003c/tr\u003e`;\n}\nfunction renderGroup(title, list) {\n  if (!list.length) return \u0027\u0027;\n  return `\u003ctr\u003e\u003ctd colspan=\"6\" style=\"font-size:12px;font-weight:bold;color:#0f172a;background:#e2e8f0;padding:8px;border-bottom:1px solid #cbd5e1;\"\u003e${esc(title)} (${list.length})\u003c/td\u003e\u003c/tr\u003e${list.map(renderRow).join(\u0027\u0027)}`;\n}\nconst gruposDetalle = [\n  [\u0027Diferencias de estado\u0027, rows.filter(r =\u003e r.Estado === \u0027DIFERENCIA_ESTADO\u0027)],\n  [\u0027Solo en AD\u0027, rows.filter(r =\u003e r.Estado === \u0027SOLO_AD\u0027)],\n  [\u0027Solo en iTop\u0027, rows.filter(r =\u003e r.Estado === \u0027SOLO_ITOP\u0027)],\n  [\u0027Revisar estado iTop\u0027, rows.filter(r =\u003e r.Estado === \u0027REVISAR_ESTADO_ITOP\u0027)],\n  [\u0027Sincronizados - Activos\u0027, rows.filter(r =\u003e r.Estado === \u0027SINCRONIZADO\u0027 \u0026\u0026 r[\u0027AD Status\u0027] === \u0027ACTIVO\u0027)],\n  [\u0027Sincronizados - Inactivos\u0027, rows.filter(r =\u003e r.Estado === \u0027SINCRONIZADO\u0027 \u0026\u0026 r[\u0027AD Status\u0027] === \u0027INACTIVO\u0027)],\n  [\u0027Sincronizados - Otros estados\u0027, rows.filter(r =\u003e r.Estado === \u0027SINCRONIZADO\u0027 \u0026\u0026 ![\u0027ACTIVO\u0027,\u0027INACTIVO\u0027].includes(r[\u0027AD Status\u0027]))],\n];\nconst detailRows = gruposDetalle.map(([title, list]) =\u003e renderGroup(title, list)).join(\u0027\u0027) || `\u003ctr\u003e${td(\u0027Sin registros para mostrar.\u0027)}${td(\u0027-\u0027)}${td(\u0027-\u0027)}${td(\u0027-\u0027)}${td(badge(\u0027SIN_DATOS\u0027,\u0027info\u0027))}${td(\u0027No se recibieron equipos desde AD ni desde iTop para el alcance configurado.\u0027)}\u003c/tr\u003e`;\n\nconst generatedAt = new Date().toLocaleString(\u0027es-CL\u0027, { timeZone: cfg.zonaHoraria || \u0027America/Santiago\u0027, year:\u0027numeric\u0027, month:\u00272-digit\u0027, day:\u00272-digit\u0027, hour:\u00272-digit\u0027, minute:\u00272-digit\u0027 });\nconst subject = `${cfg.mail.subject} - ${hayDiferencias ? \u0027Con diferencias\u0027 : \u0027Sin diferencias\u0027}`;\nconst html = \u0027\u0027;\r\n\r\nreturn [{\n  json: {\n    ...input,\n    resumen,\n    rows,\n    hayDiferencias,\n    email_from: cfg.mail.from,\n    email_to: cfg.mail.to,\n    email_cc: cfg.mail.cc,\n    email_bcc: cfg.mail.bcc,\n    email_subject: subject,\n    report_template_key: input.report_template_key || \u0027ad-itop-endpoint-pc-laptop-comparacion\u0027,\n    report_title: \u0027Comparacion AD vs iTop - Endpoint PC/Laptop\u0027,\n    report_description: \u0027Comparacion informativa entre equipos recuperados desde Active Directory y activos PC/Laptop recuperados desde iTop.\u0027,\n    generated_at: generatedAt,\n    company: input.Company || input.company || \u0027TecnoComp\u0027,\n    Company: input.Company || input.company || \u0027TecnoComp\u0027,\n    itop_organization: input.itop_organization || \u0027Minera GoldFields Chile\u0027,\n    total_ad_equipos: String(resumen.total_ad_equipos),\n    total_ad_activos: String(resumen.total_ad_activos),\n    total_ad_inactivos: String(resumen.total_ad_inactivos),\n    total_itop_pc_laptop: String(resumen.total_itop_pc_laptop),\n    sincronizados_activos: String(resumen.sincronizados_activos),\n    sincronizados_inactivos: String(resumen.sincronizados_inactivos),\n    diferencias_estado: String(resumen.diferencias_estado),\n    solo_ad: String(resumen.solo_ad),\n    solo_itop: String(resumen.solo_itop),\n    revisar: String(resumen.revisar),\n    duplicados: String(resumen.duplicados),\n    descartados_ad: String(resumen.descartados_ad),\n    detail_blocks: `\u003cdiv style=\"font-size:13px;color:#475569;margin:0 0 12px 0;\"\u003eRegla de conversion iTop: \u003cstrong\u003eStock y Produccion = ACTIVO\u003c/strong\u003e; \u003cstrong\u003eObsoleto = INACTIVO\u003c/strong\u003e; \u003cstrong\u003eImplementation = VALIDAR\u003c/strong\u003e; \u003cstrong\u003esin estado = VALIDAR\u003c/strong\u003e; \u003cstrong\u003eotros estados reales = INACTIVO\u003c/strong\u003e. La comparacion se realiza por \u003cstrong\u003ehostname\u003c/strong\u003e. En AD se consideran equipos \u003cstrong\u003eACTIVOS e INACTIVOS\u003c/strong\u003e dentro del alcance configurado. Para este reporte se omite el prefijo \u003cstrong\u003eGFPE\u003c/strong\u003e.\u003c/div\u003e\u003cdiv style=\"font-size:12px;color:#64748b;margin:0 0 8px 0;\"\u003eSe muestran primero las diferencias y registros por revisar. Los sincronizados quedan al final. Total mostrado: ${esc(rows.length)}.\u003c/div\u003e\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:1px solid #dbe3ec;border-collapse:collapse;\"\u003e\u003cthead\u003e\u003ctr\u003e${th(\u0027Hostname\u0027)}${th(\u0027Tipo\u0027)}${th(\u0027AD Status\u0027)}${th(\u0027iTop Status\u0027)}${th(\u0027Estado\u0027)}${th(\u0027Observacion\u0027)}\u003c/tr\u003e\u003c/thead\u003e\u003ctbody\u003e${detailRows}\u003c/tbody\u003e\u003c/table\u003e`,\n    operational_notes: `OU AD consideradas: ${cfg.ldap.includedOus.join(\u0027, \u0027)}. Registros AD descartados por alcance/regla: ${resumen.descartados_ad}.`,\n    html,\n    attachment_binary_names: \u0027csv\u0027,\n    csv_filename: `comparacion_ad_itop_endpoint_pc_laptop_${stamp}.csv`\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csv, \u0027utf8\u0027).toString(\u0027base64\u0027),\n      mimeType: \u0027text/csv\u0027,\n      fileName: `comparacion_ad_itop_endpoint_pc_laptop_${stamp}.csv`\n    }\n  }\n}];"
-                                     },
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       20288,
-                                       6048
-                                   ],
-                      "id":  "699af6c2-6349-41c4-ae29-8d5e6680a8f4",
-                      "name":  "Comparar AD vs iTop"
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const item = $input.first();\nconst data = item?.json || {};\nconst flags = data.flags || $(\u0027Config Reporte\u0027).first()?.json?.flags || {};\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027,\u00271\u0027,\u0027yes\u0027,\u0027y\u0027,\u0027si\u0027,\u0027s\u0027,\u0027on\u0027,\u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027,\u00270\u0027,\u0027no\u0027,\u0027n\u0027,\u0027off\u0027,\u0027disabled\u0027].includes(text)) return false;\n  return fallback;\n}\nconst includeAttachment = normalizeBoolean(data.include_attachment ?? flags.include_attachment, true);\nconst sendEmail = normalizeBoolean(data.send_email ?? flags.send_email, true);\nreturn [{ json: { ...data, flags, send_email_effective: sendEmail, include_attachment_effective: includeAttachment, attachment_binary_names: includeAttachment \u0026\u0026 item.binary?.csv ? \u0027csv\u0027 : \u0027\u0027 }, binary: includeAttachment ? (item.binary || {}) : {} }];"
-                                     },
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       20512,
-                                       6048
-                                   ],
-                      "id":  "73e0c423-3489-4f2a-8034-e0621136bfc2",
-                      "name":  "Aplicar flags envio"
-                  },
-                  {
-                      "parameters":  {
-                                         "fromEmail":  "={{ $json.email_from }}",
-                                         "toEmail":  "={{ $json.email_to }}",
-                                         "subject":  "={{ $json.email_subject }}",
-                                         "html":  "={{ $json.html }}",
-                                         "options":  {
-                                                         "attachments":  "={{ $json.attachment_binary_names }}",
-                                                         "ccEmail":  "={{ $json.email_cc }}",
-                                                         "bccEmail":  "={{ $json.email_bcc }}"
-                                                     }
-                                     },
-                      "type":  "n8n-nodes-base.emailSend",
-                      "typeVersion":  2.1,
-                      "position":  [
-                                       20736,
-                                       6048
-                                   ],
-                      "id":  "e8376e67-73a0-4d16-8da1-73d64a2bff05",
-                      "name":  "Enviar correo SMTP",
-                      "webhookId":  "7ff56a14-a303-43de-a6ef-1781c95b5e3b",
-                      "credentials":  {
-                                          "smtp":  {
-                                                       "id":  "3SyjzuvErhGGEZZq",
-                                                       "name":  "SMTP_MailPit"
-                                                   }
-                                      }
-                  },
-                  {
-                      "parameters":  {
-                                         "jsCode":  "const fs = require(\u0027fs\u0027);\nconst path = require(\u0027path\u0027);\n\nfunction escapeHtml(value) {\n  return String(value ?? \u0027\u0027)\n    .replace(/\u0026/g, \u0027\u0026amp;\u0027)\n    .replace(/\u003c/g, \u0027\u0026lt;\u0027)\n    .replace(/\u003e/g, \u0027\u0026gt;\u0027)\n    .replace(/\"/g, \u0027\u0026quot;\u0027)\n    .replace(/\u0027/g, \u0027\u0026#039;\u0027);\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, \u0027utf8\u0027);\n}\n\nfunction render(template, values) {\n  return String(template || \u0027\u0027).replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) =\u003e {\n    const parts = key.split(\u0027.\u0027);\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? \u0027\u0027 : String(value);\n  });\n}\n\nfunction normalizeText(value, forSubject = false) {\n  let text = String(value ?? \u0027\u0027);\n  const htmlMap = [\n    [\u0027AutomatizaciÃ³n\u0027,\u0027Automatizaci\u0026oacute;n\u0027], [\u0027OrganizaciÃ³n\u0027,\u0027Organizaci\u0026oacute;n\u0027], [\u0027ProducciÃ³n\u0027,\u0027Producci\u0026oacute;n\u0027],\n    [\u0027automÃ¡ticamente\u0027,\u0027autom\u0026aacute;ticamente\u0027], [\u0027expiraciÃ³n\u0027,\u0027expiraci\u0026oacute;n\u0027], [\u0027prÃ³ximo\u0027,\u0027pr\u0026oacute;ximo\u0027], [\u0027revisiÃ³n\u0027,\u0027revisi\u0026oacute;n\u0027],\n    [\u0027comparaciÃ³n\u0027,\u0027comparaci\u0026oacute;n\u0027], [\u0027conciliaciÃ³n\u0027,\u0027conciliaci\u0026oacute;n\u0027], [\u0027automÃ¡ticos\u0027,\u0027autom\u0026aacute;ticos\u0027], [\u0027electrÃ³nico\u0027,\u0027electr\u0026oacute;nico\u0027], [\u0027acciÃ³n\u0027,\u0027acci\u0026oacute;n\u0027],    [\u0027Automatizaci??n\u0027,\u0027Automatizaci\u0026oacute;n\u0027], [\u0027Organizaci??n\u0027,\u0027Organizaci\u0026oacute;n\u0027], [\u0027organizaci??n\u0027,\u0027organizaci\u0026oacute;n\u0027],\n    [\u0027Producci??n\u0027,\u0027Producci\u0026oacute;n\u0027], [\u0027garant??a\u0027,\u0027garant\u0026iacute;a\u0027], [\u0027Garant??a\u0027,\u0027Garant\u0026iacute;a\u0027], [\u0027GARANT??A\u0027,\u0027GARANT\u0026Iacute;A\u0027],\n    [\u0027pr??ximos\u0027,\u0027pr\u0026oacute;ximos\u0027], [\u0027Pr??ximos\u0027,\u0027Pr\u0026oacute;ximos\u0027], [\u0027PR??XIMOS\u0027,\u0027PR\u0026Oacute;XIMOS\u0027], [\u0027pr??ximo\u0027,\u0027pr\u0026oacute;ximo\u0027], [\u0027pr??xima\u0027,\u0027pr\u0026oacute;xima\u0027],\n    [\u0027d??as\u0027,\u0027d\u0026iacute;as\u0027], [\u0027D??AS\u0027,\u0027D\u0026Iacute;AS\u0027], [\u0027D??as\u0027,\u0027D\u0026iacute;as\u0027], [\u0027m??s\u0027,\u0027m\u0026aacute;s\u0027], [\u0027M??S\u0027,\u0027M\u0026Aacute;S\u0027], [\u0027M??s\u0027,\u0027M\u0026aacute;s\u0027],\n    [\u0027T??tulo\u0027,\u0027T\u0026iacute;tulo\u0027], [\u0027antig??edad\u0027,\u0027antig\u0026uuml;edad\u0027], [\u0027actualizaci??n\u0027,\u0027actualizaci\u0026oacute;n\u0027], [\u0027configuraci??n\u0027,\u0027configuraci\u0026oacute;n\u0027],\n    [\u0027f??sicos\u0027,\u0027f\u0026iacute;sicos\u0027], [\u0027f??sico\u0027,\u0027f\u0026iacute;sico\u0027], [\u0027f??sica\u0027,\u0027f\u0026iacute;sica\u0027], [\u0027tel??fono\u0027,\u0027tel\u0026eacute;fono\u0027], [\u0027m??viles\u0027,\u0027m\u0026oacute;viles\u0027],\n    [\u0027perif??rico\u0027,\u0027perif\u0026eacute;rico\u0027], [\u0027perif??ricos\u0027,\u0027perif\u0026eacute;ricos\u0027], [\u0027??nico\u0027,\u0027\u0026uacute;nico\u0027], [\u0027??nica\u0027,\u0027\u0026uacute;nica\u0027], [\u0027??ltimo\u0027,\u0027\u0026uacute;ltimo\u0027],\n    [\u0027cr??tico\u0027,\u0027cr\u0026iacute;tico\u0027], [\u0027cr??ticos\u0027,\u0027cr\u0026iacute;ticos\u0027], [\u0027par??metros\u0027,\u0027par\u0026aacute;metros\u0027], [\u0027env??a\u0027,\u0027env\u0026iacute;a\u0027], [\u0027envi??\u0027,\u0027envi\u0026oacute;\u0027],\n    [\u0027asignaci??n\u0027,\u0027asignaci\u0026oacute;n\u0027], [\u0027ubicaci??n\u0027,\u0027ubicaci\u0026oacute;n\u0027], [\u0027descripci??n\u0027,\u0027descripci\u0026oacute;n\u0027], [\u0027categor??a\u0027,\u0027categor\u0026iacute;a\u0027],\n    [\u0027seg??n\u0027,\u0027seg\u0026uacute;n\u0027], [\u0027hist??rico\u0027,\u0027hist\u0026oacute;rico\u0027], [\u0027relaci??n\u0027,\u0027relaci\u0026oacute;n\u0027], [\u0027operaci??n\u0027,\u0027operaci\u0026oacute;n\u0027], [\u0027an??lisis\u0027,\u0027an\u0026aacute;lisis\u0027],\n    [\u0027creaci??n\u0027,\u0027creaci\u0026oacute;n\u0027], [\u0027aprobaci??n\u0027,\u0027aprobaci\u0026oacute;n\u0027], [\u0027atenci??n\u0027,\u0027atenci\u0026oacute;n\u0027], [\u0027informaci??n\u0027,\u0027informaci\u0026oacute;n\u0027],\n    [\u0027clasificaci??n\u0027,\u0027clasificaci\u0026oacute;n\u0027], [\u0027revisi??n\u0027,\u0027revisi\u0026oacute;n\u0027], [\u0027intervenci??n\u0027,\u0027intervenci\u0026oacute;n\u0027], [\u0027secci??n\u0027,\u0027secci\u0026oacute;n\u0027],\n    [\u0027l??nea\u0027,\u0027l\u0026iacute;nea\u0027], [\u0027c??digos\u0027,\u0027c\u0026oacute;digos\u0027], [\u0027d??nde\u0027,\u0027d\u0026oacute;nde\u0027], [\u0027espa??ol\u0027,\u0027espa\u0026ntilde;ol\u0027], [\u0027vi??etas\u0027,\u0027vi\u0026ntilde;etas\u0027],\n    [\u0027m??ltiples\u0027,\u0027m\u0026uacute;ltiples\u0027], [\u0027m??xima\u0027,\u0027m\u0026aacute;xima\u0027], [\u0027r??pida\u0027,\u0027r\u0026aacute;pida\u0027], [\u0027reposici??n\u0027,\u0027reposici\u0026oacute;n\u0027],\n    [\u0027est??ndar\u0027,\u0027est\u0026aacute;ndar\u0027], [\u0027alg??n\u0027,\u0027alg\u0026uacute;n\u0027], [\u0027??til\u0027,\u0027\u0026uacute;til\u0027], [\u0027port??til\u0027,\u0027port\u0026aacute;til\u0027]\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) =\u003e [bad, good\n    .replace(/\u0026aacute;/g,\u0027a\u0027).replace(/\u0026eacute;/g,\u0027e\u0027).replace(/\u0026iacute;/g,\u0027i\u0027).replace(/\u0026oacute;/g,\u0027o\u0027).replace(/\u0026uacute;/g,\u0027u\u0027)\n    .replace(/\u0026Aacute;/g,\u0027A\u0027).replace(/\u0026Eacute;/g,\u0027E\u0027).replace(/\u0026Iacute;/g,\u0027I\u0027).replace(/\u0026Oacute;/g,\u0027O\u0027).replace(/\u0026Uacute;/g,\u0027U\u0027)\n    .replace(/\u0026uuml;/g,\u0027u\u0027).replace(/\u0026Uuml;/g,\u0027U\u0027).replace(/\u0026ntilde;/g,\u0027n\u0027).replace(/\u0026Ntilde;/g,\u0027N\u0027)]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(\u0027 ?? \u0027).join(forSubject ? \u0027 - \u0027 : \u0027 \u0026bull; \u0027);\n  text = text.split(\u0027??\u0027).join(forSubject ? \u0027-\u0027 : \u0027\u0026bull;\u0027);\n  return text;\n}\n\nfunction getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === \u0027\u0027) return fallback;\n  if (typeof value === \u0027boolean\u0027) return value;\n  if (typeof value === \u0027number\u0027) return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if ([\u0027true\u0027, \u00271\u0027, \u0027yes\u0027, \u0027y\u0027, \u0027si\u0027, \u0027s\u0027, \u0027on\u0027, \u0027enabled\u0027].includes(text)) return true;\n  if ([\u0027false\u0027, \u00270\u0027, \u0027no\u0027, \u0027n\u0027, \u0027off\u0027, \u0027disabled\u0027].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  const trigger = getNodeJson(\u0027SetTrigger - Flujo\u0027);\n  const mixed = getNodeJson(\u0027SetMixed - Configuracion efectiva\u0027);\n  const value = trigger[name] ?? trigger.flags?.[name] ?? data[name] ?? data.flags?.[name] ?? mixed[name] ?? mixed.flags?.[name];\n  return normalizeBoolean(value, fallback);\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? \u0027\u0027)\n    .split(/\\r?\\n|\\. /)\n    .map(v =\u003e v.trim().replace(/\\.$/, \u0027\u0027))\n    .filter(Boolean);\n  if (!lines.length) return \u0027\u003cdiv style=\"font-size:13px; line-height:20px; color:#64748b;\"\u003eSin observaciones adicionales.\u003c/div\u003e\u0027;\n  return \u0027\u003cul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\"\u003e\u0027 +\n    lines.map(line =\u003e \u0027\u003cli\u003e\u0027 + escapeHtml(line) + \u0027.\u003c/li\u003e\u0027).join(\u0027\u0027) +\n    \u0027\u003c/ul\u003e\u0027;\n}\n\nfunction statCard(data, stat) {\n  const value = data[stat.value] ?? data[stat.fallbackValue] ?? \u0027-\u0027;\n  return \u0027\u003ctd class=\"summary-card\" width=\"33.33%\" valign=\"top\"\u003e\u003ctable role=\"presentation\" width=\"100%\" style=\"border:1px solid \u0027 + stat.border + \u0027; background-color:\u0027 + stat.background + \u0027;\"\u003e\u003ctr\u003e\u003ctd style=\"padding:12px;\"\u003e\u003cdiv style=\"font-size:11px; color:\u0027 + stat.labelColor + \u0027; font-weight:bold;\"\u003e\u0027 + escapeHtml(stat.label) + \u0027\u003c/div\u003e\u003cdiv style=\"font-size:24px; color:\u0027 + stat.valueColor + \u0027; font-weight:bold;\"\u003e\u0027 + escapeHtml(value) + \u0027\u003c/div\u003e\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003c/td\u003e\u0027;\n}\n\nfunction statRows(data, stats) {\n  const rows = [];\n  for (let i = 0; i \u003c stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(stat =\u003e statCard(data, stat));\n    while (cells.length \u003c 3) cells.push(\u0027\u003ctd class=\"summary-card\" width=\"33.33%\" valign=\"top\"\u003e\u0026nbsp;\u003c/td\u003e\u0027);\n    rows.push(\u0027\u003ctr\u003e\u0027 + cells.join(\u0027\u0027) + \u0027\u003c/tr\u003e\u0027);\n  }\n  return rows.join(\u0027\\n\u0027);\n}\n\nfunction simpleTable(title, rows, headers, emptyText) {\n  if (!rows) return \u0027\u0027;\n  const headerHtml = headers.map(h =\u003e \u0027\u003cth align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\"\u003e\u0027 + escapeHtml(h) + \u0027\u003c/th\u003e\u0027).join(\u0027\u0027);\n  const body = rows || \u0027\u003ctr\u003e\u003ctd colspan=\"\u0027 + headers.length + \u0027\" style=\"padding:14px; font-size:12px; color:#64748b;\"\u003e\u0027 + escapeHtml(emptyText || \u0027Sin registros.\u0027) + \u0027\u003c/td\u003e\u003c/tr\u003e\u0027;\n  return \u0027\u003cdiv style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\"\u003e\u0027 + escapeHtml(title) + \u0027\u003c/div\u003e\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"\u003e\u003cthead\u003e\u003ctr style=\"background:#f8fafc;\"\u003e\u0027 + headerHtml + \u0027\u003c/tr\u003e\u003c/thead\u003e\u003ctbody\u003e\u0027 + body + \u0027\u003c/tbody\u003e\u003c/table\u003e\u0027;\n}\n\nfunction tableContent(data) {\n  const blocks = [];\n  for (const key of [\u0027detail_blocks\u0027, \u0027grouped_section\u0027, \u0027detail_section\u0027, \u0027detail_table_html\u0027]) {\n    if (data[key]) blocks.push(data[key]);\n  }\n  if (data.class_asset_blocks) blocks.push(data.class_asset_blocks);\n  if (data.status_asset_blocks) blocks.push(data.status_asset_blocks);\n  if (data.review_asset_blocks) blocks.push(data.review_asset_blocks);\n  if (data.ticket_sections) blocks.push(data.ticket_sections);\n  if (data.older_section) blocks.push(data.older_section);\n  if (data.recent_section) blocks.push(data.recent_section);\n  if (data.ticket_rows_html) blocks.push(simpleTable(\u0027Tickets abiertos\u0027, data.ticket_rows_html, [\u0027Criticidad\u0027,\u0027Referencia\u0027,\u0027Tipo\u0027,\u0027Titulo\u0027,\u0027Solicitante\u0027,\u0027Estado\u0027,\u0027Creacion\u0027,\u0027Ultimo update\u0027,\u0027Antiguedad\u0027,\u0027SLA\u0027], \u0027Sin tickets.\u0027));\n  if (data.movement_rows) blocks.push(simpleTable(\u0027Movimientos recientes\u0027, data.movement_rows, [\u0027Fecha\u0027,\u0027Movimiento\u0027,\u0027Activo\u0027,\u0027Clase\u0027,\u0027Origen\u0027,\u0027Destino\u0027], \u0027Sin movimientos.\u0027));\n  if (data.class_summary_rows) blocks.push(simpleTable(\u0027Resumen por clase\u0027, data.class_summary_rows, [\u0027Clase\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por clase.\u0027));\n  if (data.warehouse_summary_rows) blocks.push(simpleTable(\u0027Resumen por bodega/localidad\u0027, data.warehouse_summary_rows, [\u0027Bodega/localidad\u0027,\u0027Total\u0027,\u0027Clases\u0027,\u0027Observacion\u0027], \u0027Sin resumen por bodega.\u0027));\n  if (data.status_summary_rows) blocks.push(simpleTable(\u0027Resumen por estado\u0027, data.status_summary_rows, [\u0027Estado\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por estado.\u0027));\n  if (data.location_summary_rows) blocks.push(simpleTable(\u0027Resumen por localidad\u0027, data.location_summary_rows, [\u0027Localidad\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin resumen por localidad.\u0027));\n  if (data.class_status_rows) blocks.push(simpleTable(\u0027Clase por estado\u0027, data.class_status_rows, [\u0027Clase\u0027,\u0027Productivo\u0027,\u0027Inventario\u0027,\u0027No operativo\u0027], \u0027Sin matriz de estados.\u0027));\n  if (data.location_matrix_rows) {\n    const header = data.location_matrix_header_cells || \u0027\u003cth align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\"\u003eBodega/localidad\u003c/th\u003e\u0027;\n    blocks.push(\u0027\u003cdiv style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\"\u003eMatriz por bodega/localidad\u003c/div\u003e\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"\u003e\u003cthead\u003e\u003ctr style=\"background:#f8fafc;\"\u003e\u0027 + header + \u0027\u003c/tr\u003e\u003c/thead\u003e\u003ctbody\u003e\u0027 + data.location_matrix_rows + \u0027\u003c/tbody\u003e\u003c/table\u003e\u0027);\n  }\n  if (data.top_location_rows) blocks.push(simpleTable(\u0027Top bodega/localidad\u0027, data.top_location_rows, [\u0027Bodega/localidad\u0027,\u0027Total\u0027,\u0027Dato 1\u0027,\u0027Observacion\u0027], \u0027Sin top de localidades.\u0027));\n  return blocks.filter(Boolean).join(\u0027\\n\u0027);\n}\n\nfunction buildHtml(item) {\n  const data = item.json || {};\n  const triggerConfig = getNodeJson(\u0027SetTrigger - Flujo\u0027);\n  const mixedConfig = getNodeJson(\u0027SetMixed - Configuracion efectiva\u0027);\n  const root = data.template_root || mixedConfig.template_root || triggerConfig.template_root || \u0027/opt/n8n-config/templates/mail/v1\u0027;\n  const key = data.report_template_key || mixedConfig.report_template_key || triggerConfig.report_template_key || \u0027cmdb-activos-sin-contacto\u0027;\n  const contract = JSON.parse(readText(path.join(root, \u0027reports\u0027, key + \u0027.json\u0027)));\n  const partial = (name) =\u003e readText(path.join(root, contract.partials[name]));\n\n  const styles = partial(\u0027styles\u0027);\n  const header = render(partial(\u0027header\u0027), {\n    eyebrow: escapeHtml(contract.header?.eyebrow || \u0027Automatizacion ITSM / CMDB\u0027),\n    title: escapeHtml(data.report_title || data.email_subject || \u0027Reporte\u0027),\n    subtitle: escapeHtml(contract.header?.subtitle || \u0027\u0027),\n    itop_organization: escapeHtml(data.itop_organization || \u0027-\u0027),\n    generated_at: escapeHtml(data.generated_at || \u0027-\u0027),\n    source_label: escapeHtml(data.source_label || data.report_source_label || contract.header?.source_label || \u0027-\u0027),\n  });\n  const summary = render(partial(\u0027summary\u0027), { description: escapeHtml(data.report_description || contract.summary?.description || \u0027\u0027) });\n  const stats = render(partial(\u0027stats\u0027), { stats_rows: statRows(data, contract.stats || []) });\n  const criteria = render(partial(\u0027criteria\u0027), contract.criteria || {});\n  const tables = flagEnabled(data, \u0027include_detail\u0027, true) ? render(partial(\u0027tables\u0027), {\n    title: contract.tables?.title || \u0027Detalle operacional\u0027,\n    subtitle: contract.tables?.subtitle || \u0027\u0027,\n    content: tableContent(data) || \u0027\u003ctable role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"\u003e\u003ctr\u003e\u003ctd style=\"padding:14px; font-size:13px; color:#64748b;\"\u003eSin registros para el criterio del reporte.\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u0027,\n  }) : \u0027\u0027;\n  const notes = flagEnabled(data, \u0027include_operational_notes\u0027, true) ? render(partial(\u0027notes\u0027), { notes_list: notesList(data.operational_notes) }) : \u0027\u0027;\n  const cta = flagEnabled(data, \u0027include_itop_button_footer\u0027, true) ? render(partial(\u0027cta\u0027), {\n    href: escapeHtml(data.itop_url || \u0027#\u0027),\n    label: contract.cta?.label || \u0027Abrir\u0027,\n  }) : \u0027\u0027;\n  const footer = render(partial(\u0027footer\u0027), {\n    brand: contract.footer?.brand || \u0027Automatizacion ITSM / CMDB\u0027,\n    company: escapeHtml(data.company || data.Company || \u0027\u0027),\n    generated_at: escapeHtml(data.generated_at || \u0027-\u0027),\n  });\n\n  let html = render(partial(\u0027layout\u0027), {\n    title: escapeHtml(data.report_title || data.email_subject || \u0027Reporte\u0027),\n    styles,\n    header,\n    summary: flagEnabled(data, \u0027include_summary\u0027, true) ? summary : \u0027\u0027,\n    stats: flagEnabled(data, \u0027include_summary\u0027, true) ? stats : \u0027\u0027,\n    criteria,\n    tables,\n    notes,\n    cta,\n    footer,\n  });\n  html = normalizeText(html, false);\n  data.email_subject = normalizeText(data.email_subject, true);\n\n  const includeAttachment = flagEnabled(data, \u0027include_attachment\u0027, true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  return {\n    json: {\n      ...data,\n      html,\n      template_version: contract.template_version || \u0027mail-v1\u0027,\n      template_contract: key,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment \u0026\u0026 binary.csv ? \u0027csv\u0027 : \u0027\u0027,\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n}\n\nreturn $input.all().map(buildHtml);\n"
-                                     },
-                      "id":  "c2a3f3b9-64d5-4cde-9b4d-0b72f6b7d8b1",
-                      "name":  "HTML - Renderer parciales",
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       20548,
-                                       6048
-                                   ]
-                  }
-              ],
-    "pinData":  {
-
-                },
-    "connections":  {
-                        "Ejecutar manualmente":  {
-                                                     "main":  [
-                                                                  [
-                                                                      {
-                                                                          "node":  "SetTrigger - Flujo",
-                                                                          "type":  "main",
-                                                                          "index":  0
-                                                                      }
-                                                                  ]
-                                                              ]
-                                                 },
-                        "Cron - Mensual":  {
-                                               "main":  [
-                                                            [
-                                                                {
-                                                                    "node":  "SetTrigger - Flujo",
-                                                                    "type":  "main",
-                                                                    "index":  0
-                                                                }
-                                                            ]
-                                                        ]
-                                           },
-                        "Webhook - ejecucion externa":  {
-                                                            "main":  [
-                                                                         [
-                                                                             {
-                                                                                 "node":  "Validar webhook",
-                                                                                 "type":  "main",
-                                                                                 "index":  0
-                                                                             }
-                                                                         ]
-                                                                     ]
-                                                        },
-                        "Validar webhook":  {
-                                                "main":  [
-                                                             [
-                                                                 {
-                                                                     "node":  "Responder webhook",
-                                                                     "type":  "main",
-                                                                     "index":  0
-                                                                 }
-                                                             ]
-                                                         ]
-                                            },
-                        "Responder webhook":  {
-                                                  "main":  [
-                                                               [
-                                                                   {
-                                                                       "node":  "Continuar webhook valido",
-                                                                       "type":  "main",
-                                                                       "index":  0
-                                                                   }
-                                                               ]
-                                                           ]
-                                              },
-                        "Continuar webhook valido":  {
-                                                         "main":  [
-                                                                      [
-                                                                          {
-                                                                              "node":  "SetTrigger - Flujo",
-                                                                              "type":  "main",
-                                                                              "index":  0
-                                                                          }
-                                                                      ]
-                                                                  ]
-                                                     },
-                        "SetTrigger - Flujo":  {
-                                                   "main":  [
-                                                                [
-                                                                    {
-                                                                        "node":  "SubWorkflow - SetBase reportes correo",
-                                                                        "type":  "main",
-                                                                        "index":  0
-                                                                    }
-                                                                ]
-                                                            ]
-                                               },
-                        "SubWorkflow - SetBase reportes correo":  {
-                                                                      "main":  [
-                                                                                   [
-                                                                                       {
-                                                                                           "node":  "Config Reporte",
-                                                                                           "type":  "main",
-                                                                                           "index":  0
-                                                                                       }
-                                                                                   ]
-                                                                               ]
-                                                                  },
-                        "Config Reporte":  {
-                                               "main":  [
-                                                            [
-                                                                {
-                                                                    "node":  "LDAP - Endpoint AD",
-                                                                    "type":  "main",
-                                                                    "index":  0
-                                                                },
-                                                                {
-                                                                    "node":  "iTop - PC",
-                                                                    "type":  "main",
-                                                                    "index":  0
-                                                                }
-                                                            ]
-                                                        ]
-                                           },
-                        "LDAP - Endpoint AD":  {
-                                                   "main":  [
-                                                                [
-                                                                    {
-                                                                        "node":  "Normalizar Endpoint AD",
-                                                                        "type":  "main",
-                                                                        "index":  0
-                                                                    }
-                                                                ]
-                                                            ]
-                                               },
-                        "iTop - PC":  {
-                                          "main":  [
-                                                       [
-                                                           {
-                                                               "node":  "Normalizar iTop PC-Laptop",
-                                                               "type":  "main",
-                                                               "index":  0
-                                                           }
-                                                       ]
-                                                   ]
-                                      },
-                        "Normalizar Endpoint AD":  {
-                                                       "main":  [
-                                                                    [
-                                                                        {
-                                                                            "node":  "Merge AD e iTop",
-                                                                            "type":  "main",
-                                                                            "index":  0
-                                                                        }
-                                                                    ]
-                                                                ]
-                                                   },
-                        "Normalizar iTop PC-Laptop":  {
-                                                          "main":  [
-                                                                       [
-                                                                           {
-                                                                               "node":  "Merge AD e iTop",
-                                                                               "type":  "main",
-                                                                               "index":  1
-                                                                           }
-                                                                       ]
-                                                                   ]
-                                                      },
-                        "Merge AD e iTop":  {
-                                                "main":  [
-                                                             [
-                                                                 {
-                                                                     "node":  "Comparar AD vs iTop",
-                                                                     "type":  "main",
-                                                                     "index":  0
-                                                                 }
-                                                             ]
-                                                         ]
-                                            },
-                        "Comparar AD vs iTop":  {
-                                                    "main":  [
-                                                                 [
-                                                                     {
-                                                                         "node":  "HTML - Renderer parciales",
-                                                                         "type":  "main",
-                                                                         "index":  0
-                                                                     }
-                                                                 ]
-                                                             ]
-                                                },
-                        "Aplicar flags envio":  {
-                                                    "main":  [
-                                                                 [
-                                                                     {
-                                                                         "node":  "Enviar correo SMTP",
-                                                                         "type":  "main",
-                                                                         "index":  0
-                                                                     }
-                                                                 ]
-                                                             ]
-                                                },
-                        "HTML - Renderer parciales":  {
-                                                          "main":  [
-                                                                       [
-                                                                           {
-                                                                               "node":  "Aplicar flags envio",
-                                                                               "type":  "main",
-                                                                               "index":  0
-                                                                           }
-                                                                       ]
-                                                                   ]
-                                                      }
-                    },
-    "active":  false,
-    "settings":  {
-                     "executionOrder":  "v1",
-                     "binaryMode":  "separate"
-                 },
-    "versionId":  "8d007d3e-4423-4950-95dc-32d063449040",
-    "meta":  {
-                 "instanceId":  "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
-             },
-    "id":  "mXcinh94smylKzIq",
-    "tags":  [
-
-             ]
+{
+  "name": "AD - iTop - Comparacion Endpoint PC Laptop - SMTP",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        18720,
+        6048
+      ],
+      "id": "08a72c67-be71-4192-97c7-98f07cdd9b20",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ad-itop-endpoint-pc-laptop-comparacion",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        18048,
+        5856
+      ],
+      "id": "4f76fe03-bc94-429b-9f0a-706b1b85b8f6",
+      "name": "Webhook - ejecucion externa",
+      "webhookId": "f05d3680-5dbd-48e9-9c80-0a9ec5c73680",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5ueiVRP6pKurE71t",
+          "name": "HeaderAuth_GF_QA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst body = item?.json?.body || {};\nconst errors = [];\n\nfunction text(name) { return String(body[name] ?? '').trim(); }\nfunction optionalBoolean(name) {\n  const raw = body[name];\n  if (raw === undefined || raw === null || raw === '') return true;\n  const v = String(raw).trim().toLowerCase();\n  return ['true','false','1','0','yes','no','si','s','n','on','off'].includes(v);\n}\n\nif (!text('email_to')) errors.push('email_to es obligatorio para llamadas webhook.');\nfor (const name of ['include_attachment','include_detail','include_summary','send_email']) {\n  if (!optionalBoolean(name)) errors.push(`${name} debe ser booleano compatible: true/false, 1/0, si/no.`);\n}\nconst valid = errors.length === 0;\nreturn [{ json: { ...(item.json || {}), webhook_contract: { valid, status_code: valid ? 202 : 400, message: valid ? 'Workflow accepted' : errors.join(' '), errors } }, binary: item.binary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18272,
+        5856
+      ],
+      "id": "c35e2114-02e4-4d3a-884c-fb323dcc3ff2",
+      "name": "Validar webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"message\": $json.webhook_contract.message, \"accepted\": $json.webhook_contract.valid } }}",
+        "options": {
+          "responseCode": "={{ $json.webhook_contract.status_code }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        18496,
+        5856
+      ],
+      "id": "cd962f3b-0808-4e70-b763-1a9718d47455",
+      "name": "Responder webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst json = item?.json || {};\nif (!json.webhook_contract?.valid) return [];\nconst { webhook_contract, ...cleanJson } = json;\nreturn [{ json: cleanJson, binary: item.binary }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18720,
+        5856
+      ],
+      "id": "707a04fb-eb60-43a1-b271-adc27fd907a8",
+      "name": "Continuar webhook valido"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 7,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        18720,
+        6240
+      ],
+      "id": "57e93710-a255-4d52-a34f-c00809462926",
+      "name": "Cron - Mensual"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "055fc394-a6fe-4fca-9799-f14c8a473850",
+              "name": "email_from",
+              "value": "={{ $json.body?.email_from ?? \"notificaciones@dominio.cl\" }}",
+              "type": "string"
+            },
+            {
+              "id": "a64270a7-9a43-49dc-a5bc-8c6fb1bc1693",
+              "name": "email_to",
+              "value": "={{ $json.body?.email_to ?? \"mesa.ayuda@dominio.cl\" }}",
+              "type": "string"
+            },
+            {
+              "id": "a6ce1103-169a-42d8-9963-ed314c0c10b4",
+              "name": "email_cc",
+              "value": "={{ $json.body?.email_cc ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "a6944dde-5168-4329-935f-876d82a6bc4e",
+              "name": "email_bcc",
+              "value": "={{ $json.body?.email_bcc ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "cd269776-9fae-4b64-9b46-b92f960c439c",
+              "name": "email_subject",
+              "value": "Comparacion AD vs iTop - Endpoint PC/Laptop",
+              "type": "string"
+            },
+            {
+              "id": "986e5668-6ce7-4ec9-a6df-22cb55f49998",
+              "name": "timezone",
+              "value": "America/Santiago",
+              "type": "string"
+            },
+            {
+              "id": "713e91fc-d6b6-4aad-b505-ec630a283d47",
+              "name": "Company",
+              "value": "TecnoComp",
+              "type": "string"
+            },
+            {
+              "id": "7addd653-0b35-4db7-9930-80330b2a3627",
+              "name": "itop_organization",
+              "value": "={{ $json.body?.itop_organization || $json.body?.organization || $json.itop_organization || $json.organization || $json.config?.itop_organization || $json.config?.itop?.organization || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "42a2b43e-e35b-4cd3-9bd0-2804325539c7",
+              "name": "report_template_key",
+              "value": "ad-itop-endpoint-pc-laptop-comparacion",
+              "type": "string"
+            },
+            {
+              "id": "916fce73-7db7-4e12-bc3f-9c171aa98980",
+              "name": "ldap_base_dn",
+              "value": "={{ $json.body?.ldap_base_dn ?? \"OU=SITES_CHILE,DC=GFPE,DC=GFIROOT,DC=Local\" }}",
+              "type": "string"
+            },
+            {
+              "id": "0afa455c-0786-415d-9863-4ef1bcd35c94",
+              "name": "ldap_filter",
+              "value": "={{ $json.body?.ldap_filter ?? \"(&(objectClass=computer)(objectCategory=computer))\" }}",
+              "type": "string"
+            },
+            {
+              "id": "4b59f1a8-6205-40ea-813d-8bc6f9551b9a",
+              "name": "ldap_included_ous",
+              "value": "={{ $json.body?.ldap_included_ous ?? \"Computers,Disable Device,Servers,Servers AWS\" }}",
+              "type": "string"
+            },
+            {
+              "id": "d334e52c-49b5-4b28-9c8c-387a92409a51",
+              "name": "ldap_attributes",
+              "value": "cn,name,sAMAccountName,dNSHostName,distinguishedName,userAccountControl,lastLogonTimestamp,lastLogon,operatingSystem,operatingSystemVersion,managedBy,location,description,info,whenChanged,whenCreated,objectClass,objectCategory",
+              "type": "string"
+            },
+            {
+              "id": "b75a4aaa-f381-4f6d-b8f7-765281387434",
+              "name": "itop_pc_class",
+              "value": "PC",
+              "type": "string"
+            },
+            {
+              "id": "1f86cef5-ece7-4157-b6b2-a9c1b7f521a6",
+              "name": "itop_laptop_class",
+              "value": "Laptop",
+              "type": "string"
+            },
+            {
+              "id": "fa1f2ed5-4683-4bc8-b896-f33995cd8351",
+              "name": "itop_oql_pc",
+              "value": "SELECT PC",
+              "type": "string"
+            },
+            {
+              "id": "8c5b1f62-e4c7-4a30-bd90-4639f222c0eb",
+              "name": "itop_oql_laptop",
+              "value": "SELECT Laptop",
+              "type": "string"
+            },
+            {
+              "id": "4ca4d8a6-4075-42d3-b53f-7916b7301da5",
+              "name": "itop_output_fields",
+              "value": "name,friendlyname,status,serialnumber,asset_number,org_id,org_id_friendlyname,finalclass,description,location_id_friendlyname,brand_id_friendlyname,model_id_friendlyname",
+              "type": "string"
+            },
+            {
+              "id": "4b0f3c9c-1e01-47b7-8e1d-0d4ba142ef6b",
+              "name": "itop_limit",
+              "value": 5000,
+              "type": "number"
+            },
+            {
+              "id": "d07d18fb-2d8f-4069-9048-26583eb9d366",
+              "name": "include_attachment",
+              "value": "={{ $json.body?.include_attachment ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "7747dd5a-a333-499c-b388-99f20d2cf010",
+              "name": "include_detail",
+              "value": "={{ $json.body?.include_detail ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "1ccd5510-be33-44fb-a5a3-fbc8c4b01b10",
+              "name": "include_summary",
+              "value": "={{ $json.body?.include_summary ?? true }}",
+              "type": "string"
+            },
+            {
+              "id": "cfe4a63a-b994-45c8-9318-1b4e096ede99",
+              "name": "send_email",
+              "value": "={{ $json.body?.send_email ?? true }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        18944,
+        6048
+      ],
+      "id": "165cc2cb-5027-4082-bf6c-c6a9b7cfb34c",
+      "name": "SetTrigger - Flujo"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "puR8KZ9UFvq5zRqX",
+          "mode": "list",
+          "cachedResultUrl": "/n8n/workflow/puR8KZ9UFvq5zRqX",
+          "cachedResultName": "SYS - Configuracion base reportes correo"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        19168,
+        6048
+      ],
+      "id": "36287ab7-3a1d-46ed-8a04-e98aa1c53939",
+      "name": "SubWorkflow - SetBase reportes correo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $input.first()?.json || {};\nconst trigger = $('SetTrigger - Flujo').first()?.json || {};\n\nfunction normalizeBoolean(value, fallback) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true','1','yes','y','si','s','on','enabled'].includes(text)) return true;\n  if (['false','0','no','n','off','disabled'].includes(text)) return false;\n  return fallback;\n}\n\nconst effectiveOrganization = trigger.itop_organization || trigger.organization || base.itop_organization || base.organization || base.config?.itop_organization || base.config?.itop?.organization || '';\nconst flags = { ...(base.flags || {}) };\nfor (const key of ['include_attachment','include_detail','include_summary','include_itop_button_footer','send_email']) {\n  flags[key] = normalizeBoolean(trigger[key] ?? base[key], flags[key] ?? true);\n}\n\nconst config = {\n  itop_organization: effectiveOrganization,\n  organization: effectiveOrganization,\n  zonaHoraria: trigger.timezone || base.timezone || 'America/Santiago',\n  nombreReporte: 'ad_itop_endpoint_pc_laptop_comparacion',\n  ldap: {\n    baseDn: trigger.ldap_base_dn,\n    filter: trigger.ldap_filter,\n    attributes: trigger.ldap_attributes,\n    includedOus: String(trigger.ldap_included_ous || '').split(',').map(x => x.trim()).filter(Boolean)\n  },\n  itop: {\n    pcClass: trigger.itop_pc_class || 'PC',\n    laptopClass: trigger.itop_laptop_class || 'Laptop',\n    oqlPC: trigger.itop_oql_pc || 'SELECT PC',\n    oqlLaptop: trigger.itop_oql_laptop || 'SELECT Laptop',\n    fields: trigger.itop_output_fields || 'name,friendlyname,status,serialnumber,asset_number,org_id,org_id_friendlyname,finalclass,description,location_id_friendlyname,brand_id_friendlyname,model_id_friendlyname'\n  },\n  mail: {\n    from: trigger.email_from,\n    to: trigger.email_to,\n    cc: trigger.email_cc || '',\n    bcc: trigger.email_bcc || '',\n    subject: trigger.email_subject || 'Comparacion AD vs iTop - Endpoint PC/Laptop'\n  }\n};\n\nconst errors = [];\nfunction required(path, value) { if (value === undefined || value === null || String(value).trim() === '') errors.push(`Parametro obligatorio no informado: ${path}`); }\nrequired('ldap_base_dn', config.ldap.baseDn);\nrequired('ldap_filter', config.ldap.filter);\nrequired('ldap_attributes', config.ldap.attributes);\nrequired('email_from', config.mail.from);\nrequired('email_to', config.mail.to);\nif (!config.ldap.includedOus.length) errors.push('ldap_included_ous debe contener al menos una OU relativa bajo SITES_CHILE.');\nif (errors.length) throw new Error(errors.join(' | '));\n\nflags.include_itop_button_footer = false;\nreturn [{ json: { ...base, ...trigger, itop_organization: effectiveOrganization, organization: effectiveOrganization, flags, config, config_validated: true, include_itop_button_footer: false } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        19392,
+        6048
+      ],
+      "id": "a1c12276-f677-4147-aba0-45a7d04f8148",
+      "name": "Config Reporte"
+    },
+    {
+      "parameters": {
+        "baseDN": "={{ $json.config.ldap.baseDn }}",
+        "searchFor": "custom",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ldap",
+      "typeVersion": 1,
+      "position": [
+        19616,
+        5952
+      ],
+      "id": "99be8a39-a7fe-4115-9831-d301b51b04c4",
+      "name": "LDAP - Endpoint AD",
+      "credentials": {
+        "ldap": {
+          "id": "TcJKQ6y3VWBzndLe",
+          "name": "LDAP_GF"
+        }
+      },
+      "notes": "Consulta equipos bajo SITES_CHILE; el filtrado final se realiza por objeto computer, OU configurada, prefijo GF0 y estado activo."
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Config Reporte').first().json.config;\nconst included = (cfg.ldap.includedOus || []).map(x => String(x).trim().toLowerCase()).filter(Boolean);\n\nfunction clean(v) {\n  if (v === undefined || v === null) return '';\n  if (Array.isArray(v)) v = v[0] ?? '';\n  return String(v).trim();\n}\nfunction hasClass(j, name) {\n  const oc = j.objectClass;\n  const arr = Array.isArray(oc) ? oc : String(oc || '').split(',');\n  return arr.map(x => String(x).toLowerCase()).includes(String(name).toLowerCase());\n}\nfunction isDisabled(uac) {\n  const n = Number(clean(uac));\n  return Number.isFinite(n) && (n & 2) === 2;\n}\nfunction filetimeToDate(value) {\n  const raw = clean(value);\n  if (!raw || raw === '0') return null;\n  const n = Number(raw);\n  if (!Number.isFinite(n) || n <= 0) return null;\n  const ms = Math.floor(n / 10000 - 11644473600000);\n  const d = new Date(ms);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\nfunction fmtDate(value) {\n  const d = value instanceof Date ? value : filetimeToDate(value);\n  if (!d) return '-';\n  return d.toLocaleString('es-CL', { timeZone: cfg.zonaHoraria || 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });\n}\nfunction hostnameOf(j) {\n  const raw = clean(j.dNSHostName || j.dnshostname || j.name || j.cn || j.sAMAccountName || j.samaccountname).replace(/\\$$/, '');\n  return raw.split('.')[0].trim().toUpperCase();\n}\nfunction ouRelative(dn) {\n  const parts = clean(dn).split(',').map(x => x.trim()).filter(x => /^OU=/i.test(x));\n  return parts.join(',');\n}\nfunction ouNames(dn) {\n  return clean(dn).split(',').map(x => x.trim()).filter(x => /^OU=/i.test(x)).map(x => x.replace(/^OU=/i, '').toLowerCase());\n}\nfunction inIncludedOu(dn) {\n  const names = ouNames(dn);\n  return included.some(ou => names.includes(ou));\n}\nfunction subtype(host) {\n  if (host.endsWith('-L')) return 'Laptop';\n  if (host.endsWith('-D')) return 'Desktop';\n  if (host.endsWith('-T')) return 'Tablet';\n  if (host.endsWith('-V')) return 'Virtual';\n  return 'Validar';\n}\nfunction prefixClass(host) {\n  const h = clean(host).toUpperCase();\n  if (h.startsWith('GF0')) return 'ENDPOINT';\n  if (h.startsWith('GFPE')) return 'SERVIDOR';\n  return 'REVISAR';\n}\n\nconst endpoints = [];\nconst descartados = [];\nfor (const item of $input.all()) {\n  const j = item.json || {};\n  const dn = clean(j.distinguishedName || j.dn);\n  const sam = clean(j.sAMAccountName || j.samaccountname);\n  const host = hostnameOf(j);\n  const computerLike = hasClass(j, 'computer') || sam.endsWith('$') || Boolean(j.dNSHostName || j.dnshostname);\n  if (!computerLike) continue;\n\n  if (!inIncludedOu(dn)) {\n    descartados.push({ hostname: host, motivo: 'Fuera de OU incluidas', dn });\n    continue;\n  }\n\n  // Para conciliaciÃ³n 1 a 1 se consideran equipos AD activos e inactivos.\n  // No se excluye por prefijo: GF0=ENDPOINT, GFPE=SERVIDOR, otro=REVISAR.\n  // No se valida subtipo AD como regla de alcance; el sufijo se informa solo como dato operativo.\n  const status = isDisabled(j.userAccountControl) ? 'INACTIVO' : 'ACTIVO';\n  const clasificacionPrefijo = prefixClass(host);\n  endpoints.push({\n    hostname: host,\n    ad_status: status,\n    ad_status_raw: clean(j.userAccountControl),\n    clasificacion_prefijo: clasificacionPrefijo,\n    subtipo: subtype(host),\n    lastLogon: fmtDate(j.lastLogonTimestamp || j.lastLogon),\n    ou_relativa: ouRelative(dn),\n    distinguishedName: dn,\n    dnsHostName: clean(j.dNSHostName || j.dnshostname),\n    operatingSystem: clean(j.operatingSystem),\n    operatingSystemVersion: clean(j.operatingSystemVersion),\n    managedBy: clean(j.managedBy),\n    location: clean(j.location),\n    description: clean(j.description || j.info),\n    whenChanged: clean(j.whenChanged),\n    whenCreated: clean(j.whenCreated)\n  });\n}\nreturn [{ json: { adEndpoints: endpoints, adDiscarded: descartados } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        19840,
+        5952
+      ],
+      "id": "eb8bbf66-2ddb-4a10-9d18-0b992145a7f9",
+      "name": "Normalizar Endpoint AD",
+      "notes": "Consulta equipos bajo SITES_CHILE; el filtrado final considera solo objetos computer dentro de las OU configuradas. Para conciliaciÃ³n 1 a 1 se incluyen activos e inactivos. ClasificaciÃ³n por prefijo: GF0=ENDPOINT, GFPE=SERVIDOR, otro=REVISAR."
+    },
+    {
+      "parameters": {
+        "authentication": "token",
+        "class": "={{ $json.config.itop.pcClass }}",
+        "key": "={{ $json.config.itop.oqlPC }}",
+        "output_fields": "={{ $json.config.itop.fields }}",
+        "limit": "={{ $json.itop_limit ?? 5000 }}",
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-itop.iTop",
+      "typeVersion": 1,
+      "position": [
+        19616,
+        6144
+      ],
+      "id": "17664f4b-65df-42ab-9416-bf19b7cd31b1",
+      "name": "iTop - PC",
+      "credentials": {
+        "iTopTokenApi": {
+          "id": "FdUX5lCOh0Z3YWW4",
+          "name": "iTopToken_GF_QA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Config Reporte').first().json.config;\n\nfunction clean(v) {\n  if (v === undefined || v === null) return '';\n  if (Array.isArray(v)) v = v[0] ?? '';\n  return String(v).trim();\n}\nfunction flattenInput(items) {\n  const rows = [];\n  for (const item of items) {\n    const j = item.json || {};\n    if (j.objects && typeof j.objects === 'object') {\n      for (const [key, value] of Object.entries(j.objects)) rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      continue;\n    }\n    if (j.data?.objects && typeof j.data.objects === 'object') {\n      for (const [key, value] of Object.entries(j.data.objects)) rows.push({ key, ...(value || {}), fields: value?.fields || value || {} });\n      continue;\n    }\n    if (Array.isArray(j)) { rows.push(...j); continue; }\n    rows.push(j);\n  }\n  return rows;\n}\nfunction getField(obj, names, fallback = '') {\n  for (const name of names) {\n    if (obj && obj[name] !== undefined && obj[name] !== null && obj[name] !== '') return obj[name];\n    if (obj?.fields && obj.fields[name] !== undefined && obj.fields[name] !== null && obj.fields[name] !== '') return obj.fields[name];\n  }\n  return fallback;\n}\nfunction hostnameFrom(value) {\n  const raw = clean(value).replace(/\\$$/, '');\n  return raw.split('.')[0].trim().toUpperCase();\n}\nfunction normalizeStatus(value, friendlyValue = '') {\n  const rawCode = clean(value);\n  const rawFriendly = clean(friendlyValue);\n  const raw = rawFriendly || rawCode;\n  const values = [rawCode, rawFriendly].map(v => v.toLowerCase()).filter(Boolean);\n  const has = (items) => values.some(v => items.includes(v));\n\n  // Estados reales iTop para clase PC/Laptop:\n  // En Inventario (stock), No Productivo (implementation), Productivo (production), Obsoleto (obsolete).\n  if (has(['production','produccion','producción','in production','en produccion','en producción','productivo'])) {\n    return { normalized: 'ACTIVO', raw: raw || 'Productivo' };\n  }\n  if (has(['stock','en stock','en inventario','inventario'])) {\n    return { normalized: 'ACTIVO', raw: raw || 'En Inventario' };\n  }\n  if (has(['obsolete','obsoleto'])) {\n    return { normalized: 'INACTIVO', raw: raw || 'Obsoleto' };\n  }\n  if (has(['implementation','implementacion','implementación','in implementation','en implementacion','en implementación','no productivo'])) {\n    return { normalized: 'VALIDAR', raw: raw || 'No Productivo' };\n  }\n  if (!raw) {\n    return { normalized: 'VALIDAR', raw: '-' };\n  }\n  return { normalized: 'INACTIVO', raw };\n}\n\nconst rows = flattenInput($input.all());\nconst assets = [];\nfor (const row of rows) {\n  const f = row.fields || row;\n  const host = hostnameFrom(getField(f, ['name', 'friendlyname', 'hostname', 'serialnumber'], ''));\n  if (!host) continue;\n  const status = normalizeStatus(getField(f, ['status'], ''), getField(f, ['status_friendlyname'], ''));\n  const finalclass = clean(getField(f, ['finalclass', 'class'], row.class || '')) || 'PC/Laptop';\n  assets.push({\n    hostname: host,\n    itop_status: status.normalized,\n    itop_status_raw: status.raw,\n    itop_class: finalclass,\n    itop_key: clean(row.key || row.id || getField(f, ['id', '_key', 'key'], '')),\n    friendlyname: clean(getField(f, ['friendlyname'], '')),\n    serialnumber: clean(getField(f, ['serialnumber', 'serial_number'], '')),\n    asset_number: clean(getField(f, ['asset_number', 'assetnumber'], '')),\n    org_name: clean(getField(f, ['org_id_friendlyname', 'org_name'], '')),\n    location: clean(getField(f, ['location_id_friendlyname', 'location_name'], '')),\n    brand: clean(getField(f, ['brand_id_friendlyname', 'brand_name'], '')),\n    model: clean(getField(f, ['model_id_friendlyname', 'model_name'], ''))\n  });\n}\nreturn [{ json: { itopAssets: assets } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        19840,
+        6144
+      ],
+      "id": "9a375dca-d666-496e-b957-3785cf20c4d7",
+      "name": "Normalizar iTop PC-Laptop"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        20064,
+        6048
+      ],
+      "id": "4fbd4069-7a94-49c9-8b94-b07dde4de3ad",
+      "name": "Merge AD e iTop"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Config Reporte').first().json.config;\nconst input = $input.first().json || {};\nconst organization = clean(input.itop_organization || input.organization || cfg.itop_organization || cfg.organization || cfg.itop?.organization || '');\nconst adEndpointsRaw = input.adEndpoints || [];\nconst itopAssetsRaw = input.itopAssets || [];\nconst adDiscarded = input.adDiscarded || [];\n\nfunction isGfpeHost(value) {\n  return String(value ?? '').trim().toUpperCase().startsWith('GFPE');\n}\n\n// Este reporte compara endpoints PC/Laptop; se omiten equipos con prefijo GFPE.\nconst adEndpoints = adEndpointsRaw.filter(x => !isGfpeHost(x.hostname));\nconst itopAssets = itopAssetsRaw.filter(x => !isGfpeHost(x.hostname));\n\nfunction clean(v) { return String(v ?? '').trim(); }\nfunction add(map, key, value) { if (!map.has(key)) map.set(key, []); map.get(key).push(value); }\nfunction esc(value) { return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#039;'); }\nfunction csvEscape(value) { return `\"${String(value ?? '').replace(/\"/g, '\"\"')}\"`; }\n\nconst adByHost = new Map();\nconst itopByHost = new Map();\nfor (const a of adEndpoints) add(adByHost, a.hostname, a);\nfor (const a of itopAssets) add(itopByHost, a.hostname, a);\n\nfunction prefixClass(host) {\n  const h = clean(host).toUpperCase();\n  if (h.startsWith('GF0')) return 'ENDPOINT';\n  if (h.startsWith('GFPE')) return 'SERVIDOR';\n  return 'REVISAR';\n}\n\nfunction resolveTipo(host, ad, itop) {\n  // Tipo visual del equipo segun nomenclatura. La regla de alcance AD se valida por prefijo:\n  // GF0=Endpoint, GFPE=Servidor, otro=Revisar. No se usa el subtipo AD como criterio de exclusion.\n  const h = clean(host).toUpperCase();\n  if (h.endsWith('-L')) return 'Laptop';\n  if (h.endsWith('-D')) return 'Desktop';\n  if (h.endsWith('-V')) return 'Virtual';\n  if (h.endsWith('-T')) return 'Tablet';\n\n  // Fallback iTop: solo para registros sin sufijo suficiente o SOLO_ITOP.\n  const rawClass = clean(itop?.itop_class || '').toLowerCase();\n  if (rawClass === 'laptop') return 'Laptop';\n  if (rawClass === 'pc') return 'PC';\n\n  return 'Validar';\n}\n\nconst allHosts = new Set([...adByHost.keys(), ...itopByHost.keys()].filter(Boolean));\nconst rows = [];\nlet sincronizados = 0;\nlet diferencias = 0;\nlet soloAD = 0;\nlet soloITop = 0;\nlet revisar = 0;\nlet duplicados = 0;\n\nfor (const host of [...allHosts].sort()) {\n  const adList = adByHost.get(host) || [];\n  const itopList = itopByHost.get(host) || [];\n  if (adList.length > 1 || itopList.length > 1) duplicados++;\n  const ad = adList[0] || null;\n  const itop = itopList[0] || null;\n  let estado = '';\n  let observacion = '';\n  if (ad && itop) {\n    if (itop.itop_status === 'VALIDAR') {\n      estado = 'REVISAR_ESTADO_ITOP'; revisar++;\n      observacion = `Equipo encontrado en ambos sistemas. iTop informa estado real ${itop.itop_status_raw || '-'}, clasificado como VALIDAR para revision operativa frente al estado AD=${ad.ad_status}.`;\n    } else if (ad.ad_status === itop.itop_status) {\n      estado = 'SINCRONIZADO'; sincronizados++;\n      observacion = `Sincronizado: AD=${ad.ad_status}, iTop=${itop.itop_status}. Estado real iTop: ${itop.itop_status_raw || '-'}.`;\n    } else {\n      estado = 'DIFERENCIA_ESTADO'; diferencias++;\n      observacion = `Diferencia de estado: AD=${ad.ad_status}; iTop=${itop.itop_status}. Estado real iTop: ${itop.itop_status_raw || '-'}.`;\n    }\n  } else if (ad && !itop) {\n    estado = 'SOLO_AD'; soloAD++;\n    observacion = 'Equipo existe en AD dentro del alcance configurado, pero no existe como PC/Laptop en iTop por hostname. Se considera su estado AD real para conciliacion.';\n  } else if (!ad && itop) {\n    estado = 'SOLO_ITOP'; soloITop++;\n    observacion = `Equipo existe en iTop PC/Laptop, pero no fue encontrado en AD dentro del alcance configurado. Estado real iTop: ${itop.itop_status_raw || '-'}.`;\n  }\n  if (adList.length > 1) observacion += ` Duplicado AD: ${adList.length} registros con mismo hostname.`;\n  if (itopList.length > 1) observacion += ` Duplicado iTop: ${itopList.length} registros con mismo hostname.`;\n  rows.push({\n    Hostname: host,\n    Tipo: resolveTipo(host, ad, itop),\n    'Clasificacion Prefijo': ad?.clasificacion_prefijo || prefixClass(host),\n    'AD Status': String(ad?.ad_status || 'NO_ENCONTRADO').toUpperCase(),\n    'iTop Status': String(itop?.itop_status || 'NO_ENCONTRADO').toUpperCase(),\n    'iTop Status Real': itop?.itop_status_raw || '',\n    Estado: estado,\n    Observacion: observacion,\n    Subtipo: ad?.subtipo || '',\n    'LastLogon AD': ad?.lastLogon || '-',\n    'OU AD': ad?.ou_relativa || '',\n    'SO AD': ad?.operatingSystem || '',\n    'DNSHostName AD': ad?.dnsHostName || '',\n    'Clase iTop': itop?.itop_class || '',\n    'Serial iTop': itop?.serialnumber || '',\n    'Asset Number iTop': itop?.asset_number || '',\n    'Org iTop': itop?.org_name || '',\n    'Ubicacion iTop': itop?.location || '',\n    'Key iTop': itop?.itop_key || ''\n  });\n}\n\nconst resumen = {\n  fecha_ejecucion: new Date().toISOString(),\n  total_ad_equipos: adEndpoints.length,\n  total_ad_activos: adEndpoints.filter(x => x.ad_status === 'ACTIVO').length,\n  total_ad_inactivos: adEndpoints.filter(x => x.ad_status === 'INACTIVO').length,\n  total_itop_pc_laptop: itopAssets.length,\n  sincronizados,\n  sincronizados_activos: rows.filter(r => r.Estado === 'SINCRONIZADO' && r['AD Status'] === 'ACTIVO').length,\n  sincronizados_inactivos: rows.filter(r => r.Estado === 'SINCRONIZADO' && r['AD Status'] === 'INACTIVO').length,\n  diferencias_estado: diferencias,\n  solo_ad: soloAD,\n  solo_itop: soloITop,\n  revisar,\n  duplicados,\n  descartados_ad: adDiscarded.length\n};\nconst hayDiferencias = diferencias + soloAD + soloITop + revisar + duplicados > 0;\n\nconst estadoOrden = {\n  DIFERENCIA_ESTADO: 10,\n  SOLO_AD: 20,\n  SOLO_ITOP: 30,\n  REVISAR_ESTADO_ITOP: 40,\n  SINCRONIZADO: 90\n};\nfunction sincronizadoOrden(row) {\n  if (row.Estado !== 'SINCRONIZADO') return 0;\n  if (row['AD Status'] === 'ACTIVO') return 1;\n  if (row['AD Status'] === 'INACTIVO') return 2;\n  return 3;\n}\nrows.sort((a, b) => {\n  const oa = estadoOrden[a.Estado] ?? 80;\n  const ob = estadoOrden[b.Estado] ?? 80;\n  if (oa !== ob) return oa - ob;\n  const sa = sincronizadoOrden(a);\n  const sb = sincronizadoOrden(b);\n  if (sa !== sb) return sa - sb;\n  return String(a.Hostname || '').localeCompare(String(b.Hostname || ''));\n});\n\nconst csvHeaders = ['Hostname','Tipo','Clasificacion Prefijo','AD Status','iTop Status','iTop Status Real','Estado','Observacion','Subtipo','LastLogon AD','OU AD','SO AD','DNSHostName AD','Clase iTop','Serial iTop','Asset Number iTop','Org iTop','Ubicacion iTop','Key iTop'];\nconst csv = '\\uFEFF' + [csvHeaders.map(csvEscape).join(';'), ...rows.map(r => csvHeaders.map(h => csvEscape(r[h])).join(';'))].join('\\r\\n');\nconst stamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);\n\nfunction displayEstado(estado) {\n  const labels = {\n    SINCRONIZADO: 'Sincronizado',\n    DIFERENCIA_ESTADO: 'Diferencia de estado',\n    SOLO_AD: 'Solo en AD',\n    SOLO_ITOP: 'Solo en iTop',\n    REVISAR_ESTADO_ITOP: 'Revisar estado iTop',\n    SIN_DATOS: 'Sin datos'\n  };\n  return labels[estado] || String(estado || '-');\n}\nfunction td(v) { return `<td style=\"font-size:12px;line-height:16px;color:#1f2937;padding:8px;border-bottom:1px solid #e5e7eb;vertical-align:top;\">${v}</td>`; }\nfunction th(v) { return `<th align=\"left\" style=\"font-size:11px;color:#334155;background:#f1f5f9;padding:8px;border-bottom:1px solid #cbd5e1;\">${esc(v)}</th>`; }\nfunction renderRow(r) {\n  return `<tr>${td(`<strong>${esc(r.Hostname)}</strong>`)}${td(esc(r.Tipo || 'Validar'))}${td(esc(r['AD Status']))}${td(esc(r['iTop Status']))}${td(esc(displayEstado(r.Estado)))}${td(esc(r.Observacion))}</tr>`;\n}\nfunction renderGroup(title, list) {\n  if (!list.length) return '';\n  return `<tr><td colspan=\"6\" style=\"font-size:12px;font-weight:bold;color:#0f172a;background:#e2e8f0;padding:8px;border-bottom:1px solid #cbd5e1;\">${esc(title)} (${list.length})</td></tr>${list.map(renderRow).join('')}`;\n}\nconst gruposDetalle = [\n  ['DIFERENCIAS - Casos a analizar', rows.filter(r => r.Estado === 'DIFERENCIA_ESTADO')],\n  ['SOLO AD - Casos a analizar', rows.filter(r => r.Estado === 'SOLO_AD')],\n  ['SOLO ITOP - Casos a analizar', rows.filter(r => r.Estado === 'SOLO_ITOP')],\n  ['REVISAR - Casos a analizar', rows.filter(r => r.Estado === 'REVISAR_ESTADO_ITOP')],\n  ['Correctos - Sincronizados activos', rows.filter(r => r.Estado === 'SINCRONIZADO' && r['AD Status'] === 'ACTIVO')],\n  ['Correctos - Sincronizados inactivos', rows.filter(r => r.Estado === 'SINCRONIZADO' && r['AD Status'] === 'INACTIVO')],\n  ['Correctos - Sincronizados otros estados', rows.filter(r => r.Estado === 'SINCRONIZADO' && !['ACTIVO','INACTIVO'].includes(r['AD Status']))],\n];\nconst detailRows = gruposDetalle.map(([title, list]) => renderGroup(title, list)).join('') || `<tr>${td('Sin registros para mostrar.')}${td('-')}${td('-')}${td('-')}${td(esc(displayEstado('SIN_DATOS')))}${td('No se recibieron equipos desde AD ni desde iTop para el alcance configurado.')}</tr>`;\n\nconst generatedAt = new Date().toLocaleString('es-CL', { timeZone: cfg.zonaHoraria || 'America/Santiago', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });\nconst subject = `${cfg.mail.subject} - ${hayDiferencias ? 'Con diferencias' : 'Sin diferencias'}`;\nconst html = '';\r\n\r\nreturn [{\n  json: {\n    ...input,\n    resumen,\n    rows,\n    hayDiferencias,\n    email_from: cfg.mail.from,\n    email_to: cfg.mail.to,\n    email_cc: cfg.mail.cc,\n    email_bcc: cfg.mail.bcc,\n    email_subject: subject,\n    report_template_key: input.report_template_key || 'ad-itop-endpoint-pc-laptop-comparacion',\n    report_title: 'Comparacion AD vs iTop - Endpoint PC/Laptop',\n    report_description: 'Vista de conciliacion entre el inventario de endpoints en Active Directory y los activos PC/Laptop registrados en iTop, orientada a detectar brechas de sincronizacion y priorizar acciones de regularizacion.',\n    generated_at: generatedAt,\n    company: input.Company || input.company || 'TecnoComp',\n    Company: input.Company || input.company || 'TecnoComp',\n    itop_organization: organization || '-',\n    total_ad_equipos: String(resumen.total_ad_equipos),\n    total_ad_activos: String(resumen.total_ad_activos),\n    total_ad_inactivos: String(resumen.total_ad_inactivos),\n    total_itop_pc_laptop: String(resumen.total_itop_pc_laptop),\n    sincronizados_activos: String(resumen.sincronizados_activos),\n    sincronizados_inactivos: String(resumen.sincronizados_inactivos),\n    diferencias_estado: String(resumen.diferencias_estado),\n    solo_ad: String(resumen.solo_ad),\n    solo_itop: String(resumen.solo_itop),\n    revisar: String(resumen.revisar),\n    duplicados: String(resumen.duplicados),\n    descartados_ad: String(resumen.descartados_ad),\n    detail_blocks: `<div style=\"font-size:13px;color:#475569;margin:0 0 12px 0;\">Vista priorizada de conciliacion: los casos a analizar se presentan al inicio (diferencias, registros exclusivos por fuente y elementos en revision). Los equipos correctos o sincronizados quedan al final para facilitar lectura y seguimiento. En iTop, No Productivo se trata como VALIDAR para confirmar su vigencia operativa.</div><div style=\"font-size:12px;color:#64748b;margin:0 0 8px 0;\">Total mostrado: ${esc(rows.length)} registros comparados por hostname dentro del alcance definido para el reporte.</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:1px solid #dbe3ec;border-collapse:collapse;\"><thead><tr>${th('Hostname')}${th('Tipo')}${th('AD')}${th('iTop')}${th('Estado')}${th('Observacion')}</tr></thead><tbody>${detailRows}</tbody></table>`,\n    operational_notes: `Este reporte entrega una fotografia ejecutiva de consistencia entre AD e iTop, enfocando la atencion en los activos que requieren decision o regularizacion. Al ordenar primero las brechas y dejar los registros correctos al final, facilita una revision rapida para mantener inventario confiable, trazabilidad de soporte y continuidad operacional.`,\n    html,\n    include_itop_button_footer: false,\n    flags: { ...(input.flags || {}), include_itop_button_footer: false },\n    attachment_binary_names: 'csv',\n    csv_filename: `comparacion_ad_itop_endpoint_pc_laptop_${stamp}.csv`\n  },\n  binary: {\n    csv: {\n      data: Buffer.from(csv, 'utf8').toString('base64'),\n      mimeType: 'text/csv',\n      fileName: `comparacion_ad_itop_endpoint_pc_laptop_${stamp}.csv`\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20288,
+        6048
+      ],
+      "id": "699af6c2-6349-41c4-ae29-8d5e6680a8f4",
+      "name": "Comparar AD vs iTop"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst data = item?.json || {};\nconst flags = data.flags || $('Config Reporte').first()?.json?.flags || {};\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true','1','yes','y','si','s','on','enabled'].includes(text)) return true;\n  if (['false','0','no','n','off','disabled'].includes(text)) return false;\n  return fallback;\n}\nconst includeAttachment = normalizeBoolean(data.include_attachment ?? flags.include_attachment, true);\nconst sendEmail = normalizeBoolean(data.send_email ?? flags.send_email, true);\nreturn [{ json: { ...data, flags, send_email_effective: sendEmail, include_attachment_effective: includeAttachment, attachment_binary_names: includeAttachment && item.binary?.csv ? 'csv' : '' }, binary: includeAttachment ? (item.binary || {}) : {} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20512,
+        6048
+      ],
+      "id": "73e0c423-3489-4f2a-8034-e0621136bfc2",
+      "name": "Aplicar flags envio"
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.email_from }}",
+        "toEmail": "={{ $json.email_to }}",
+        "subject": "={{ $json.email_subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "attachments": "={{ $json.attachment_binary_names }}",
+          "ccEmail": "={{ $json.email_cc }}",
+          "bccEmail": "={{ $json.email_bcc }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        20736,
+        6048
+      ],
+      "id": "e8376e67-73a0-4d16-8da1-73d64a2bff05",
+      "name": "Enviar correo SMTP",
+      "webhookId": "7ff56a14-a303-43de-a6ef-1781c95b5e3b",
+      "credentials": {
+        "smtp": {
+          "id": "3SyjzuvErhGGEZZq",
+          "name": "SMTP_MailPit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nfunction escapeHtml(value) {\n  return String(value ?? '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction readText(filePath) {\n  return fs.readFileSync(filePath, 'utf8').replace(/^\\uFEFF/, '');\n}\n\nfunction render(template, values) {\n  return String(template || '').replace(/{{\\s*([\\w.]+)\\s*}}/g, (_, key) => {\n    const parts = key.split('.');\n    let value = values;\n    for (const part of parts) value = value?.[part];\n    return value === undefined || value === null ? '' : String(value);\n  });\n}\n\nfunction normalizeText(value, forSubject = false) {\n  let text = String(value ?? '');\n  const htmlMap = [\n    ['revision','revisi&oacute;n'], ['Revision','Revisi&oacute;n'], ['comparacion','comparaci&oacute;n'], ['Comparacion','Comparaci&oacute;n'],\n    ['conciliacion','conciliaci&oacute;n'], ['Conciliacion','Conciliaci&oacute;n'], ['sincronizacion','sincronizaci&oacute;n'], ['Sincronizacion','Sincronizaci&oacute;n'],\n    ['regularizacion','regularizaci&oacute;n'], ['Regularizacion','Regularizaci&oacute;n'], ['normalizacion','normalizaci&oacute;n'], ['Normalizacion','Normalizaci&oacute;n'],\n    ['auditoria','auditor&iacute;a'], ['Auditoria','Auditor&iacute;a'], ['analisis','an&aacute;lisis'], ['Analisis','An&aacute;lisis'], ['Observacion','Observaci&oacute;n'],\n    ['AutomatizaciÃ³n','Automatizaci&oacute;n'], ['OrganizaciÃ³n','Organizaci&oacute;n'], ['ProducciÃ³n','Producci&oacute;n'],\n    ['automÃ¡ticamente','autom&aacute;ticamente'], ['expiraciÃ³n','expiraci&oacute;n'], ['prÃ³ximo','pr&oacute;ximo'], ['revisiÃ³n','revisi&oacute;n'],\n    ['comparaciÃ³n','comparaci&oacute;n'], ['conciliaciÃ³n','conciliaci&oacute;n'], ['automÃ¡ticos','autom&aacute;ticos'], ['electrÃ³nico','electr&oacute;nico'], ['acciÃ³n','acci&oacute;n'],    ['Automatizaci??n','Automatizaci&oacute;n'], ['Organizaci??n','Organizaci&oacute;n'], ['organizaci??n','organizaci&oacute;n'],\n    ['Producci??n','Producci&oacute;n'], ['garant??a','garant&iacute;a'], ['Garant??a','Garant&iacute;a'], ['GARANT??A','GARANT&Iacute;A'],\n    ['pr??ximos','pr&oacute;ximos'], ['Pr??ximos','Pr&oacute;ximos'], ['PR??XIMOS','PR&Oacute;XIMOS'], ['pr??ximo','pr&oacute;ximo'], ['pr??xima','pr&oacute;xima'],\n    ['d??as','d&iacute;as'], ['D??AS','D&Iacute;AS'], ['D??as','D&iacute;as'], ['m??s','m&aacute;s'], ['M??S','M&Aacute;S'], ['M??s','M&aacute;s'],\n    ['T??tulo','T&iacute;tulo'], ['antig??edad','antig&uuml;edad'], ['actualizaci??n','actualizaci&oacute;n'], ['configuraci??n','configuraci&oacute;n'],\n    ['f??sicos','f&iacute;sicos'], ['f??sico','f&iacute;sico'], ['f??sica','f&iacute;sica'], ['tel??fono','tel&eacute;fono'], ['m??viles','m&oacute;viles'],\n    ['perif??rico','perif&eacute;rico'], ['perif??ricos','perif&eacute;ricos'], ['??nico','&uacute;nico'], ['??nica','&uacute;nica'], ['??ltimo','&uacute;ltimo'],\n    ['cr??tico','cr&iacute;tico'], ['cr??ticos','cr&iacute;ticos'], ['par??metros','par&aacute;metros'], ['env??a','env&iacute;a'], ['envi??','envi&oacute;'],\n    ['asignaci??n','asignaci&oacute;n'], ['ubicaci??n','ubicaci&oacute;n'], ['descripci??n','descripci&oacute;n'], ['categor??a','categor&iacute;a'],\n    ['seg??n','seg&uacute;n'], ['hist??rico','hist&oacute;rico'], ['relaci??n','relaci&oacute;n'], ['operaci??n','operaci&oacute;n'], ['an??lisis','an&aacute;lisis'],\n    ['creaci??n','creaci&oacute;n'], ['aprobaci??n','aprobaci&oacute;n'], ['atenci??n','atenci&oacute;n'], ['informaci??n','informaci&oacute;n'],\n    ['clasificaci??n','clasificaci&oacute;n'], ['revisi??n','revisi&oacute;n'], ['intervenci??n','intervenci&oacute;n'], ['secci??n','secci&oacute;n'],\n    ['l??nea','l&iacute;nea'], ['c??digos','c&oacute;digos'], ['d??nde','d&oacute;nde'], ['espa??ol','espa&ntilde;ol'], ['vi??etas','vi&ntilde;etas'],\n    ['m??ltiples','m&uacute;ltiples'], ['m??xima','m&aacute;xima'], ['r??pida','r&aacute;pida'], ['reposici??n','reposici&oacute;n'],\n    ['est??ndar','est&aacute;ndar'], ['alg??n','alg&uacute;n'], ['??til','&uacute;til'], ['port??til','port&aacute;til']\n  ];\n  const subjectMap = htmlMap.map(([bad, good]) => [bad, good\n    .replace(/&aacute;/g,'a').replace(/&eacute;/g,'e').replace(/&iacute;/g,'i').replace(/&oacute;/g,'o').replace(/&uacute;/g,'u')\n    .replace(/&Aacute;/g,'A').replace(/&Eacute;/g,'E').replace(/&Iacute;/g,'I').replace(/&Oacute;/g,'O').replace(/&Uacute;/g,'U')\n    .replace(/&uuml;/g,'u').replace(/&Uuml;/g,'U').replace(/&ntilde;/g,'n').replace(/&Ntilde;/g,'N')]);\n  for (const [bad, good] of (forSubject ? subjectMap : htmlMap)) text = text.split(bad).join(good);\n  text = text.split(' ?? ').join(forSubject ? ' - ' : ' &bull; ');\n  text = text.split('??').join(forSubject ? '-' : '&bull;');\n  return text;\n}\n\nfunction getNodeJson(name) {\n  try { return $(name).first()?.json || {}; } catch (error) { return {}; }\n}\n\nfunction normalizeBoolean(value, fallback = true) {\n  if (value === undefined || value === null || value === '') return fallback;\n  if (typeof value === 'boolean') return value;\n  if (typeof value === 'number') return value !== 0;\n  const text = String(value).trim().toLowerCase();\n  if (['true', '1', 'yes', 'y', 'si', 's', 'on', 'enabled'].includes(text)) return true;\n  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(text)) return false;\n  return fallback;\n}\n\nfunction flagEnabled(data, name, fallback = true) {\n  const trigger = getNodeJson('SetTrigger - Flujo');\n  const mixed = getNodeJson('SetMixed - Configuracion efectiva');\n  const value = data[name] ?? data.flags?.[name] ?? trigger[name] ?? trigger.flags?.[name] ?? mixed[name] ?? mixed.flags?.[name];\n  return normalizeBoolean(value, fallback);\n}\n\nfunction notesList(value) {\n  const lines = String(value ?? '')\n    .split(/\\r?\\n|\\. /)\n    .map(v => v.trim().replace(/\\.$/, ''))\n    .filter(Boolean);\n  if (!lines.length) return '<div style=\"font-size:13px; line-height:20px; color:#64748b;\">Sin observaciones adicionales.</div>';\n  return '<ul style=\"margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:20px;\">' +\n    lines.map(line => '<li>' + escapeHtml(line) + '.</li>').join('') +\n    '</ul>';\n}\n\nfunction statCard(data, stat) {\n  const value = data[stat.value] ?? data[stat.fallbackValue] ?? '-';\n  return '<td class=\"summary-card\" width=\"33.33%\" valign=\"top\"><table role=\"presentation\" width=\"100%\" style=\"border:1px solid ' + stat.border + '; background-color:' + stat.background + ';\"><tr><td style=\"padding:12px;\"><div style=\"font-size:11px; color:' + stat.labelColor + '; font-weight:bold;\">' + escapeHtml(stat.label) + '</div><div style=\"font-size:24px; color:' + stat.valueColor + '; font-weight:bold;\">' + escapeHtml(value) + '</div></td></tr></table></td>';\n}\n\nfunction statRows(data, stats) {\n  const rows = [];\n  for (let i = 0; i < stats.length; i += 3) {\n    const cells = stats.slice(i, i + 3).map(stat => statCard(data, stat));\n    while (cells.length < 3) cells.push('<td class=\"summary-card\" width=\"33.33%\" valign=\"top\">&nbsp;</td>');\n    rows.push('<tr>' + cells.join('') + '</tr>');\n  }\n  return rows.join('\\n');\n}\n\nfunction simpleTable(title, rows, headers, emptyText) {\n  if (!rows) return '';\n  const headerHtml = headers.map(h => '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">' + escapeHtml(h) + '</th>').join('');\n  const body = rows || '<tr><td colspan=\"' + headers.length + '\" style=\"padding:14px; font-size:12px; color:#64748b;\">' + escapeHtml(emptyText || 'Sin registros.') + '</td></tr>';\n  return '<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">' + escapeHtml(title) + '</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + headerHtml + '</tr></thead><tbody>' + body + '</tbody></table>';\n}\n\nfunction tableContent(data) {\n  const blocks = [];\n  for (const key of ['detail_blocks', 'grouped_section', 'detail_section', 'detail_table_html']) {\n    if (data[key]) blocks.push(data[key]);\n  }\n  if (data.class_asset_blocks) blocks.push(data.class_asset_blocks);\n  if (data.status_asset_blocks) blocks.push(data.status_asset_blocks);\n  if (data.review_asset_blocks) blocks.push(data.review_asset_blocks);\n  if (data.ticket_sections) blocks.push(data.ticket_sections);\n  if (data.older_section) blocks.push(data.older_section);\n  if (data.recent_section) blocks.push(data.recent_section);\n  if (data.ticket_rows_html) blocks.push(simpleTable('Tickets abiertos', data.ticket_rows_html, ['Criticidad','Referencia','Tipo','Titulo','Solicitante','Estado','Creacion','Ultimo update','Antiguedad','SLA'], 'Sin tickets.'));\n  if (data.movement_rows) blocks.push(simpleTable('Movimientos recientes', data.movement_rows, ['Fecha','Movimiento','Activo','Clase','Origen','Destino'], 'Sin movimientos.'));\n  if (data.class_summary_rows) blocks.push(simpleTable('Resumen por clase', data.class_summary_rows, ['Clase','Total','Dato 1','Observacion'], 'Sin resumen por clase.'));\n  if (data.warehouse_summary_rows) blocks.push(simpleTable('Resumen por bodega/localidad', data.warehouse_summary_rows, ['Bodega/localidad','Total','Clases','Observacion'], 'Sin resumen por bodega.'));\n  if (data.status_summary_rows) blocks.push(simpleTable('Resumen por estado', data.status_summary_rows, ['Estado','Total','Dato 1','Observacion'], 'Sin resumen por estado.'));\n  if (data.location_summary_rows) blocks.push(simpleTable('Resumen por localidad', data.location_summary_rows, ['Localidad','Total','Dato 1','Observacion'], 'Sin resumen por localidad.'));\n  if (data.class_status_rows) blocks.push(simpleTable('Clase por estado', data.class_status_rows, ['Clase','Productivo','Inventario','No operativo'], 'Sin matriz de estados.'));\n  if (data.location_matrix_rows) {\n    const header = data.location_matrix_header_cells || '<th align=\"left\" style=\"padding:8px; font-size:11px; color:#475569;\">Bodega/localidad</th>';\n    blocks.push('<div style=\"font-size:14px; font-weight:bold; color:#1e293b; margin:18px 0 8px 0;\">Matriz por bodega/localidad</div><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; border:1px solid #dbe3ec;\"><thead><tr style=\"background:#f8fafc;\">' + header + '</tr></thead><tbody>' + data.location_matrix_rows + '</tbody></table>');\n  }\n  if (data.top_location_rows) blocks.push(simpleTable('Top bodega/localidad', data.top_location_rows, ['Bodega/localidad','Total','Dato 1','Observacion'], 'Sin top de localidades.'));\n  return blocks.filter(Boolean).join('\\n');\n}\n\nfunction buildHtml(item) {\n  const data = item.json || {};\n  const triggerConfig = getNodeJson('SetTrigger - Flujo');\n  const mixedConfig = getNodeJson('SetMixed - Configuracion efectiva');\n  const root = data.template_root || mixedConfig.template_root || triggerConfig.template_root || '/opt/n8n-config/templates/mail/v1';\n  const key = data.report_template_key || mixedConfig.report_template_key || triggerConfig.report_template_key || 'cmdb-activos-sin-contacto';\n  const contract = JSON.parse(readText(path.join(root, 'reports', key + '.json')));\n  const partial = (name) => readText(path.join(root, contract.partials[name]));\n\n  const styles = partial('styles');\n  const header = render(partial('header'), {\n    eyebrow: escapeHtml(contract.header?.eyebrow || 'Automatizacion ITSM / CMDB'),\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    subtitle: escapeHtml(contract.header?.subtitle || ''),\n    itop_organization: escapeHtml(data.itop_organization || '-'),\n    generated_at: escapeHtml(data.generated_at || '-'),\n    source_label: escapeHtml(data.source_label || data.report_source_label || contract.header?.source_label || '-'),\n  });\n  const summary = render(partial('summary'), { description: escapeHtml(data.report_description || contract.summary?.description || '') });\n  const stats = render(partial('stats'), { stats_rows: statRows(data, contract.stats || []) });\n  const criteria = render(partial('criteria'), contract.criteria || {});\n  const tables = flagEnabled(data, 'include_detail', true) ? render(partial('tables'), {\n    title: contract.tables?.title || 'Detalle operacional',\n    subtitle: contract.tables?.subtitle || '',\n    content: tableContent(data) || '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"border:1px solid #dbe3ec;\"><tr><td style=\"padding:14px; font-size:13px; color:#64748b;\">Sin registros para el criterio del reporte.</td></tr></table>',\n  }) : '';\n  const notes = flagEnabled(data, 'include_operational_notes', true) ? render(partial('notes'), { notes_list: notesList(data.operational_notes) }) : '';\n  const cta = flagEnabled(data, 'include_itop_button_footer', true) ? render(partial('cta'), {\n    href: escapeHtml(data.itop_url || '#'),\n    label: contract.cta?.label || 'Abrir',\n  }) : '';\n  const footer = render(partial('footer'), {\n    brand: contract.footer?.brand || 'Automatizacion ITSM / CMDB',\n    company: escapeHtml(data.company || data.Company || ''),\n    generated_at: escapeHtml(data.generated_at || '-'),\n  });\n\n  let html = render(partial('layout'), {\n    title: escapeHtml(data.report_title || data.email_subject || 'Reporte'),\n    styles,\n    header,\n    summary: flagEnabled(data, 'include_summary', true) ? summary : '',\n    stats: flagEnabled(data, 'include_summary', true) ? stats : '',\n    criteria,\n    tables,\n    notes,\n    cta,\n    footer,\n  });\n  html = normalizeText(html, false);\n  data.email_subject = normalizeText(data.email_subject, true);\n\n  const includeAttachment = flagEnabled(data, 'include_attachment', true);\n  const binary = includeAttachment ? (item.binary || {}) : {};\n  return {\n    json: {\n      ...data,\n      html,\n      template_version: contract.template_version || 'mail-v1',\n      template_contract: key,\n      include_attachment_effective: includeAttachment,\n      attachment_binary_names: includeAttachment && binary.csv ? 'csv' : '',\n      has_csv_binary: Boolean(binary.csv),\n    },\n    binary,\n  };\n}\n\nreturn $input.all().map(buildHtml);\n"
+      },
+      "id": "c2a3f3b9-64d5-4cde-9b4d-0b72f6b7d8b1",
+      "name": "HTML - Renderer parciales",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20548,
+        6048
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron - Mensual": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - ejecucion externa": {
+      "main": [
+        [
+          {
+            "node": "Validar webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar webhook": {
+      "main": [
+        [
+          {
+            "node": "Responder webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder webhook": {
+      "main": [
+        [
+          {
+            "node": "Continuar webhook valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continuar webhook valido": {
+      "main": [
+        [
+          {
+            "node": "SetTrigger - Flujo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetTrigger - Flujo": {
+      "main": [
+        [
+          {
+            "node": "SubWorkflow - SetBase reportes correo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SubWorkflow - SetBase reportes correo": {
+      "main": [
+        [
+          {
+            "node": "Config Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Reporte": {
+      "main": [
+        [
+          {
+            "node": "LDAP - Endpoint AD",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "iTop - PC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LDAP - Endpoint AD": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Endpoint AD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iTop - PC": {
+      "main": [
+        [
+          {
+            "node": "Normalizar iTop PC-Laptop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Endpoint AD": {
+      "main": [
+        [
+          {
+            "node": "Merge AD e iTop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar iTop PC-Laptop": {
+      "main": [
+        [
+          {
+            "node": "Merge AD e iTop",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge AD e iTop": {
+      "main": [
+        [
+          {
+            "node": "Comparar AD vs iTop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comparar AD vs iTop": {
+      "main": [
+        [
+          {
+            "node": "HTML - Renderer parciales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aplicar flags envio": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo SMTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Renderer parciales": {
+      "main": [
+        [
+          {
+            "node": "Aplicar flags envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8d007d3e-4423-4950-95dc-32d063449040",
+  "meta": {
+    "instanceId": "0ad3b920e2d3586b0e2fb892d909337f22ce15cbde2c7354c038d868efea76ad"
+  },
+  "id": "mXcinh94smylKzIq",
+  "tags": []
 }
