@@ -1,63 +1,93 @@
 {
-  "template_version": "mail-v1",
-  "partials": {
-    "styles": "partials/styles.html",
-    "layout": "partials/layout.html",
-    "header": "partials/header.html",
-    "summary": "partials/summary.html",
-    "stats": "partials/stats.html",
-    "criteria": "partials/criteria.html",
-    "tables": "partials/tables.html",
-    "notes": "partials/notes.html",
-    "cta": "partials/cta.html",
-    "footer": "partials/footer.html"
-  },
-  "header": {
-    "eyebrow": "Automatización ITSM / CMDB",
-    "subtitle": "Consolidado operativo sincronizado desde Combodo iTop",
-    "source_label": "Producción / iTop"
-  },
-  "summary": {
-    "description": "Reporte de cuentas AD vigentes cuya fecha de expiración se encuentra dentro del periodo configurado."
-  },
-  "criteria": {
-    "title": "Criterio del reporte",
-    "body": "Se consideran cuentas de usuario habilitadas, con accountExpires informado y fecha de expiración dentro del horizonte definido para el reporte."
-  },
-  "tables": {
-    "title": "Cuentas con vencimiento próximo",
-    "subtitle": "Detalle agrupado por mes de vencimiento para revisión operacional."
-  },
-  "cta": {
-    "label": "Abrir Combodo iTop"
-  },
-  "footer": {
-    "brand": "Automatización ITSM / CMDB"
-  },
-  "stats": [
-    {
-      "label": "TOTAL CUENTAS",
-      "value": "total_records",
-      "border": "#bfdbfe",
-      "background": "#eff6ff",
-      "labelColor": "#1e3a8a",
-      "valueColor": "#1e3a8a"
-    },
-    {
-      "label": "DENTRO 30 DÍAS",
-      "value": "within_30_count",
-      "border": "#fecaca",
-      "background": "#fef2f2",
-      "labelColor": "#991b1b",
-      "valueColor": "#991b1b"
-    },
-    {
-      "label": "DENTRO 90 DÍAS",
-      "value": "within_90_count",
-      "border": "#fed7aa",
-      "background": "#fff7ed",
-      "labelColor": "#9a3412",
-      "valueColor": "#9a3412"
-    }
-  ]
+    "template_version":  "mail-v1",
+    "partials":  {
+                     "styles":  "partials/styles.html",
+                     "layout":  "partials/layout.html",
+                     "header":  "partials/header.html",
+                     "summary":  "partials/summary.html",
+                     "stats":  "partials/stats.html",
+                     "criteria":  "partials/criteria.html",
+                     "tables":  "partials/tables.html",
+                     "notes":  "partials/notes.html",
+                     "cta":  "partials/cta.html",
+                     "footer":  "partials/footer.html"
+                 },
+    "header":  {
+                   "eyebrow":  "Automatizacion ITSM / CMDB",
+                   "subtitle":  "Consolidado operativo de cuentas AD con vencimiento",
+                   "source_label":  "Produccion / Active Directory"
+               },
+    "summary":  {
+                    "description":  "Vista mensual de cuentas AD con fecha de expiracion configurada dentro del periodo evaluado, incluyendo cuentas activas y desactivadas para facilitar revision operacional."
+                },
+    "criteria":  {
+                     "title":  "Criterio del reporte",
+                     "body":  "Permite anticipar renovaciones, cierres o revisiones de acceso asociadas a cuentas AD con vencimiento programado durante los proximos seis meses."
+                 },
+    "tables":  {
+                   "title":  "Cuentas por mes de vencimiento",
+                   "subtitle":  "Detalle mensual para priorizar revision, renovacion o cierre de accesos."
+               },
+    "cta":  {
+                "label":  "Abrir Combodo iTop"
+            },
+    "footer":  {
+                   "brand":  "Automatizacion ITSM / CMDB"
+               },
+    "stats":  [
+                  {
+                      "label":  "MES 1",
+                      "labelValue":  "month_1_label",
+                      "value":  "month_1_count",
+                      "border":  "#bfdbfe",
+                      "background":  "#eff6ff",
+                      "labelColor":  "#1e3a8a",
+                      "valueColor":  "#1e3a8a"
+                  },
+                  {
+                      "label":  "MES 2",
+                      "labelValue":  "month_2_label",
+                      "value":  "month_2_count",
+                      "border":  "#bbf7d0",
+                      "background":  "#f0fdf4",
+                      "labelColor":  "#166534",
+                      "valueColor":  "#166534"
+                  },
+                  {
+                      "label":  "MES 3",
+                      "labelValue":  "month_3_label",
+                      "value":  "month_3_count",
+                      "border":  "#fde68a",
+                      "background":  "#fffbeb",
+                      "labelColor":  "#a16207",
+                      "valueColor":  "#a16207"
+                  },
+                  {
+                      "label":  "MES 4",
+                      "labelValue":  "month_4_label",
+                      "value":  "month_4_count",
+                      "border":  "#ddd6fe",
+                      "background":  "#f5f3ff",
+                      "labelColor":  "#6d28d9",
+                      "valueColor":  "#6d28d9"
+                  },
+                  {
+                      "label":  "MES 5",
+                      "labelValue":  "month_5_label",
+                      "value":  "month_5_count",
+                      "border":  "#fecaca",
+                      "background":  "#fef2f2",
+                      "labelColor":  "#991b1b",
+                      "valueColor":  "#991b1b"
+                  },
+                  {
+                      "label":  "MES 6",
+                      "labelValue":  "month_6_label",
+                      "value":  "month_6_count",
+                      "border":  "#cbd5e1",
+                      "background":  "#f8fafc",
+                      "labelColor":  "#475569",
+                      "valueColor":  "#0f172a"
+                  }
+              ]
 }
