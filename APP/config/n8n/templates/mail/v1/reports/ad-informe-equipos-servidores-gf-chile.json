@@ -1,64 +1,93 @@
 {
-  "template_version": "mail-v1",
-  "partials": {
-    "styles": "partials/styles.html",
-    "layout": "partials/layout.html",
-    "header": "partials/header.html",
-    "summary": "partials/summary.html",
-    "stats": "partials/stats.html",
-    "criteria": "partials/criteria.html",
-    "tables": "partials/tables.html",
-    "notes": "partials/notes.html",
-    "cta": "partials/cta.html",
-    "footer": "partials/footer.html"
-  },
-  "header": {
-    "eyebrow": "Automatización ITSM / CMDB",
-    "subtitle": "Consolidado operativo sincronizado desde Combodo iTop",
-    "source_label": "Producción / iTop"
-  },
-  "summary": {
-    "description": "Consolidado de equipos y servidores recuperados desde Active Directory, clasificados por alcance, estado y tipo operacional."
-  },
-  "criteria": {
-    "title": "Criterio del reporte",
-    "body": "Se procesan objetos computer de Active Directory dentro de las OU configuradas para GF Chile, separando endpoints, servidores y registros que requieren revisión."
-  },
-  "tables": {
-    "title": "Detalle de equipos y servidores",
-    "subtitle": "Resumen y detalle operacional para control de inventario AD."
-  },
-  "cta": {
-    "label": "Abrir Combodo iTop"
-  },
-  "footer": {
-    "brand": "Automatización ITSM / CMDB"
-  },
-  "stats": [
-    {
-      "label": "TOTAL EQUIPOS",
-      "value": "total_equipos",
-      "fallbackValue": "total_records",
-      "border": "#bfdbfe",
-      "background": "#eff6ff",
-      "labelColor": "#1e3a8a",
-      "valueColor": "#1e3a8a"
-    },
-    {
-      "label": "SERVIDORES",
-      "value": "total_servidores",
-      "border": "#cbd5e1",
-      "background": "#f8fafc",
-      "labelColor": "#475569",
-      "valueColor": "#0f172a"
-    },
-    {
-      "label": "ENDPOINTS",
-      "value": "total_endpoint",
-      "border": "#bbf7d0",
-      "background": "#f0fdf4",
-      "labelColor": "#166534",
-      "valueColor": "#166534"
-    }
-  ]
+    "template_version":  "mail-v1",
+    "partials":  {
+                     "styles":  "partials/styles.html",
+                     "layout":  "partials/layout.html",
+                     "header":  "partials/header.html",
+                     "summary":  "partials/summary.html",
+                     "stats":  "partials/stats.html",
+                     "criteria":  "partials/criteria.html",
+                     "tables":  "partials/tables.html",
+                     "notes":  "partials/notes.html",
+                     "cta":  "partials/cta.html",
+                     "footer":  "partials/footer.html"
+                 },
+    "header":  {
+                   "eyebrow":  "Automatizacion ITSM / CMDB",
+                   "subtitle":  "Consolidado operativo sincronizado desde Active Directory",
+                   "source_label":  "Produccion / Active Directory"
+               },
+    "summary":  {
+                    "description":  "Vista consolidada del inventario de equipos y servidores registrados en Active Directory, destacando activos, inactivos y registros que requieren revision para apoyar control operativo y gobierno de inventario."
+                },
+    "criteria":  {
+                     "title":  "Criterio del reporte",
+                     "body":  "Entrega una mirada priorizada del inventario AD dentro del alcance GF Chile, permitiendo identificar brechas de nomenclatura, vigencia y clasificacion antes de procesos de auditoria, normalizacion o conciliacion con CMDB."
+                 },
+    "tables":  {
+                   "title":  "Inventario AD de equipos y servidores",
+                   "subtitle":  "Detalle priorizado para revision de nomenclatura, validacion de endpoints y control de activos e inactivos."
+               },
+    "cta":  {
+                "label":  "Abrir Combodo iTop"
+            },
+    "footer":  {
+                   "brand":  "Automatizacion ITSM / CMDB"
+               },
+    "stats":  [
+                  {
+                      "label":  "TOTAL",
+                      "value":  "total_records",
+                      "fallbackValue":  "total_equipos",
+                      "border":  "#bfdbfe",
+                      "background":  "#eff6ff",
+                      "labelColor":  "#1e3a8a",
+                      "valueColor":  "#1e3a8a"
+                  },
+                  {
+                      "label":  "REVISAR",
+                      "value":  "total_revisar",
+                      "fallbackValue":  "0",
+                      "border":  "#fed7aa",
+                      "background":  "#fff7ed",
+                      "labelColor":  "#9a3412",
+                      "valueColor":  "#9a3412"
+                  },
+                  {
+                      "label":  "VALIDAR",
+                      "value":  "total_validar",
+                      "fallbackValue":  "0",
+                      "border":  "#fde68a",
+                      "background":  "#fffbeb",
+                      "labelColor":  "#92400e",
+                      "valueColor":  "#92400e"
+                  },
+                  {
+                      "label":  "ACTIVOS",
+                      "value":  "total_activos",
+                      "fallbackValue":  "0",
+                      "border":  "#bbf7d0",
+                      "background":  "#f0fdf4",
+                      "labelColor":  "#166534",
+                      "valueColor":  "#166534"
+                  },
+                  {
+                      "label":  "INACTIVOS",
+                      "value":  "total_inactivos",
+                      "fallbackValue":  "0",
+                      "border":  "#fecaca",
+                      "background":  "#fef2f2",
+                      "labelColor":  "#991b1b",
+                      "valueColor":  "#991b1b"
+                  },
+                  {
+                      "label":  "CLASIFICADOS",
+                      "value":  "total_clasificados",
+                      "fallbackValue":  "0",
+                      "border":  "#cbd5e1",
+                      "background":  "#f8fafc",
+                      "labelColor":  "#475569",
+                      "valueColor":  "#0f172a"
+                  }
+              ]
 }
