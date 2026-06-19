@@ -1,8 +1,44 @@
+# Normalizar todos los archivos de texto a LF en repo y working directory
+* text=auto eol=lf
+
+# Configuración y contenedores
+/.gitattributes text eol=lf
+/.gitignore text eol=lf
 *.sh text eol=lf
+*.bash text eol=lf
+Dockerfile* text eol=lf
+*.conf text eol=lf
+*.env text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
-*.conf text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+
+# Datos y documentación
 *.sql text eol=lf
 *.md text eol=lf
-*.html text eol=lf
+*.txt text eol=lf
+*.xml text eol=lf
 *.json text eol=lf
+*.csv text eol=lf
+
+# Frontend / plantillas
+*.js text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.ts text eol=lf
+*.html text eol=lf
+*.svg text eol=lf
+
+# Binarios — sin conversión
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tar binary
