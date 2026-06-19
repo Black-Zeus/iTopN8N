@@ -14,6 +14,7 @@ logs/
 !APP/config/n8n/WorkFlow_v3/test/
 !APP/config/n8n/WorkFlow_v3/test/*.test.tmp
 *.bak
+APP/config/n8n/.tmp-*/
 
 # OS files
 .DS_Store
