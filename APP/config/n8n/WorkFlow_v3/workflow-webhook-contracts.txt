@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-05-09T02:54:44.571Z",
   "scope": "Campos permitidos por webhook para WorkFlow_v3. No se aceptan aliases; usar exclusivamente los nombres indicados.",
-  "base_url": "http://192.168.3.138:8089/n8n",
+  "base_url": "http://10.101.0.135:8089/n8n",
   "auth": {
     "header": "X-Webhook-Token",
     "credential": "HeaderAuth_GF_QA",

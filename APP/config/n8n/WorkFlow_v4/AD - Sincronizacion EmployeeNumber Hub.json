@@ -1,0 +1,112 @@
+{
+  "id": "ADEmployeeNumberHubSync",
+  "name": "AD - Sincronizacion EmployeeNumber Hub",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 160],
+      "id": "61b02e40-2975-4ad9-9f03-1780ab6093d1",
+      "name": "Ejecutar manualmente"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 2,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [0, 0],
+      "id": "63085562-b6c5-480f-a28b-528bf2f68b87",
+      "name": "Cron - Diario 02:00"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "baseDN": "DC=GFPE,DC=GFIROOT,DC=Local",
+        "searchFor": "custom",
+        "customFilter": "(&(objectClass=user)(objectCategory=person)(sAMAccountName=*))",
+        "returnAll": true,
+        "options": {
+          "attributes": ["sAMAccountName", "displayName", "employeeNumber", "distinguishedName", "userAccountControl"],
+          "pageSize": 1000,
+          "scope": "sub"
+        }
+      },
+      "type": "n8n-nodes-base.ldap",
+      "typeVersion": 1,
+      "position": [256, 80],
+      "id": "16a85657-e70d-46d0-b10a-b21f68c97b21",
+      "name": "LDAP - Leer EmployeeNumber",
+      "credentials": {
+        "ldap": {
+          "id": "LDAPGFEmployeeSync",
+          "name": "LDAP_GF"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function clean(value) {\n  if (Array.isArray(value)) value = value[0];\n  return String(value ?? '').trim();\n}\n\nconst output = [];\nconst seen = new Set();\nfor (const item of $input.all()) {\n  const row = item.json || {};\n  const userId = clean(row.sAMAccountName ?? row.samaccountname).toLowerCase();\n  const displayName = clean(row.displayName ?? row.displayname);\n  const employeeNumber = clean(row.employeeNumber ?? row.employeenumber);\n  const distinguishedName = clean(row.distinguishedName ?? row.dn);\n  const userAccountControl = Number(clean(row.userAccountControl ?? row.useraccountcontrol) || 0);\n  const isActive = (userAccountControl & 2) === 0 ? 1 : 0;\n  if (!userId || seen.has(userId)) continue;\n  seen.add(userId);\n  output.push({ json: { user_id: userId, display_name: displayName, employee_number: employeeNumber, distinguished_name: distinguishedName, is_active: isActive } });\n}\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [512, 80],
+      "id": "f031aa35-8855-4ee9-a68d-8f8b44625255",
+      "name": "Normalizar y validar"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO hub_ad_employee_numbers (user_id, display_name, employee_number, distinguished_name, is_active, synced_at) VALUES ($1, $2, $3, $4, $5, NOW()) ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), employee_number = VALUES(employee_number), distinguished_name = VALUES(distinguished_name), is_active = VALUES(is_active), synced_at = VALUES(synced_at)",
+        "options": {
+          "queryBatching": "transaction",
+          "queryReplacement": "={{ [$json.user_id, $json.display_name, $json.employee_number, $json.distinguished_name, $json.is_active] }}"
+        }
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [768, 80],
+      "id": "af60b696-ef08-44fc-b62d-736cf299c77f",
+      "name": "MariaDB Hub - Upsert",
+      "credentials": {
+        "mySql": {
+          "id": "MariaDBiTopHubSync",
+          "name": "MariaDB_iTopHub"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ejecutar manualmente": {
+      "main": [[{"node": "LDAP - Leer EmployeeNumber", "type": "main", "index": 0}]]
+    },
+    "Cron - Diario 02:00": {
+      "main": [[{"node": "LDAP - Leer EmployeeNumber", "type": "main", "index": 0}]]
+    },
+    "LDAP - Leer EmployeeNumber": {
+      "main": [[{"node": "Normalizar y validar", "type": "main", "index": 0}]]
+    },
+    "Normalizar y validar": {
+      "main": [[{"node": "MariaDB Hub - Upsert", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "timezone": "America/Santiago",
+    "executionOrder": "v1"
+  },
+  "versionId": "60a4ed8c-cda5-489a-ad6e-4ce09d120c78",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

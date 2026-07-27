@@ -2,7 +2,7 @@
 # WorkFlow_v3. Ejecutar desde Git Bash.
 # Positivos HTTP 202; validaciones HTTP 400; seguridad HTTP 403.
 
-export N8N_BASE="http://192.168.3.138:8089/n8n"
+export N8N_BASE="http://10.101.0.135:8089/n8n"
 export WEBHOOK_TOKEN="120cce89d60ecb6e13dbee08bbde8d3db193c29edb17e4cf08fc6f4eb7eba0a7"
 
 call_ok() {
